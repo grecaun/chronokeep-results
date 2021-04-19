@@ -7,5 +7,4 @@ type Account struct {
 	Email      string `json:"email"`
 	Identifier string `json:"id"`
 	Type       string `json:"type"`
-	Keys       []Key  `json:"keys"`
 }
