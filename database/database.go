@@ -179,7 +179,7 @@ func createTables() error {
 		");"
 
 	resultTable := "CREATE TABLE IF NOT EXISTS result(" +
-		"event_year_id FOREIGN KEY REFERENCES event_year(event_year_id), " +
+		"event_year_id BIGINT FOREIGN KEY REFERENCES event_year(event_year_id), " +
 		"bib VARCHAR(100) NOT NULL, " +
 		"first VARCHAR(100) NOT NULL, " +
 		"last VARCHAR(100) NOT NULL, " +
@@ -198,7 +198,14 @@ func createTables() error {
 		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 		"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish), " +
-		"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence), " +
+		"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)" +
+		");"
+
+	recordTable := "CREATE TABLE IF NOT EXISTS call_record(" +
+		"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+		"time DATETIME NOT NULL, " +
+		"count INT DEFAULT 0, " +
+		"CONSTRAINT account_time UNIQUE (account_id, time)" +
 		");"
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
@@ -233,6 +240,11 @@ func createTables() error {
 	_, err = db.ExecContext(ctx, resultTable)
 	if err != nil {
 		return fmt.Errorf("error creating result table: %v", err)
+	}
+
+	_, err = db.ExecContext(ctx, recordTable)
+	if err != nil {
+		return fmt.Errorf("error creating record table: %v", err)
 	}
 
 	return nil

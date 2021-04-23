@@ -5,9 +5,9 @@ package types
 // Example types are: default, readonly, nodelete
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
+	AccountIdentifier string `json:"-"`
 	Value             string `json:"value"`
 	Type              string `json:"type"`
 	AllowedHosts      string `json:"allowedHosts"`
-	AccountIdentifier string `json:"accountID"`
 	ValidUntil        string `json:"validUntil"`
 }
