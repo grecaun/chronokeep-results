@@ -15,17 +15,26 @@ func GetAccount(email string) (*types.Account, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(ctx, "SELECT account_id, name, email, type FROM account WHERE deleted=FALSE AND email=?;", email)
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE AND email=?;",
+		email)
 	defer res.Close()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving account: %v", err)
 	}
 	var outAccount types.Account
 	if res.Next() {
-		err := res.Scan(&outAccount.Identifier, &outAccount.Name, &outAccount.Email, &outAccount.Type)
+		err := res.Scan(
+			&outAccount.Identifier,
+			&outAccount.Name,
+			&outAccount.Email,
+			&outAccount.Type)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
 		}
+	} else {
+		return nil, fmt.Errorf("account not found: %v", email)
 	}
 	return &outAccount, nil
 }
@@ -38,7 +47,9 @@ func GetAccounts() ([]types.Account, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(ctx, "SELECT account_id, name, email, type FROM account WHERE deleted = FALSE;")
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE;")
 	defer res.Close()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -63,7 +74,12 @@ func AddAccount(account types.Account) (*types.Account, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, "INSERT INTO account(name, email, type) VALUES (?, ?, ?)", account.Name, account.Email, account.Type)
+	res, err := db.ExecContext(
+		ctx,
+		"INSERT INTO account(name, email, type) VALUES (?, ?, ?)",
+		account.Name,
+		account.Email,
+		account.Type)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add account: %v", err)
 	}
@@ -80,6 +96,7 @@ func AddAccount(account types.Account) (*types.Account, error) {
 }
 
 // DeleteAccount Deletes an account from view, does not permanently delete from database.
+// This does not cascade down.  Must be done manually.
 func DeleteAccount(account types.Account) error {
 	db, err := GetDB()
 	if err != nil {
@@ -87,7 +104,10 @@ func DeleteAccount(account types.Account) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, "UPDATE account SET deleted=TRUE WHERE account_id=?", account.Identifier)
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET deleted=TRUE WHERE account_id=?",
+		account.Identifier)
 	if err != nil {
 		return fmt.Errorf("error deleting account: %v", err)
 	}
@@ -109,7 +129,13 @@ func UpdateAccount(account types.Account) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, "UPDATE account SET name=?, email=?, type=? WHERE account_id=?", account.Name, account.Email, account.Type, account.Identifier)
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET name=?, email=?, type=? WHERE account_id=?",
+		account.Name,
+		account.Email,
+		account.Type,
+		account.Identifier)
 	if err != nil {
 		return fmt.Errorf("error updating account: %v", err)
 	}

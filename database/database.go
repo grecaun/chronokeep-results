@@ -156,6 +156,7 @@ func createTables() error {
 		"slug VARCHAR(20) NOT NULL, " +
 		"website VARCHAR(200), " +
 		"image VARCHAR(200), " +
+		"contact_email VARCHAR(100), " +
 		"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
 		"access_restricted BOOL DEFAULT FALSE, " +
 		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
