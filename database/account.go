@@ -18,18 +18,20 @@ func GetAccount(email string) (*types.Account, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE AND email=?;",
-		email)
-	defer res.Close()
+		email,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving account: %v", err)
 	}
+	defer res.Close()
 	var outAccount types.Account
 	if res.Next() {
 		err := res.Scan(
 			&outAccount.Identifier,
 			&outAccount.Name,
 			&outAccount.Email,
-			&outAccount.Type)
+			&outAccount.Type,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
 		}
@@ -49,11 +51,12 @@ func GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE;")
-	defer res.Close()
+		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE;",
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
 	}
+	defer res.Close()
 	var outAccounts []types.Account
 	for res.Next() {
 		var account types.Account
@@ -79,7 +82,8 @@ func AddAccount(account types.Account) (*types.Account, error) {
 		"INSERT INTO account(name, email, type) VALUES (?, ?, ?)",
 		account.Name,
 		account.Email,
-		account.Type)
+		account.Type,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add account: %v", err)
 	}
@@ -107,7 +111,8 @@ func DeleteAccount(account types.Account) error {
 	res, err := db.ExecContext(
 		ctx,
 		"UPDATE account SET deleted=TRUE WHERE account_id=?",
-		account.Identifier)
+		account.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error deleting account: %v", err)
 	}
@@ -135,7 +140,8 @@ func UpdateAccount(account types.Account) error {
 		account.Name,
 		account.Email,
 		account.Type,
-		account.Identifier)
+		account.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error updating account: %v", err)
 	}

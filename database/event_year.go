@@ -19,11 +19,12 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 		ctx,
 		"SELECT event_year_id, event_id, year, date, time, live FROM event_year JOIN event ON event_year.event_id=event.event_id WHERE slug=? AND year=? AND deleted=FALSE;",
 		event_slug,
-		year)
-	defer res.Close()
+		year,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event year: %v", err)
 	}
+	defer res.Close()
 	var outEventYear types.EventYear
 	if res.Next() {
 		err := res.Scan(
@@ -32,7 +33,8 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 			&outEventYear.Year,
 			&outEventYear.Date,
 			&outEventYear.Time,
-			&outEventYear.Live)
+			&outEventYear.Live,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
 		}
@@ -53,11 +55,12 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT event_year_id, event_id, year, date, time, live FROM event_year JOIN event ON event_year.event_id=event.event_id WHERE slug=? AND deleted=FALSE;",
-		event_slug)
-	defer res.Close()
+		event_slug,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event years: %v", err)
 	}
+	defer res.Close()
 	var outEventYears []types.EventYear
 	for res.Next() {
 		var year types.EventYear
@@ -67,7 +70,8 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 			&year.Year,
 			&year.Date,
 			&year.Time,
-			&year.Live)
+			&year.Live,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
 		}
@@ -91,7 +95,8 @@ func AddEventYear(year types.EventYear) (*types.EventYear, error) {
 		year.Year,
 		year.Date,
 		year.Time,
-		year.Live)
+		year.Live,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event year: %v", err)
 	}
@@ -121,7 +126,8 @@ func DeleteEventYear(year types.EventYear) error {
 	res, err := db.ExecContext(
 		ctx,
 		"UPDATE event_year SET deleted=TRUE WHERE event_year_id=?",
-		year.Identifier)
+		year.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error deleting event year: %v", err)
 	}
@@ -149,7 +155,8 @@ func UpdateEventYear(year types.EventYear) error {
 		year.Date,
 		year.Time,
 		year.Live,
-		year.Identifier)
+		year.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error updating event year: %v", err)
 	}

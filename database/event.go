@@ -18,11 +18,12 @@ func GetEvent(slug string) (*types.Event, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE and slug=?;",
-		slug)
-	defer res.Close()
+		slug,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
 	}
+	defer res.Close()
 	var outEvent types.Event
 	if res.Next() {
 		err := res.Scan(
@@ -54,11 +55,12 @@ func GetEvents() ([]types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE;")
-	defer res.Close()
+		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE;",
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
 	}
+	defer res.Close()
 	var outEvents []types.Event
 	for res.Next() {
 		var event types.Event
@@ -91,11 +93,12 @@ func GetAccountEvents(accountID int64) ([]types.Event, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE AND account_id=?;",
-		accountID)
-	defer res.Close()
+		accountID,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
 	}
+	defer res.Close()
 	var outEvents []types.Event
 	for res.Next() {
 		var event types.Event
@@ -134,7 +137,8 @@ func AddEvent(event types.Event) (*types.Event, error) {
 		event.Image,
 		event.ContactEmail,
 		event.AccountIdentifier,
-		event.AccessRestricted)
+		event.AccessRestricted,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event: %v", err)
 	}
@@ -166,7 +170,8 @@ func DeleteEvent(event types.Event) error {
 	res, err := db.ExecContext(
 		ctx,
 		"UPDATE event SET deleted=TRUE WHERE event_id=?",
-		event.Identifier)
+		event.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error deleting event: %v", err)
 	}
@@ -195,7 +200,8 @@ func UpdateEvent(event types.Event) error {
 		event.Image,
 		event.ContactEmail,
 		event.AccessRestricted,
-		event.Identifier)
+		event.Identifier,
+	)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)
 	}

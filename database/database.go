@@ -148,7 +148,8 @@ func createTables() error {
 		"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP," +
 		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"deleted BOOL DEFAULT FALSE);"
+		"deleted BOOL DEFAULT FALSE," +
+		"UNIQUE(value));"
 
 	eventTable := "CREATE TABLE IF NOT EXISTS event(" +
 		"event_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
@@ -198,8 +199,8 @@ func createTables() error {
 		"finish BOOL DEFAULT TRUE, " +
 		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish), " +
-		"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)" +
+		"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish) ON CONFLICT UPDATE, " +
+		"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
 		");"
 
 	recordTable := "CREATE TABLE IF NOT EXISTS call_record(" +
