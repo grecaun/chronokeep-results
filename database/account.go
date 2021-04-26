@@ -69,7 +69,7 @@ func GetAccounts() ([]types.Account, error) {
 	return outAccounts, nil
 }
 
-// AddAccounts Adds an account to the database.
+// AddAccount Adds an account to the database.
 func AddAccount(account types.Account) (*types.Account, error) {
 	db, err := GetDB()
 	if err != nil {

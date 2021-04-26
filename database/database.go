@@ -21,7 +21,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	DatabaseVersion       = 1
+	CurrentVersion        = 1
 )
 
 // GetDatabase Used to get a database with given configuration information.
@@ -96,8 +96,8 @@ func Setup(inCfg *util.Config) error {
 			return err
 		}
 		// Otherwise check if our database is out of date and update if necessary.
-	} else if dbVersion < DatabaseVersion {
-		err = updateTables()
+	} else if dbVersion < CurrentVersion {
+		err = updateTables(dbVersion, CurrentVersion)
 		if err != nil {
 			return err
 		}
@@ -112,103 +112,131 @@ func createDatabase(dbName string) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	result, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName))
+	res, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName))
 	if err != nil {
 		return fmt.Errorf("error creating database: %v", err)
 	}
-	_, err = result.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error fetching rows: %v", err)
+		return fmt.Errorf("error fetching rows on create database: %v", err)
 	}
+	updateDB(nil)
+	return db.Close()
+}
+
+func deleteDatabase(dbName string) error {
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(ctx, fmt.Sprintf("DELETE DATABASE %s", dbName))
+	if err != nil {
+		return fmt.Errorf("error deleting database: %v", err)
+	}
+	_, err = res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error fetching rows on database delete: %v", err)
+	}
+
 	return db.Close()
 }
 
 func createTables() error {
-	settingsTable := "CREATE TABLE IF NOT EXISTS settings(" +
-		"name VARCHAR(200) NOT NULL, " +
-		"value VARCHAR(200) NOT NULL, " +
-		"UNIQUE (name));"
+	var settingsTable, accountTable, keyTable, eventTable, eventYearTable, resultTable, recordTable string
+	switch config.DBDriver {
+	case "postgres":
+		return errors.New("postgres not yet supported")
+	case "mysql":
+		settingsTable = "CREATE TABLE IF NOT EXISTS settings(" +
+			"name VARCHAR(200) NOT NULL, " +
+			"value VARCHAR(200) NOT NULL, " +
+			"UNIQUE (name));"
 
-	accountTable := "CREATE TABLE IF NOT EXISTS account(" +
-		"account_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-		"name VARCHAR(100), " +
-		"email VARCHAR(100), " +
-		"type VARCHAR(20), " +
-		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"deleted BOOL DEFAULT FALSE, " +
-		"UNIQUE(email));"
+		accountTable = "CREATE TABLE IF NOT EXISTS account(" +
+			"account_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
+			"name VARCHAR(100), " +
+			"email VARCHAR(100), " +
+			"type VARCHAR(20), " +
+			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(email));"
 
-	keyTable := "CREATE TABLE IF NOT EXISTS key(" +
-		"key_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-		"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
-		"value CHAR(100) NOT NULL, " +
-		"type VARCHAR(20) NOT NULL, " +
-		"allowed_hosts TEXT, " +
-		"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP," +
-		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"deleted BOOL DEFAULT FALSE," +
-		"UNIQUE(value));"
+		keyTable = "CREATE TABLE IF NOT EXISTS key(" +
+			"key_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
+			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+			"value CHAR(100) NOT NULL, " +
+			"type VARCHAR(20) NOT NULL, " +
+			"allowed_hosts TEXT, " +
+			"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP," +
+			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"deleted BOOL DEFAULT FALSE," +
+			"UNIQUE(value));"
 
-	eventTable := "CREATE TABLE IF NOT EXISTS event(" +
-		"event_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-		"name VARCHAR(100) NOT NULL, " +
-		"slug VARCHAR(20) NOT NULL, " +
-		"website VARCHAR(200), " +
-		"image VARCHAR(200), " +
-		"contact_email VARCHAR(100), " +
-		"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
-		"access_restricted BOOL DEFAULT FALSE, " +
-		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"deleted BOOL DEFAULT FALSE, " +
-		"UNIQUE(name), " +
-		"UNIQUE(slug)" +
-		");"
+		eventTable = "CREATE TABLE IF NOT EXISTS event(" +
+			"event_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
+			"name VARCHAR(100) NOT NULL, " +
+			"slug VARCHAR(20) NOT NULL, " +
+			"website VARCHAR(200), " +
+			"image VARCHAR(200), " +
+			"contact_email VARCHAR(100), " +
+			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+			"access_restricted BOOL DEFAULT FALSE, " +
+			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(name), " +
+			"UNIQUE(slug)" +
+			");"
 
-	eventYearTable := "CREATE TABLE IF NOT EXISTS event_year(" +
-		"event_year_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-		"event_id BIGINT FOREIGN KEY REFERENCES event(event_id), " +
-		"year VARCHAR(20) NOT NULL, " +
-		"date DATE NOT NULL, " +
-		"time TIME NOT NULL, " +
-		"live BOOL DEFAULT FALSE, " +
-		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"deleted BOOL DEFAULT FALSE, " +
-		"CONSTRAINT year_slug UNIQUE (event_id, year)" +
-		");"
+		eventYearTable = "CREATE TABLE IF NOT EXISTS event_year(" +
+			"event_year_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
+			"event_id BIGINT FOREIGN KEY REFERENCES event(event_id), " +
+			"year VARCHAR(20) NOT NULL, " +
+			"date DATE NOT NULL, " +
+			"time TIME NOT NULL, " +
+			"live BOOL DEFAULT FALSE, " +
+			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"deleted BOOL DEFAULT FALSE, " +
+			"CONSTRAINT year_slug UNIQUE (event_id, year)" +
+			");"
 
-	resultTable := "CREATE TABLE IF NOT EXISTS result(" +
-		"event_year_id BIGINT FOREIGN KEY REFERENCES event_year(event_year_id), " +
-		"bib VARCHAR(100) NOT NULL, " +
-		"first VARCHAR(100) NOT NULL, " +
-		"last VARCHAR(100) NOT NULL, " +
-		"age INT NOT NULL, " +
-		"gender CHAR(1) NOT NULL, " +
-		"age_group VARCHAR(200), " +
-		"distance VARCHAR(200) NOT NULL, " +
-		"seconds INT DEFAULT 0, " +
-		"milliseconds INT DEFAULT 0, " +
-		"location VARCHAR(500), " +
-		"occurence INT DEFAULT -1, " +
-		"ranking INT DEFAULT -1, " +
-		"age_ranking INT DEFUALT -1, " +
-		"gender_ranking INT DEFAULT -1, " +
-		"finish BOOL DEFAULT TRUE, " +
-		"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-		"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-		"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish) ON CONFLICT UPDATE, " +
-		"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
-		");"
+		resultTable = "CREATE TABLE IF NOT EXISTS result(" +
+			"event_year_id BIGINT FOREIGN KEY REFERENCES event_year(event_year_id), " +
+			"bib VARCHAR(100) NOT NULL, " +
+			"first VARCHAR(100) NOT NULL, " +
+			"last VARCHAR(100) NOT NULL, " +
+			"age INT NOT NULL, " +
+			"gender CHAR(1) NOT NULL, " +
+			"age_group VARCHAR(200), " +
+			"distance VARCHAR(200) NOT NULL, " +
+			"seconds INT DEFAULT 0, " +
+			"milliseconds INT DEFAULT 0, " +
+			"location VARCHAR(500), " +
+			"occurence INT DEFAULT -1, " +
+			"ranking INT DEFAULT -1, " +
+			"age_ranking INT DEFUALT -1, " +
+			"gender_ranking INT DEFAULT -1, " +
+			"finish BOOL DEFAULT TRUE, " +
+			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish) ON CONFLICT UPDATE, " +
+			"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
+			");"
 
-	recordTable := "CREATE TABLE IF NOT EXISTS call_record(" +
-		"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
-		"time DATETIME NOT NULL, " +
-		"count INT DEFAULT 0, " +
-		"CONSTRAINT account_time UNIQUE (account_id, time)" +
-		");"
+		recordTable = "CREATE TABLE IF NOT EXISTS call_record(" +
+			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+			"time DATETIME NOT NULL, " +
+			"count INT DEFAULT 0, " +
+			"CONSTRAINT account_time UNIQUE (account_id, time) ON CONFLICT UPDATE" +
+			");"
+	default:
+		return errors.New("invalid database type given")
+	}
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
@@ -269,10 +297,22 @@ func checkVersion() int {
 	return -1
 }
 
-func updateTables() error {
+func updateTables(oldVersion, newVersion int) error {
+	switch config.DBDriver {
+	case "postgres":
+		return errors.New("postgres not yet supported")
+	case "mysql":
+	default:
+		return errors.New("invalid database type given")
+	}
 	return nil
 }
 
+func updateDB(newdb *sql.DB) {
+	db = newdb
+}
+
+// Close Closes database.
 func Close() {
 	db.Close()
 }

@@ -11,32 +11,37 @@ type GenderalRequest struct {
 
 // GetEventsResponse Struct used for the response of a Get Events request.
 type GetEventsResponse struct {
-	Count  int     `json:"count"`
-	Events []Event `json:"events"`
+	Code     int     `json:"code"`
+	Response string  `json:"response"`
+	Count    int     `json:"count"`
+	Events   []Event `json:"events"`
 }
 
-// GetAllEventsRequest Struct used for the request to Get Events based on account.
-type GetEventsRequest struct {
+// GetAccountEventsRequest Struct used for the request to Get Events based on account.
+type GetAccountEventsRequest struct {
 	Key     string `json:"key"`
 	Account string `json:"account"`
 }
 
 // GetEventResponse Struct used for the response of a Get Event request.
 type GetEventResponse struct {
-	Event Event `json:"event"`
+	Code     int    `json:"code"`
+	Response string `json:"response"`
+	Event    Event  `json:"event"`
 }
 
 // GetEventRequest Struct used for the request to get a single Event.
 type GetEventRequest struct {
-	Key             string `json:"key"`
-	EventIdentifier string `json:"eventID"`
-	EventSlug       string `json:"eventSlug"`
+	Key       string `json:"key"`
+	EventSlug string `json:"eventSlug"`
 }
 
 // ModifyEventResponse Struct used for the response of a Add/Update Event request.
 type ModifyEventResponse struct {
-	Comment string `json:"comment"`
-	Event   Event  `json:"event"`
+	Code     int    `json:"code"`
+	Response string `json:"response"`
+	Comment  string `json:"comment"`
+	Event    Event  `json:"event"`
 }
 
 // AddEventRequest Struct used for the request to Add an Event.
@@ -53,8 +58,8 @@ type UpdateEventRequest struct {
 
 // DeleteEventRequest Struct used for the request to Delete an Event.
 type DeleteEventRequest struct {
-	Key             string `json:"key"`
-	EventIdentifier string `json:"eventID"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
 }
 
 /*
@@ -63,29 +68,32 @@ type DeleteEventRequest struct {
 
 // GetEventYearResponse Struct used for the response of a Get EventYear request.
 type GetEventYearResponse struct {
+	Code      int       `json:"code"`
+	Response  string    `json:"response"`
 	Event     Event     `json:"event"`
 	EventYear EventYear `json:"eventYear"`
 }
 
 // GetEventYearRequest Struct used for the request of an Event Year.
 type GetEventYearRequest struct {
-	Key             string `json:"key"`
-	EventIdentifier string `json:"eventID"`
-	Year            string `json:"year"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
+	Year string `json:"year"`
 }
 
 // ModifyEventYearResponse Struct used for the response of an Add/Update EventYear Request.
 type ModifyEventYearResponse struct {
-	Comment   string    `json:"comment"`
+	Code      int       `json:"code"`
+	Response  string    `json:"response"`
 	Event     Event     `json:"event"`
 	EventYear EventYear `json:"eventYear"`
 }
 
 // AddEventYearRequest Struct used to add an Event Year.
 type AddEventYearRequest struct {
-	Key             string    `json:"key"`
-	EventIdentifier string    `json:"eventID"`
-	EventYear       EventYear `json:"eventYear"`
+	Key       string    `json:"key"`
+	Slug      string    `json:"slug"`
+	EventYear EventYear `json:"eventYear"`
 }
 
 // UpdateEventYearRequest Struct used to update an Event Year.
@@ -96,8 +104,9 @@ type UpdateEventYearRequest struct {
 
 // DeleteEventYearRequest Struct used to delete an Event Year.
 type DeleteEventYearRequest struct {
-	Key                 string `json:"key"`
-	EventYearIdentifier string `json:"eventYearID"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
+	Year string `json:"year"`
 }
 
 /*
@@ -106,26 +115,32 @@ type DeleteEventYearRequest struct {
 
 // GetResultsResponse Struct used for the response of a GetResults request.
 type GetResultsResponse struct {
-	Results []Result `json:"results"`
+	Code     int      `json:"code"`
+	Response string   `json:"response"`
+	Count    int      `json:"count"`
+	Results  []Result `json:"results"`
 }
 
 // GetResultsRequest Struct used for the request of Results for an EventYear
 type GetResultsRequest struct {
-	Key                 string `json:"key"`
-	EventYearIdentifier string `json:"eventYearID"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
+	Year string `json:"year"`
 }
 
 // ModifyResultsResponse Struct used for the response to an Add/Update/Delete Results request.
 type ModifyResultsResponse struct {
-	Count   int    `json:"count"`
-	Comment string `json:"comment"`
+	Code     int    `json:"code"`
+	Response string `json:"response"`
+	Count    int    `json:"count"`
 }
 
 // ModifyResultsRequest Struct used to add/update Results.
 type ModifyResultsRequest struct {
-	Key                 string   `json:"key"`
-	EventYearIdentifier string   `json:"eventYearID"`
-	Results             []Result `json:"results"`
+	Key     string   `json:"key"`
+	Slug    string   `json:"slug"`
+	Year    string   `json:"year"`
+	Results []Result `json:"results"`
 }
 
 // DeleteResultsRequest Struct used to delete results for an EventYear.
@@ -140,8 +155,9 @@ type DeleteResultsRequest struct {
 
 // ModifyKeyResponse Struct used to respond to a Add/Update Key Request.
 type ModifyKeyResponse struct {
-	Comment string `json:"comment"`
-	Key     Key    `json:"key"`
+	Code     int    `json:"code"`
+	Response string `json:"response"`
+	Key      Key    `json:"key"`
 }
 
 // DeleteKeyRequest Struct used for the Delete Key request.
@@ -166,9 +182,11 @@ type UpdateKeyRequest struct {
 
 // GetAccountResponse Struct used for the response of the Get Account Request.
 type GetAccountResponse struct {
-	Account Account `json:"account"`
-	Keys    []Key   `json:"keys"`
-	Events  []Event `json:"events"`
+	Code     int     `json:"code"`
+	Response string  `json:"response"`
+	Account  Account `json:"account"`
+	Keys     []Key   `json:"keys"`
+	Events   []Event `json:"events"`
 }
 
 // GetAccountRequest Struct used to request information about a specific account.
@@ -178,13 +196,16 @@ type GetAccountRequest struct {
 
 // GetAllAccountsResponse Struct used to get all of the accounts.
 type GetAllAccountsResponse struct {
+	Code     int       `json:"code"`
+	Response string    `json:"response"`
 	Accounts []Account `json:"accounts"`
 }
 
 // ModifyAccountResponse Struct used to respond to add/update account requests.
 type ModifyAccountResponse struct {
-	Comment string  `json:"comment"`
-	Account Account `json:"account"`
+	Code     int     `json:"code"`
+	Response string  `json:"response"`
+	Account  Account `json:"account"`
 }
 
 // ModifyAccountRequest Struct used to request to add/update an account.
@@ -194,5 +215,5 @@ type ModifyAccountRequest struct {
 
 // DeleteAccountRequest Struct used to delete an account.
 type DeleteAccountRequest struct {
-	AccountIdentifier string `json:"accountID"`
+	Email string `json:"email"`
 }
