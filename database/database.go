@@ -124,14 +124,14 @@ func createDatabase(dbName string) error {
 	return db.Close()
 }
 
-func deleteDatabase(dbName string) error {
+func deleteDatabase() error {
 	db, err := GetDB()
 	if err != nil {
 		return err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, fmt.Sprintf("DELETE DATABASE %s", dbName))
+	res, err := db.ExecContext(ctx, fmt.Sprintf("DELETE DATABASE %s", config.DBName))
 	if err != nil {
 		return fmt.Errorf("error deleting database: %v", err)
 	}
