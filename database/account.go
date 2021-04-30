@@ -36,7 +36,7 @@ func GetAccount(email string) (*types.Account, error) {
 			return nil, fmt.Errorf("error getting account information: %v", err)
 		}
 	} else {
-		return nil, fmt.Errorf("account not found: %v", email)
+		return nil, nil
 	}
 	return &outAccount, nil
 }
@@ -124,6 +124,66 @@ func DeleteAccount(account types.Account) error {
 		return fmt.Errorf("error deleting account, rows affected: %v", rows)
 	}
 	return nil
+}
+
+// ResurrectAccount Brings an account out of the deleted state.
+func ResurrectAccount(email string) error {
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET deleted=FALSE WHERE email=?",
+		email,
+	)
+	if err != nil {
+		return fmt.Errorf("error resurrecting account: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected on resurrect account: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error resurrecting account, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// GetDeletedAccount Returns a deleted account.
+func GetDeletedAccount(email string) (*types.Account, error) {
+	db, err := GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT account_id, name, email, type FROM account WHERE deleted=TRUE AND email=?;",
+		email,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving account: %v", err)
+	}
+	defer res.Close()
+	var outAccount types.Account
+	if res.Next() {
+		err := res.Scan(
+			&outAccount.Identifier,
+			&outAccount.Name,
+			&outAccount.Email,
+			&outAccount.Type,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting account information: %v", err)
+		}
+	} else {
+		return nil, nil
+	}
+	return &outAccount, nil
 }
 
 // UpdateAccount Updates account information in the database.

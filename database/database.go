@@ -60,6 +60,9 @@ func GetDatabase(inCfg *util.Config) (*sql.DB, error) {
 
 // GetDB Used as a general way to get a database.
 func GetDB() (*sql.DB, error) {
+	if db != nil {
+		return db, nil
+	}
 	if config != nil {
 		return GetDatabase(config)
 	}
@@ -67,23 +70,11 @@ func GetDB() (*sql.DB, error) {
 }
 
 // Setup Automatically creates and updates tables for all of our information.
-func Setup(inCfg *util.Config) error {
-	// Connect to the database software without a database name.
-	config = inCfg
-	dbName := config.DBName
-	config.DBName = ""
-
-	// Create the database if it doesn't exists.
-	err := createDatabase(dbName)
-	if err != nil {
-		return err
-	}
-
+func Setup(config *util.Config) error {
 	// Connect to DB with database name.
-	config.DBName = dbName
-	db, err = GetDatabase(config)
+	_, err := GetDatabase(config)
 	if err != nil {
-		return fmt.Errorf("error connecting to database after establishing database exists: %v", err)
+		return fmt.Errorf("error connecting to database: %v", err)
 	}
 
 	// Check our database version.
@@ -105,14 +96,21 @@ func Setup(inCfg *util.Config) error {
 	return nil
 }
 
-func createDatabase(dbName string) error {
-	db, err := GetDatabase(config)
+func createDatabase() error {
+	cfg := util.Config{
+		DBDriver:   config.DBDriver,
+		DBHost:     config.DBHost,
+		DBPassword: config.DBHost,
+		DBUser:     config.DBUser,
+		DBName:     "",
+	}
+	db, err := GetDatabase(&cfg)
 	if err != nil {
-		return fmt.Errorf("error connecting to database with no database name: %v", err)
+		return fmt.Errorf("error connecting to database to create database: %v", err)
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", dbName))
+	res, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", config.DBName))
 	if err != nil {
 		return fmt.Errorf("error creating database: %v", err)
 	}
@@ -122,6 +120,24 @@ func createDatabase(dbName string) error {
 	}
 	updateDB(nil)
 	return db.Close()
+}
+
+func dropTables() error {
+	db, err := GetDatabase(config)
+	if err != nil {
+		return fmt.Errorf("error connecting to database to drop tables: %v", err)
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"DROP TABLE call_record; DROP TABLE result; DROP TABLE event_year; DROP TABLE event; DROP TABLE key; DROP TABLE account; DROP TABLE settings;",
+	)
+	_, err = res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error fetching rows on database drop tables: %v", err)
+	}
+	return nil
 }
 
 func deleteDatabase() error {
@@ -139,7 +155,7 @@ func deleteDatabase() error {
 	if err != nil {
 		return fmt.Errorf("error fetching rows on database delete: %v", err)
 	}
-
+	updateDB(nil)
 	return db.Close()
 }
 
@@ -152,13 +168,13 @@ func createTables() error {
 		settingsTable = "CREATE TABLE IF NOT EXISTS settings(" +
 			"name VARCHAR(200) NOT NULL, " +
 			"value VARCHAR(200) NOT NULL, " +
-			"UNIQUE (name));"
+			"UNIQUE (name) ON CONFLICT UPDATE);"
 
 		accountTable = "CREATE TABLE IF NOT EXISTS account(" +
 			"account_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-			"name VARCHAR(100), " +
-			"email VARCHAR(100), " +
-			"type VARCHAR(20), " +
+			"name VARCHAR(100) NOT NULL, " +
+			"email VARCHAR(100) NOT NULL, " +
+			"type VARCHAR(20) NOT NULL, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 			"deleted BOOL DEFAULT FALSE, " +
@@ -238,6 +254,8 @@ func createTables() error {
 		return errors.New("invalid database type given")
 	}
 
+	settingsValue := fmt.Sprintf("INSERT INTO settings(name, value) VALUES ('version', '%v');", CurrentVersion)
+
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
@@ -275,6 +293,11 @@ func createTables() error {
 	_, err = db.ExecContext(ctx, recordTable)
 	if err != nil {
 		return fmt.Errorf("error creating record table: %v", err)
+	}
+
+	_, err = db.ExecContext(ctx, settingsValue)
+	if err != nil {
+		return fmt.Errorf("error adding settings: %v", err)
 	}
 
 	return nil

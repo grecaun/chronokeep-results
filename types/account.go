@@ -8,3 +8,8 @@ type Account struct {
 	Email      string `json:"email"`
 	Type       string `json:"type"`
 }
+
+// Equals is used to check if the fields of an Account other than the identifier are identical.
+func (this *Account) Equals(other *Account) bool {
+	return this.Name == other.Name && this.Email == other.Email && this.Type == other.Type
+}
