@@ -241,10 +241,17 @@ func TestGetAccounts(t *testing.T) {
 			Type:  "free",
 		},
 	}
+	retAccounts, err := GetAccounts()
+	if err != nil {
+		t.Errorf("Error getting accounts: %v", err)
+	}
+	if len(retAccounts) != 0 {
+		t.Errorf("Expected number of accounts is %v but %v were found.", 0, len(accounts))
+	}
 	AddAccount(accounts[0])
 	AddAccount(accounts[1])
 	AddAccount(accounts[2])
-	retAccounts, err := GetAccounts()
+	retAccounts, err = GetAccounts()
 	if err != nil {
 		t.Errorf("Error getting accounts: %v", err)
 	}

@@ -40,7 +40,7 @@ func GetEvent(slug string) (*types.Event, error) {
 			return nil, fmt.Errorf("error getting event: %v", err)
 		}
 	} else {
-		return nil, fmt.Errorf("unable to find event: %v", slug)
+		return nil, nil
 	}
 	return &outEvent, nil
 }
@@ -83,7 +83,7 @@ func GetEvents() ([]types.Event, error) {
 }
 
 // GetAccountsEvents Gets all events associated with an account.
-func GetAccountEvents(accountID int64) ([]types.Event, error) {
+func GetAccountEvents(email string) ([]types.Event, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
@@ -92,8 +92,8 @@ func GetAccountEvents(accountID int64) ([]types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE AND account_id=?;",
-		accountID,
+		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE deleted=FALSE AND email=?;",
+		email,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)

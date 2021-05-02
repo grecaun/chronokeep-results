@@ -10,3 +10,11 @@ type EventYear struct {
 	Time            string `json:"time"`
 	Live            bool   `json:"live"`
 }
+
+func (this *EventYear) Equals(other *EventYear) bool {
+	return this.EventIdentifier == other.EventIdentifier &&
+		this.Year == other.Year &&
+		this.Date == other.Date &&
+		this.Time == other.Time &&
+		this.Live == other.Live
+}
