@@ -41,7 +41,7 @@ func GetAccountCallRecords(email string) ([]types.CallRecord, error) {
 }
 
 // GetCallRecord Checks the database for a specific call record.
-func GetCallRecord(email, inTime string) (*types.CallRecord, error) {
+func GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err

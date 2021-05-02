@@ -246,7 +246,7 @@ func createTables() error {
 
 		recordTable = "CREATE TABLE IF NOT EXISTS call_record(" +
 			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
-			"time DATETIME NOT NULL, " +
+			"time BIGINT NOT NULL, " +
 			"count INT DEFAULT 0, " +
 			"CONSTRAINT account_time UNIQUE (account_id, time) ON CONFLICT UPDATE" +
 			");"

@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/pkg/errors"
 )
@@ -27,23 +28,30 @@ func GetConfig() (*Config, error) {
 
 	dbDriver := os.Getenv("DB_CONNECTOR")
 	if dbDriver == "" {
-		dbDriver = "postgres"
+		dbDriver = "mysql"
+	}
+
+	recordInterval, err := strconv.Atoi(os.Getenv("RECORD_INTERVAL"))
+	if err != nil {
+		recordInterval = 300
 	}
 
 	return &Config{
-		DBName:     dbName,
-		DBHost:     dbHost,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBDriver:   dbDriver,
+		DBName:         dbName,
+		DBHost:         dbHost,
+		DBUser:         dbUser,
+		DBPassword:     dbPassword,
+		DBDriver:       dbDriver,
+		RecordInterval: recordInterval,
 	}, nil
 }
 
 // Config is the struct that holds all of the config values for connecting to a database
 type Config struct {
-	DBName     string `json:"dbName"`
-	DBHost     string `json:"dbHost"`
-	DBUser     string `json:"dbUser"`
-	DBPassword string `json:"dbPass"`
-	DBDriver   string `json:"dbDriver"`
+	DBName         string `json:"dbName"`
+	DBHost         string `json:"dbHost"`
+	DBUser         string `json:"dbUser"`
+	DBPassword     string `json:"dbPass"`
+	DBDriver       string `json:"dbDriver"`
+	RecordInterval int    `json:"recordInterval"`
 }

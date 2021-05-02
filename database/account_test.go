@@ -8,7 +8,7 @@ import (
 func TestAddAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -95,7 +95,7 @@ func TestAddAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -201,7 +201,7 @@ func TestGetAccount(t *testing.T) {
 func TestGetAccounts(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -267,7 +267,7 @@ func TestGetAccounts(t *testing.T) {
 func TestUpdateAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -370,7 +370,7 @@ func TestUpdateAccount(t *testing.T) {
 func TestDeleteAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -454,7 +454,7 @@ func TestDeleteAccount(t *testing.T) {
 func TestResurrectAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
@@ -529,7 +529,7 @@ func TestResurrectAccount(t *testing.T) {
 func TestGetDeletedAccount(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
-		t.Errorf("setup error: %v", err)
+		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	accounts := []types.Account{
