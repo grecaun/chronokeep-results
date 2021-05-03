@@ -122,6 +122,7 @@ func createDatabase() error {
 	return db.Close()
 }
 
+/*
 func dropTables() error {
 	db, err := GetDatabase(config)
 	if err != nil {
@@ -142,6 +143,7 @@ func dropTables() error {
 	}
 	return nil
 }
+*/
 
 func deleteDatabase() error {
 	db, err := GetDB()

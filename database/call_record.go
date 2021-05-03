@@ -129,6 +129,7 @@ func AddCallRecords(records []types.CallRecord) error {
 	return nil
 }
 
+/*
 func deleteCallRecords() (int64, error) {
 	db, err := GetDB()
 	if err != nil {
@@ -172,3 +173,4 @@ func deleteCallRecord(record types.CallRecord) (int64, error) {
 	}
 	return count, nil
 }
+*/
