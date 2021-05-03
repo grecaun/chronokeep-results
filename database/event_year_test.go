@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"testing"
+	"time"
 )
 
 func TestAddEventYear(t *testing.T) {
@@ -42,58 +43,54 @@ func TestAddEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		Date:            "2020/10/06",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
-		Date:            "2020/10/05",
-		Time:            "09:00",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	out, err := AddEventYear(*eventYear1)
 	if err != nil {
-		t.Errorf("Error adding event year: %v", err)
+		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear1) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear1, *out)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *out)
 	}
 	out, err = AddEventYear(*eventYear2)
 	if err != nil {
-		t.Errorf("Error adding event year: %v", err)
+		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear2) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear2, *out)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear2, *out)
 	}
 	out, err = AddEventYear(*eventYear3)
 	if err != nil {
-		t.Errorf("Error adding event year: %v", err)
+		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear3) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear3, *out)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear3, *out)
 	}
 	out, err = AddEventYear(*eventYear4)
 	if err != nil {
-		t.Errorf("Error adding event year: %v", err)
+		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear4) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear4, *out)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear4, *out)
 	}
 }
 
@@ -134,29 +131,25 @@ func TestGetEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		Date:            "2020/10/06",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
-		Date:            "2020/10/05",
-		Time:            "09:00",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	AddEventYear(*eventYear1)
@@ -165,45 +158,45 @@ func TestGetEventYear(t *testing.T) {
 	AddEventYear(*eventYear4)
 	eyear, err := GetEventYear(event1.Slug, eventYear1.Year)
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear1) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear1, *eyear)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *eyear)
 	}
 	eyear, err = GetEventYear(event1.Slug, eventYear2.Year)
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear2) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear2, *eyear)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear2, *eyear)
 	}
 	eyear, err = GetEventYear(event2.Slug, eventYear3.Year)
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear3) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear3, *eyear)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear3, *eyear)
 	}
 	eyear, err = GetEventYear(event2.Slug, eventYear4.Year)
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear4) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear4, *eyear)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear4, *eyear)
 	}
 	eyear, err = GetEventYear(event1.Slug, "2000")
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if eyear != nil {
-		t.Errorf("Expected a nil event year but found %v+.", *eyear)
+		t.Errorf("Expected a nil event year but found %+v.", *eyear)
 	}
 	eyear, err = GetEventYear("testevent", "2000")
 	if err != nil {
-		t.Errorf("Error getting event year: %v", err)
+		t.Fatalf("Error getting event year: %v", err)
 	}
 	if eyear != nil {
-		t.Errorf("Expected a nil event year but found %v+.", *eyear)
+		t.Errorf("Expected a nil event year but found %+v.", *eyear)
 	}
 }
 
@@ -252,29 +245,25 @@ func TestGetEventYears(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		Date:            "2020/10/06",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
-		Date:            "2020/10/05",
-		Time:            "09:00",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	AddEventYear(*eventYear1)
@@ -283,29 +272,29 @@ func TestGetEventYears(t *testing.T) {
 	AddEventYear(*eventYear4)
 	years, err := GetEventYears(event1.Slug)
 	if err != nil {
-		t.Errorf("Error getting event years: %v", err)
+		t.Fatalf("Error getting event years: %v", err)
 	}
 	if len(years) != 2 {
 		t.Errorf("Expected %v years but found %v.", 2, len(years))
 	}
 	if (!years[0].Equals(eventYear1) && !years[0].Equals(eventYear2)) ||
 		(!years[1].Equals(eventYear1) && !years[1].Equals(eventYear2)) {
-		t.Errorf("Event years expected %v+ %v+; Found %v+ %v+;", *eventYear1, *eventYear2, years[0], years[1])
+		t.Errorf("Event years expected %+v %+v; Found %+v %+v;", *eventYear1, *eventYear2, years[0], years[1])
 	}
 	years, err = GetEventYears(event2.Slug)
 	if err != nil {
-		t.Errorf("Error getting event years: %v", err)
+		t.Fatalf("Error getting event years: %v", err)
 	}
 	if len(years) != 2 {
 		t.Errorf("Expected %v years but found %v.", 2, len(years))
 	}
 	if (!years[0].Equals(eventYear3) && !years[0].Equals(eventYear4)) ||
 		(!years[1].Equals(eventYear3) && !years[1].Equals(eventYear4)) {
-		t.Errorf("Event years expected %v+ %v+; Found %v+ %v+;", *eventYear3, *eventYear4, years[0], years[1])
+		t.Errorf("Event years expected %+v %+v; Found %+v %+v;", *eventYear3, *eventYear4, years[0], years[1])
 	}
 	years, err = GetEventYears(event3.Slug)
 	if err != nil {
-		t.Errorf("Error getting event years: %v", err)
+		t.Fatalf("Error getting event years: %v", err)
 	}
 	if len(years) != 0 {
 		t.Errorf("Expected %v years but found %v.", 0, len(years))
@@ -349,50 +338,46 @@ func TestDeleteEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		Date:            "2020/10/06",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
-		Date:            "2020/10/05",
-		Time:            "09:00",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
-		Date:            "2020/04/05",
-		Time:            "11:00",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	AddEventYear(*eventYear1)
-	AddEventYear(*eventYear2)
-	AddEventYear(*eventYear3)
+	eventYear2, _ = AddEventYear(*eventYear2)
+	eventYear3, _ = AddEventYear(*eventYear3)
 	AddEventYear(*eventYear4)
 	err = DeleteEventYear(*eventYear2)
 	if err != nil {
-		t.Errorf("Error deleting event year: %v", err)
+		t.Fatalf("Error deleting event year: %v", err)
 	}
 	year, _ := GetEventYear(event1.Slug, eventYear2.Year)
 	if year != nil {
-		t.Errorf("Unexpectedly found deleted event year %v+.", year)
+		t.Errorf("Unexpectedly found deleted event year %+v.", year)
 	}
 	err = DeleteEventYear(*eventYear3)
 	if err != nil {
-		t.Errorf("Error deleting event year: %v", err)
+		t.Fatalf("Error deleting event year: %v", err)
 	}
 	year, _ = GetEventYear(event2.Slug, eventYear3.Year)
 	if year != nil {
-		t.Errorf("Unexpectedly found deleted event year %v+.", *year)
+		t.Errorf("Unexpectedly found deleted event year %+v.", *year)
 	}
 	years, _ := GetEventYears(event1.Slug)
 	if len(years) != 1 {
@@ -437,36 +422,33 @@ func TestUpdateEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		Date:            "2020/10/06",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
-		Date:            "2020/10/05",
-		Time:            "09:00",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(*eventYear1)
-	AddEventYear(*eventYear2)
-	eventYear1.Date = "2020/04/02"
-	eventYear1.Time = "07:00"
+	eventYear1, _ = AddEventYear(*eventYear1)
+	eventYear2, _ = AddEventYear(*eventYear2)
+	eventYear1.DateTime = time.Date(2000, 10, 05, 10, 10, 0, 0, time.Local)
 	eventYear1.Live = true
 	err = UpdateEventYear(*eventYear1)
 	if err != nil {
-		t.Errorf("Error updating event year: %v", err)
+		t.Fatalf("Error updating event year: %v", err)
 	}
 	event, _ := GetEventYear(event1.Slug, eventYear1.Year)
 	if !event.Equals(eventYear1) {
-		t.Errorf("Expected event year %v+, found %v+.", *eventYear1, *event)
+		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *event)
 	}
 	eventYear2.EventIdentifier = event2.Identifier
 	eventYear2.Identifier = eventYear2.Identifier + 200
 	eventYear2.Year = "1999"
 	err = UpdateEventYear(*eventYear2)
 	if err != nil {
-		t.Errorf("Error updating event year: %v", err)
+		t.Fatalf("Error updating event year: %v", err)
 	}
 	event, _ = GetEventYear(event1.Slug, "2020")
 	if event.EventIdentifier == eventYear2.EventIdentifier {

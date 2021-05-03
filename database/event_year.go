@@ -17,7 +17,7 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date, time, live FROM event_year JOIN event ON event_year.event_id=event.event_id WHERE slug=? AND year=? AND deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND event_year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -31,15 +31,14 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 			&outEventYear.Identifier,
 			&outEventYear.EventIdentifier,
 			&outEventYear.Year,
-			&outEventYear.Date,
-			&outEventYear.Time,
+			&outEventYear.DateTime,
 			&outEventYear.Live,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
 		}
 	} else {
-		return nil, fmt.Errorf("unable to find event year: %v %v", event_slug, year)
+		return nil, nil
 	}
 	return &outEventYear, nil
 }
@@ -54,7 +53,7 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date, time, live FROM event_year JOIN event ON event_year.event_id=event.event_id WHERE slug=? AND deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND event_year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -68,12 +67,11 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 			&year.Identifier,
 			&year.EventIdentifier,
 			&year.Year,
-			&year.Date,
-			&year.Time,
+			&year.DateTime,
 			&year.Live,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("error getting event year: %v", err)
+			return nil, nil
 		}
 		outEventYears = append(outEventYears, year)
 	}
@@ -90,11 +88,10 @@ func AddEventYear(year types.EventYear) (*types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event_year(event_id, year, date, time, live) VALUES (?, ?, ?, ?, ?);",
+		"INSERT INTO event_year(event_id, year, date_time, live) VALUES (?, ?, ?, ?);",
 		year.EventIdentifier,
 		year.Year,
-		year.Date,
-		year.Time,
+		year.DateTime,
 		year.Live,
 	)
 	if err != nil {
@@ -108,8 +105,7 @@ func AddEventYear(year types.EventYear) (*types.EventYear, error) {
 		Identifier:      id,
 		EventIdentifier: year.EventIdentifier,
 		Year:            year.Year,
-		Date:            year.Date,
-		Time:            year.Time,
+		DateTime:        year.DateTime,
 		Live:            year.Live,
 	}, nil
 }
@@ -123,20 +119,13 @@ func DeleteEventYear(year types.EventYear) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(
+	_, err = db.ExecContext(
 		ctx,
-		"UPDATE event_year SET deleted=TRUE WHERE event_year_id=?",
+		"UPDATE event_year SET event_year_deleted=TRUE WHERE event_year_id=?",
 		year.Identifier,
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting event year: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on delete event year: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error deleting event year, rows affected: %v", rows)
 	}
 	return nil
 }
@@ -149,23 +138,15 @@ func UpdateEventYear(year types.EventYear) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(
+	_, err = db.ExecContext(
 		ctx,
-		"UPDATE event_year SET date=?, time=?, live=? WHERE event_year_id=?",
-		year.Date,
-		year.Time,
+		"UPDATE event_year SET date_time=?, live=? WHERE event_year_id=?",
+		year.DateTime,
 		year.Live,
 		year.Identifier,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating event year: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on update event year: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error updating event year, rows affected: %v", rows)
 	}
 	return nil
 }

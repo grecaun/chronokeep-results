@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"database/sql"
@@ -32,7 +33,7 @@ func GetDatabase(inCfg *util.Config) (*sql.DB, error) {
 
 	config = inCfg
 	conString := fmt.Sprintf(
-		"%s:%s@tcp(%s)/%s",
+		"%s:%s@tcp(%s)/%s?parseTime=true",
 		config.DBUser,
 		config.DBPassword,
 		config.DBHost,
@@ -96,33 +97,6 @@ func Setup(config *util.Config) error {
 	return nil
 }
 
-func createDatabase() error {
-	cfg := util.Config{
-		DBDriver:   config.DBDriver,
-		DBHost:     config.DBHost,
-		DBPassword: config.DBHost,
-		DBUser:     config.DBUser,
-		DBName:     "",
-	}
-	db, err := GetDatabase(&cfg)
-	if err != nil {
-		return fmt.Errorf("error connecting to database to create database: %v", err)
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	res, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", config.DBName))
-	if err != nil {
-		return fmt.Errorf("error creating database: %v", err)
-	}
-	_, err = res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error fetching rows on create database: %v", err)
-	}
-	updateDB(nil)
-	return db.Close()
-}
-
-/*
 func dropTables() error {
 	db, err := GetDatabase(config)
 	if err != nil {
@@ -130,38 +104,33 @@ func dropTables() error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(
+	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE call_record; DROP TABLE result; DROP TABLE event_year; DROP TABLE event; DROP TABLE key; DROP TABLE account; DROP TABLE settings;",
+		"DROP TABLE call_record, result, event_year, event, api_key, account, settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
 	}
-	_, err = res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error fetching rows on database drop tables: %v", err)
-	}
 	return nil
 }
-*/
 
-func deleteDatabase() error {
+func SetSetting(name, value string) error {
 	db, err := GetDB()
 	if err != nil {
 		return err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(ctx, fmt.Sprintf("DELETE DATABASE %s", config.DBName))
+	_, err = db.ExecContext(
+		ctx,
+		"INSERT INTO settings(name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value=VALUES(value);",
+		name,
+		value,
+	)
 	if err != nil {
-		return fmt.Errorf("error deleting database: %v", err)
+		return fmt.Errorf("error setting settings value: %v", err)
 	}
-	_, err = res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error fetching rows on database delete: %v", err)
-	}
-	updateDB(nil)
-	return db.Close()
+	return nil
 }
 
 func createTables() error {
@@ -173,61 +142,67 @@ func createTables() error {
 		settingsTable = "CREATE TABLE IF NOT EXISTS settings(" +
 			"name VARCHAR(200) NOT NULL, " +
 			"value VARCHAR(200) NOT NULL, " +
-			"UNIQUE (name) ON CONFLICT UPDATE);"
+			"UNIQUE (name));"
 
 		accountTable = "CREATE TABLE IF NOT EXISTS account(" +
-			"account_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-			"name VARCHAR(100) NOT NULL, " +
-			"email VARCHAR(100) NOT NULL, " +
+			"account_id BIGINT NOT NULL AUTO_INCREMENT, " +
+			"account_name VARCHAR(100) NOT NULL, " +
+			"account_email VARCHAR(100) NOT NULL, " +
 			"type VARCHAR(20) NOT NULL, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"deleted BOOL DEFAULT FALSE, " +
-			"UNIQUE(email));"
+			"account_deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(account_email), " +
+			"PRIMARY KEY (account_id)" +
+			");"
 
-		keyTable = "CREATE TABLE IF NOT EXISTS key(" +
-			"key_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+		keyTable = "CREATE TABLE IF NOT EXISTS api_key(" +
+			"account_id BIGINT NOT NULL, " +
 			"value CHAR(100) NOT NULL, " +
 			"type VARCHAR(20) NOT NULL, " +
 			"allowed_hosts TEXT, " +
-			"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP," +
+			"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"deleted BOOL DEFAULT FALSE," +
-			"UNIQUE(value));"
+			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+			"api_key_deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(value), " +
+			"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
+			");"
 
 		eventTable = "CREATE TABLE IF NOT EXISTS event(" +
-			"event_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-			"name VARCHAR(100) NOT NULL, " +
+			"event_id BIGINT NOT NULL AUTO_INCREMENT, " +
+			"account_id BIGINT NOT NULL, " +
+			"event_name VARCHAR(100) NOT NULL, " +
 			"slug VARCHAR(20) NOT NULL, " +
 			"website VARCHAR(200), " +
 			"image VARCHAR(200), " +
 			"contact_email VARCHAR(100), " +
-			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
 			"access_restricted BOOL DEFAULT FALSE, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"deleted BOOL DEFAULT FALSE, " +
-			"UNIQUE(name), " +
-			"UNIQUE(slug)" +
+			"event_deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(event_name), " +
+			"UNIQUE(slug)," +
+			"FOREIGN KEY (account_id) REFERENCES account(account_id)," +
+			"PRIMARY KEY (event_id)" +
 			");"
 
 		eventYearTable = "CREATE TABLE IF NOT EXISTS event_year(" +
-			"event_year_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-			"event_id BIGINT FOREIGN KEY REFERENCES event(event_id), " +
+			"event_year_id BIGINT NOT NULL AUTO_INCREMENT, " +
+			"event_id BIGINT NOT NULL, " +
 			"year VARCHAR(20) NOT NULL, " +
-			"date DATE NOT NULL, " +
-			"time TIME NOT NULL, " +
+			"date_time DATETIME NOT NULL, " +
 			"live BOOL DEFAULT FALSE, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"deleted BOOL DEFAULT FALSE, " +
-			"CONSTRAINT year_slug UNIQUE (event_id, year)" +
+			"event_year_deleted BOOL DEFAULT FALSE, " +
+			"CONSTRAINT year_slug UNIQUE (event_id, year)," +
+			"FOREIGN KEY (event_id) REFERENCES event(event_id)," +
+			"PRIMARY KEY (event_year_id)" +
 			");"
 
 		resultTable = "CREATE TABLE IF NOT EXISTS result(" +
-			"event_year_id BIGINT FOREIGN KEY REFERENCES event_year(event_year_id), " +
+			"event_year_id BIGINT NOT NULL, " +
 			"bib VARCHAR(100) NOT NULL, " +
 			"first VARCHAR(100) NOT NULL, " +
 			"last VARCHAR(100) NOT NULL, " +
@@ -241,25 +216,25 @@ func createTables() error {
 			"location VARCHAR(500), " +
 			"occurence INT DEFAULT -1, " +
 			"ranking INT DEFAULT -1, " +
-			"age_ranking INT DEFUALT -1, " +
+			"age_ranking INT DEFAULT -1, " +
 			"gender_ranking INT DEFAULT -1, " +
 			"finish BOOL DEFAULT TRUE, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
+			"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
+			"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 			");"
 
 		recordTable = "CREATE TABLE IF NOT EXISTS call_record(" +
-			"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+			"account_id BIGINT NOT NULL, " +
 			"time BIGINT NOT NULL, " +
 			"count INT DEFAULT 0, " +
-			"CONSTRAINT account_time UNIQUE (account_id, time) ON CONFLICT UPDATE" +
+			"CONSTRAINT account_time UNIQUE (account_id, time)," +
+			"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 			");"
 	default:
 		return errors.New("invalid database type given")
 	}
-
-	settingsValue := fmt.Sprintf("INSERT INTO settings(name, value) VALUES ('version', '%v');", CurrentVersion)
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
@@ -300,10 +275,7 @@ func createTables() error {
 		return fmt.Errorf("error creating record table: %v", err)
 	}
 
-	_, err = db.ExecContext(ctx, settingsValue)
-	if err != nil {
-		return fmt.Errorf("error adding settings: %v", err)
-	}
+	SetSetting("version", strconv.Itoa(CurrentVersion))
 
 	return nil
 }

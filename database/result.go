@@ -117,7 +117,39 @@ func AddResults(eventYearID int64, results []types.Result) ([]types.Result, erro
 	defer cancelfunc()
 	stmt, err := db.PrepareContext(
 		ctx,
-		"INSERT INTO result(event_year_id, bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		"INSERT INTO result("+
+			"event_year_id, "+
+			"bib, "+
+			"first, "+
+			"last, "+
+			"age, "+
+			"gender, "+
+			"age_group, "+
+			"distance, "+
+			"seconds, "+
+			"milliseconds, "+
+			"segment, "+
+			"location, "+
+			"occurence, "+
+			"ranking, "+
+			"age_ranking, "+
+			"gender_ranking, "+
+			"finish) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			"ON DUPLICATE KEY UPDATE "+
+			"first=VALUES(first), "+
+			"last=VALUES(last), "+
+			"age=VALUES(age), "+
+			"gender=VALUES(gender), "+
+			"age_group=VALUES(age_group), "+
+			"distance=VALUES(distance), "+
+			"seconds=VALUES(seconds), "+
+			"milliseconds=VALUES(milliseconds), "+
+			"segment=VALUES(segment), "+
+			"ranking=VALUES(ranking), "+
+			"age_ranking=VALUES(age_ranking), "+
+			"gender_ranking=VALUES(gender_ranking), "+
+			"finish=VALUES(finish);",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)

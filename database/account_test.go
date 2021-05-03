@@ -49,10 +49,11 @@ func TestAddAccount(t *testing.T) {
 		},
 	}
 	// Ensure adding accounts works properly.
+	t.Log("Adding accounts")
 	oAccount := accounts[0]
 	nAccount, err := AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
@@ -61,7 +62,7 @@ func TestAddAccount(t *testing.T) {
 	oAccount = accounts[1]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
@@ -70,7 +71,7 @@ func TestAddAccount(t *testing.T) {
 	oAccount = accounts[2]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
@@ -79,7 +80,7 @@ func TestAddAccount(t *testing.T) {
 	oAccount = accounts[3]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
@@ -139,12 +140,12 @@ func TestGetAccount(t *testing.T) {
 	oAccount := accounts[0]
 	nAccount, err := AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err := GetAccount(oAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting account: %v", err)
+		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
 		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
@@ -155,12 +156,12 @@ func TestGetAccount(t *testing.T) {
 	oAccount = accounts[1]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting account: %v", err)
+		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
 		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
@@ -171,12 +172,12 @@ func TestGetAccount(t *testing.T) {
 	oAccount = accounts[2]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting account: %v", err)
+		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
 		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
@@ -187,12 +188,12 @@ func TestGetAccount(t *testing.T) {
 	oAccount = accounts[3]
 	nAccount, err = AddAccount(oAccount)
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting account: %v", err)
+		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
 		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
@@ -203,7 +204,7 @@ func TestGetAccount(t *testing.T) {
 	// Test getting unknown accounts.
 	dAccount, err = GetAccount("random@test.com")
 	if err != nil {
-		t.Errorf("Error finding account not in existence: %v", err)
+		t.Fatalf("Error finding account not in existence: %v", err)
 	}
 	if dAccount != nil {
 		t.Error("Expected not to find an account but one was found.")
@@ -255,31 +256,31 @@ func TestGetAccounts(t *testing.T) {
 	}
 	retAccounts, err := GetAccounts()
 	if err != nil {
-		t.Errorf("Error getting accounts: %v", err)
+		t.Fatalf("Error getting accounts: %v", err)
 	}
 	if len(retAccounts) != 0 {
-		t.Errorf("Expected number of accounts is %v but %v were found.", 0, len(accounts))
+		t.Errorf("Expected number of accounts is %v but %v were found.", 0, len(retAccounts))
 	}
 	AddAccount(accounts[0])
 	AddAccount(accounts[1])
 	AddAccount(accounts[2])
 	retAccounts, err = GetAccounts()
 	if err != nil {
-		t.Errorf("Error getting accounts: %v", err)
+		t.Fatalf("Error getting accounts: %v", err)
 	}
 	if len(retAccounts) != 3 {
-		t.Errorf("Expected number of accounts is %v but %v were found.", 3, len(accounts))
+		t.Errorf("Expected number of accounts is %v but %v were found.", 3, len(retAccounts))
 	}
 	AddAccount(accounts[3])
 	AddAccount(accounts[4])
 	AddAccount(accounts[5])
 	AddAccount(accounts[6])
-	accounts, err = GetAccounts()
+	retAccounts, err = GetAccounts()
 	if err != nil {
-		t.Errorf("Error getting accounts: %v", err)
+		t.Fatalf("Error getting accounts: %v", err)
 	}
 	if len(retAccounts) != 7 {
-		t.Errorf("Expected number of accounts is %v but %v were found.", 7, len(accounts))
+		t.Errorf("Expected number of accounts is %v but %v were found.", 7, len(retAccounts))
 	}
 }
 
@@ -329,12 +330,12 @@ func TestUpdateAccount(t *testing.T) {
 	// Ensure adding accounts works properly.
 	nAccount, err := AddAccount(accounts[0])
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	nAccount.Name = "New Name 1"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error updating account: %v", err)
+		t.Fatalf("Error updating account: %v", err)
 	}
 	dAccount, _ := GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
@@ -345,12 +346,12 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	nAccount, err = AddAccount(accounts[1])
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	nAccount.Type = "New Type 1"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error updating account: %v", err)
+		t.Fatalf("Error updating account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
@@ -361,13 +362,13 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	nAccount, err = AddAccount(accounts[2])
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	nAccount.Name = "New Name 2"
 	err = UpdateAccount(*nAccount)
 	dAccount, _ = GetAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error updating account: %v", err)
+		t.Fatalf("Error updating account: %v", err)
 	}
 	if nAccount.Identifier != dAccount.Identifier {
 		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
@@ -377,12 +378,12 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	nAccount, err = AddAccount(accounts[3])
 	if err != nil {
-		t.Errorf("Error adding account: %v", err)
+		t.Fatalf("Error adding account: %v", err)
 	}
 	nAccount.Type = "New Type 2"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error updating account: %v", err)
+		t.Fatalf("Error updating account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
@@ -444,7 +445,7 @@ func TestDeleteAccount(t *testing.T) {
 	nAccount, _ := AddAccount(accounts[0])
 	err = DeleteAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error deleting account: %v", err)
+		t.Fatalf("Error deleting account: %v", err)
 	}
 	dAccount, _ := GetAccount(nAccount.Email)
 	if dAccount != nil {
@@ -457,7 +458,7 @@ func TestDeleteAccount(t *testing.T) {
 	nAccount, _ = AddAccount(accounts[1])
 	err = DeleteAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error deleting account: %v", err)
+		t.Fatalf("Error deleting account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if dAccount != nil {
@@ -470,7 +471,7 @@ func TestDeleteAccount(t *testing.T) {
 	nAccount, _ = AddAccount(accounts[2])
 	err = DeleteAccount(*nAccount)
 	if err != nil {
-		t.Errorf("Error deleting account: %v", err)
+		t.Fatalf("Error deleting account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if dAccount != nil {
@@ -529,7 +530,7 @@ func TestResurrectAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error resurrecting account: %v", err)
+		t.Fatalf("Error resurrecting account: %v", err)
 	}
 	dAccount, _ := GetAccount(nAccount.Email)
 	if dAccount == nil {
@@ -539,7 +540,7 @@ func TestResurrectAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error resurrecting account: %v", err)
+		t.Fatalf("Error resurrecting account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if dAccount == nil {
@@ -549,7 +550,7 @@ func TestResurrectAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error resurrecting account: %v", err)
+		t.Fatalf("Error resurrecting account: %v", err)
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if dAccount == nil {
@@ -604,7 +605,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	dAccount, err := GetDeletedAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting deleted account %v", err)
+		t.Fatalf("Error getting deleted account %v", err)
 	}
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
@@ -613,7 +614,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting deleted account %v", err)
+		t.Fatalf("Error getting deleted account %v", err)
 	}
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
@@ -622,7 +623,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting deleted account %v", err)
+		t.Fatalf("Error getting deleted account %v", err)
 	}
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
@@ -631,7 +632,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	DeleteAccount(*nAccount)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
-		t.Errorf("Error getting deleted account %v", err)
+		t.Fatalf("Error getting deleted account %v", err)
 	}
 	if dAccount == nil {
 		t.Error("Deleted account not found.")

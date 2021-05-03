@@ -17,7 +17,7 @@ func GetAccountKeys(accountID int64) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, value, type, allowed_hosts, valid_until FROM key WHERE account_id=?;",
+		"SELECT account_id, value, type, allowed_hosts, valid_until FROM api_key WHERE api_key_deleted=FALSE AND account_id=?;",
 		accountID,
 	)
 	if err != nil {
@@ -52,14 +52,15 @@ func GetKey(key string) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, value, type, allowed_hosts, valid_until FROM key WHERE value=?;",
+		"SELECT account_id, value, type, allowed_hosts, valid_until FROM api_key WHERE api_key_deleted=FALSE AND value=?;",
+		key,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("erorr retrieving key: %v", err)
 	}
 	defer res.Close()
 	var outKey types.Key
-	for res.Next() {
+	if res.Next() {
 		err := res.Scan(
 			&outKey.AccountIdentifier,
 			&outKey.Value,
@@ -70,6 +71,8 @@ func GetKey(key string) (*types.Key, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable getting key: %v", err)
 		}
+	} else {
+		return nil, nil
 	}
 	return &outKey, nil
 }
@@ -84,7 +87,7 @@ func AddKey(key types.Key) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO key(account_id, value, type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?);",
+		"INSERT INTO api_key(account_id, value, type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?);",
 		key.AccountIdentifier,
 		key.Value,
 		key.Type,
@@ -117,7 +120,7 @@ func DeleteKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE key SET deleted=TRUE WHERE value=?;",
+		"UPDATE api_key SET api_key_deleted=TRUE WHERE value=?;",
 		key.Value,
 	)
 	if err != nil {
@@ -143,7 +146,7 @@ func UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE key SET type, allowed_hosts, valid_until WHERE value=?;",
+		"UPDATE api_key SET type=?, allowed_hosts=?, valid_until=? WHERE value=?;",
 		key.Type,
 		key.AllowedHosts,
 		key.ValidUntil,

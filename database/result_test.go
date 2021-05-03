@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"testing"
+	"time"
 )
 
 func TestAddResults(t *testing.T) {
@@ -26,8 +27,7 @@ func TestAddResults(t *testing.T) {
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
-		Date:            "2021/04/20",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
 	results := []types.Result{
@@ -106,7 +106,7 @@ func TestAddResults(t *testing.T) {
 	}
 	res, err := AddResults(eventYear.Identifier, results)
 	if err != nil {
-		t.Errorf("Error adding results: %v", err)
+		t.Fatalf("Error adding results: %v", err)
 	}
 	if len(res) != len(results) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results), len(res))
@@ -127,7 +127,7 @@ func TestAddResults(t *testing.T) {
 	results[0].Finish = false
 	res, err = AddResults(eventYear.Identifier, results[0:1])
 	if err != nil {
-		t.Errorf("Error adding results: %v", err)
+		t.Fatalf("Error adding results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
@@ -152,7 +152,7 @@ func TestAddResults(t *testing.T) {
 	results[1].GenderRanking = 451
 	res, err = AddResults(eventYear.Identifier, results[1:2])
 	if err != nil {
-		t.Errorf("Error adding results: %v", err)
+		t.Fatalf("Error adding results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
@@ -184,8 +184,7 @@ func TestGetResults(t *testing.T) {
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
-		Date:            "2021/04/20",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
 	results := []types.Result{
@@ -264,7 +263,7 @@ func TestGetResults(t *testing.T) {
 	}
 	res, err := GetResults(eventYear.Identifier)
 	if err != nil {
-		t.Errorf("Error getting results: %v", err)
+		t.Fatalf("Error getting results: %v", err)
 	}
 	if len(res) != 0 {
 		t.Errorf("Results not added but we've found %v results.", len(res))
@@ -272,18 +271,18 @@ func TestGetResults(t *testing.T) {
 	AddResults(eventYear.Identifier, results[0:1])
 	res, err = GetResults(eventYear.Identifier)
 	if err != nil {
-		t.Errorf("Error getting results: %v", err)
+		t.Fatalf("Error getting results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
 	if res[0] != results[0] {
-		t.Errorf("Expected results %v+, found %v+.", results[0], res[0])
+		t.Errorf("Expected results %+v, found %+v.", results[0], res[0])
 	}
 	AddResults(eventYear.Identifier, results)
 	res, err = GetResults(eventYear.Identifier)
 	if err != nil {
-		t.Errorf("Error getting results: %v", err)
+		t.Fatalf("Error getting results: %v", err)
 	}
 	if len(res) != len(results) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results), len(res))
@@ -296,7 +295,7 @@ func TestGetResults(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("Unable to find our first result in the database. %v+", res)
+		t.Errorf("Unable to find our first result in the database. %+v", res)
 	}
 }
 
@@ -321,8 +320,7 @@ func TestDeleteResults(t *testing.T) {
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
-		Date:            "2021/04/20",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
 	results := []types.Result{
@@ -402,7 +400,7 @@ func TestDeleteResults(t *testing.T) {
 	AddResults(eventYear.Identifier, results)
 	err = DeleteResults(eventYear.Identifier, results[1:2])
 	if err != nil {
-		t.Errorf("Error deleting specific results: %v", err)
+		t.Fatalf("Error deleting specific results: %v", err)
 	}
 	res, _ := GetResults(eventYear.Identifier)
 	if len(res) != (len(results) - 1) {
@@ -440,8 +438,7 @@ func TestDeleteEventResults(t *testing.T) {
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
-		Date:            "2021/04/20",
-		Time:            "09:00",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
 	results := []types.Result{
@@ -521,7 +518,7 @@ func TestDeleteEventResults(t *testing.T) {
 	AddResults(eventYear.Identifier, results)
 	count, err := DeleteEventResults(eventYear.Identifier)
 	if err != nil {
-		t.Errorf("Error deleting specific results: %v", err)
+		t.Fatalf("Error deleting specific results: %v", err)
 	}
 	if (count) != int64(len(results)) {
 		t.Errorf("Expected to find out %v results were deleted, %v were deleted.", len(results), count)

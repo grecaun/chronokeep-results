@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -12,32 +13,24 @@ import (
 const (
 	dbName     = "results_test"
 	dbHost     = "localhost"
-	dbUser     = "user"
-	dbPassword = "password"
+	dbUser     = "results_test"
+	dbPassword = "results_test"
+	dbPort     = 3306
+	dbDriver   = "mysql"
 )
 
 func setupTests(t *testing.T) (func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
-	config := &util.Config{
-		DBHost:     dbHost,
-		DBName:     dbName,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-	}
-	t.Log("Creating database.")
-	err := createDatabase()
-	if err != nil {
-		return nil, err
-	}
+	config = getTestConfig()
 	t.Log("Initializing database.")
-	err = Setup(config)
+	err := Setup(config)
 	if err != nil {
 		return nil, err
 	}
 	t.Log("Database initialized.")
 	return func(t *testing.T) {
 		t.Log("Deleting old database.")
-		err = deleteDatabase()
+		err = dropTables()
 		if err != nil {
 			t.Fatalf("Error deleting database. %v", err)
 			return
@@ -62,61 +55,67 @@ func setupOld(version int) error {
 			settingsTable = "CREATE TABLE IF NOT EXISTS settings(" +
 				"name VARCHAR(200) NOT NULL, " +
 				"value VARCHAR(200) NOT NULL, " +
-				"UNIQUE (name) ON CONFLICT UPDATE);"
+				"UNIQUE (name));"
 
 			accountTable = "CREATE TABLE IF NOT EXISTS account(" +
-				"account_id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
-				"name VARCHAR(100), " +
-				"email VARCHAR(100), " +
-				"type VARCHAR(20), " +
+				"account_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"account_name VARCHAR(100) NOT NULL, " +
+				"account_email VARCHAR(100) NOT NULL, " +
+				"type VARCHAR(20) NOT NULL, " +
 				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"deleted BOOL DEFAULT FALSE, " +
-				"UNIQUE(email));"
+				"account_deleted BOOL DEFAULT FALSE, " +
+				"UNIQUE(account_email), " +
+				"PRIMARY KEY (account_id)" +
+				");"
 
-			keyTable = "CREATE TABLE IF NOT EXISTS key(" +
-				"key_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-				"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
+			keyTable = "CREATE TABLE IF NOT EXISTS api_key(" +
+				"account_id BIGINT NOT NULL, " +
 				"value CHAR(100) NOT NULL, " +
 				"type VARCHAR(20) NOT NULL, " +
 				"allowed_hosts TEXT, " +
-				"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP," +
+				"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"deleted BOOL DEFAULT FALSE," +
-				"UNIQUE(value));"
+				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+				"api_key_deleted BOOL DEFAULT FALSE, " +
+				"UNIQUE(value), " +
+				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
+				");"
 
 			eventTable = "CREATE TABLE IF NOT EXISTS event(" +
-				"event_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-				"name VARCHAR(100) NOT NULL, " +
+				"event_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"account_id BIGINT NOT NULL, " +
+				"event_name VARCHAR(100) NOT NULL, " +
 				"slug VARCHAR(20) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
-				"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
 				"access_restricted BOOL DEFAULT FALSE, " +
 				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"deleted BOOL DEFAULT FALSE, " +
-				"UNIQUE(name), " +
-				"UNIQUE(slug)" +
+				"event_deleted BOOL DEFAULT FALSE, " +
+				"UNIQUE(event_name), " +
+				"UNIQUE(slug)," +
+				"FOREIGN KEY (account_id) REFERENCES account(account_id)," +
+				"PRIMARY KEY (event_id)" +
 				");"
 
 			eventYearTable = "CREATE TABLE IF NOT EXISTS event_year(" +
-				"event_year_id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-				"event_id BIGINT FOREIGN KEY REFERENCES event(event_id), " +
+				"event_year_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"event_id BIGINT NOT NULL, " +
 				"year VARCHAR(20) NOT NULL, " +
-				"date DATE NOT NULL, " +
-				"time TIME NOT NULL, " +
+				"date_time DATETIME NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
 				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"deleted BOOL DEFAULT FALSE, " +
-				"CONSTRAINT year_slug UNIQUE (event_id, year)" +
+				"event_year_deleted BOOL DEFAULT FALSE, " +
+				"CONSTRAINT year_slug UNIQUE (event_id, year)," +
+				"FOREIGN KEY (event_id) REFERENCES event(event_id)," +
+				"PRIMARY KEY (event_year_id)" +
 				");"
 
 			resultTable = "CREATE TABLE IF NOT EXISTS result(" +
-				"event_year_id BIGINT FOREIGN KEY REFERENCES event_year(event_year_id), " +
+				"event_year_id BIGINT NOT NULL, " +
 				"bib VARCHAR(100) NOT NULL, " +
 				"first VARCHAR(100) NOT NULL, " +
 				"last VARCHAR(100) NOT NULL, " +
@@ -126,23 +125,25 @@ func setupOld(version int) error {
 				"distance VARCHAR(200) NOT NULL, " +
 				"seconds INT DEFAULT 0, " +
 				"milliseconds INT DEFAULT 0, " +
+				"segment VARCHAR(500), " +
 				"location VARCHAR(500), " +
 				"occurence INT DEFAULT -1, " +
 				"ranking INT DEFAULT -1, " +
-				"age_ranking INT DEFUALT -1, " +
+				"age_ranking INT DEFAULT -1, " +
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
 				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish) ON CONFLICT UPDATE, " +
-				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
+				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");"
 
 			recordTable = "CREATE TABLE IF NOT EXISTS call_record(" +
-				"account_id BIGINT FOREIGN KEY REFERENCES account(account_id), " +
-				"time DATETIME NOT NULL, " +
+				"account_id BIGINT NOT NULL, " +
+				"time BIGINT NOT NULL, " +
 				"count INT DEFAULT 0, " +
-				"CONSTRAINT account_time UNIQUE (account_id, time) ON CONFLICT UPDATE" +
+				"CONSTRAINT account_time UNIQUE (account_id, time)," +
+				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");"
 		default:
 			return errors.New("invalid database type given")
@@ -150,8 +151,6 @@ func setupOld(version int) error {
 	default:
 		return errors.New("invalid version specified")
 	}
-
-	settingsValue := fmt.Sprintf("INSERT INTO settings(name, value) VALUES ('version', '%v');", version)
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
@@ -192,29 +191,17 @@ func setupOld(version int) error {
 		return fmt.Errorf("error creating record table: %v", err)
 	}
 
-	_, err = db.ExecContext(ctx, settingsValue)
-	if err != nil {
-		return fmt.Errorf("error adding settings: %v", err)
-	}
+	SetSetting("version", strconv.Itoa(version))
 
 	return nil
 }
 
 func TestSetupAndGet(t *testing.T) {
 	t.Log("Setting up testing database variables.")
-	config = &util.Config{
-		DBHost:     dbHost,
-		DBName:     dbName,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-	}
-	t.Log("Creating database.")
-	err := createDatabase()
-	if err != nil {
-		t.Fatalf("Error creating database. %v", err)
-	}
+	config = getTestConfig()
 	t.Log("Initializing database.")
-	err = Setup(config)
+	err := Setup(config)
+	defer dropTables()
 	if err != nil {
 		t.Fatalf("Error initializing database. %v", err)
 	}
@@ -222,7 +209,6 @@ func TestSetupAndGet(t *testing.T) {
 	if db == nil {
 		t.Fatalf("db variable not set")
 	}
-	defer deleteDatabase()
 	db.Close()
 	updateDB(nil)
 	_, err = GetDatabase(config)
@@ -239,7 +225,7 @@ func TestSetupAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting database without config values: %v", err)
 	}
-	err = deleteDatabase()
+	err = dropTables()
 	if err != nil {
 		t.Fatalf("error deleting database: %v", err)
 	}
@@ -259,19 +245,10 @@ func TestCheckVersion(t *testing.T) {
 
 func TestUpgrade(t *testing.T) {
 	t.Log("Setting up testing database variables.")
-	config = &util.Config{
-		DBHost:     dbHost,
-		DBName:     dbName,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-	}
-	err := createDatabase()
-	if err != nil {
-		t.Fatalf("Error creating database. %v", err)
-	}
-	defer deleteDatabase()
+	config = getTestConfig()
 	t.Log("Initializing database version 1.")
-	err = setupOld(1)
+	err := setupOld(1)
+	defer dropTables()
 	if err != nil {
 		t.Fatalf("Error initializing database. %v", err)
 	}
@@ -285,4 +262,20 @@ func TestUpgrade(t *testing.T) {
 		t.Fatalf("Version set to '%v' expected '1'.", version)
 	}
 	// In the future this will verify updates work properly.
+	// Check for error on drop tables as well. Because we can.
+	err = dropTables()
+	if err != nil {
+		t.Fatalf("error deleting database: %v", err)
+	}
+}
+
+func getTestConfig() *util.Config {
+	return &util.Config{
+		DBHost:     dbHost,
+		DBPort:     dbPort,
+		DBName:     dbName,
+		DBUser:     dbUser,
+		DBPassword: dbPassword,
+		DBDriver:   dbDriver,
+	}
 }

@@ -13,3 +13,11 @@ type Key struct {
 	AllowedHosts      string    `json:"allowedHosts"`
 	ValidUntil        time.Time `json:"validUntil"`
 }
+
+func (k *Key) Equal(other *Key) bool {
+	return k.AccountIdentifier == other.AccountIdentifier &&
+		k.Value == other.Value &&
+		k.Type == other.Type &&
+		k.AllowedHosts == other.AllowedHosts &&
+		k.ValidUntil.Equal(other.ValidUntil)
+}

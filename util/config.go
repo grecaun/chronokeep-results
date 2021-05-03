@@ -19,6 +19,11 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New("DB_HOST not found in environment")
 	}
 
+	dbPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if err != nil || dbPort < 0 {
+		dbPort = 3306
+	}
+
 	dbUser := os.Getenv("DB_USER")
 	if dbUser == "" {
 		return nil, errors.New("DB_USER not found in environment")
@@ -39,6 +44,7 @@ func GetConfig() (*Config, error) {
 	return &Config{
 		DBName:         dbName,
 		DBHost:         dbHost,
+		DBPort:         dbPort,
 		DBUser:         dbUser,
 		DBPassword:     dbPassword,
 		DBDriver:       dbDriver,
@@ -48,10 +54,11 @@ func GetConfig() (*Config, error) {
 
 // Config is the struct that holds all of the config values for connecting to a database
 type Config struct {
-	DBName         string `json:"dbName"`
-	DBHost         string `json:"dbHost"`
-	DBUser         string `json:"dbUser"`
-	DBPassword     string `json:"dbPass"`
-	DBDriver       string `json:"dbDriver"`
-	RecordInterval int    `json:"recordInterval"`
+	DBName         string
+	DBHost         string
+	DBPort         int
+	DBUser         string
+	DBPassword     string
+	DBDriver       string
+	RecordInterval int
 }

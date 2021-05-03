@@ -39,19 +39,19 @@ func TestAddEvent(t *testing.T) {
 	}
 	event, err := AddEvent(event1)
 	if err != nil {
-		t.Errorf("Error adding event: %v", err)
+		t.Fatalf("Error adding event: %v", err)
 	}
 	t.Logf("New event ID: %v", event.Identifier)
 	if !event.Equals(&event1) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event1, *event)
+		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *event)
 	}
 	event, err = AddEvent(event2)
 	if err != nil {
-		t.Errorf("Error adding event: %v", err)
+		t.Fatalf("Error adding event: %v", err)
 	}
 	t.Logf("New event ID: %v", event.Identifier)
 	if !event.Equals(&event2) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event2, *event)
+		t.Errorf("Event expected: %+v; Event found: %+v;", event2, *event)
 	}
 	_, err = AddEvent(event2)
 	if err == nil {
@@ -95,24 +95,24 @@ func TestGetEvent(t *testing.T) {
 	AddEvent(event2)
 	testEvent, err := GetEvent(event1.Slug)
 	if err != nil {
-		t.Errorf("Error getting event: %v", err)
+		t.Fatalf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event1) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event1, *testEvent)
+		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *testEvent)
 	}
 	testEvent, err = GetEvent(event2.Slug)
 	if err != nil {
-		t.Errorf("Error getting event: %v", err)
+		t.Fatalf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event2) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event2, *testEvent)
+		t.Errorf("Event expected: %+v; Event found: %+v;", event2, *testEvent)
 	}
 	testEvent, err = GetEvent("test")
 	if err != nil {
-		t.Errorf("Error getting event: %v", err)
+		t.Fatalf("Error getting event: %v", err)
 	}
 	if testEvent != nil {
-		t.Errorf("Unexpected event found: %v+;", *testEvent)
+		t.Errorf("Unexpected event found: %+v;", *testEvent)
 	}
 }
 
@@ -164,7 +164,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	events, err := GetEvents()
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 0 {
 		t.Errorf("Expected %v events but found %v.", 0, len(events))
@@ -173,7 +173,7 @@ func TestGetEvents(t *testing.T) {
 	AddEvent(event2)
 	events, err = GetEvents()
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 2 {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
@@ -234,41 +234,44 @@ func TestGetAccountEvents(t *testing.T) {
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
 	}
+	t.Log("Adding one event for each account.")
 	AddEvent(event1)
 	AddEvent(event2)
 	events, err := GetAccountEvents(account1.Email)
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
 	events, err = GetAccountEvents(account2.Email)
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
+	t.Log("Adding the final two events.")
 	AddEvent(event3)
 	AddEvent(event4)
 	events, err = GetAccountEvents(account1.Email)
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 2 {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
 	events, err = GetAccountEvents(account2.Email)
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 2 {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
+	t.Log("Testing an account with no events.")
 	events, err = GetAccountEvents(account3.Email)
 	if err != nil {
-		t.Errorf("Error attempting to get events: %v", err)
+		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 0 {
 		t.Errorf("Expected %v events but found %v.", 0, len(events))
@@ -293,29 +296,29 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
-	event1 := types.Event{
+	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
-	event2 := types.Event{
+	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	AddEvent(event1)
-	AddEvent(event2)
-	err = DeleteEvent(event1)
+	event1, _ = AddEvent(*event1)
+	AddEvent(*event2)
+	err = DeleteEvent(*event1)
 	if err != nil {
-		t.Errorf("Error deleting event: %v", err)
+		t.Fatalf("Error deleting event: %v", err)
 	}
 	event, _ := GetEvent(event1.Slug)
 	if event != nil {
-		t.Errorf("Found deleted event: %v+", *event)
+		t.Errorf("Found deleted event: %+v", *event)
 	}
 	events, _ := GetEvents()
 	if len(events) != 1 {
@@ -356,24 +359,19 @@ func TestUpdateEvent(t *testing.T) {
 		AccessRestricted:  true,
 	}
 	event1, _ = AddEvent(*event1)
-	eID := event1.Identifier
 	event2, _ = AddEvent(*event2)
 	event1.AccountIdentifier = account2.Identifier
-	event1.Identifier = eID + 300
 	event1.Name = "Updated Event Name"
 	event1.Slug = "update"
 	event1.ContactEmail = "event1_test@test.com"
 	event1.Website = "https://test.com/"
 	err = UpdateEvent(*event1)
 	if err != nil {
-		t.Errorf("Error updating event: %v", err)
+		t.Fatalf("Error updating event: %v", err)
 	}
 	event, _ := GetEvent("event1")
 	if event.AccountIdentifier != account1.Identifier {
 		t.Errorf("Event account id changed from %v to %v.", account1.Identifier, event.AccountIdentifier)
-	}
-	if event.Identifier != eID {
-		t.Errorf("Event id changed from %v to %v.", eID, event.Identifier)
 	}
 	if event.Name != "Event 1" {
 		t.Errorf("Event name changed from %v to %v.", "Event 1", event.Name)
@@ -391,7 +389,7 @@ func TestUpdateEvent(t *testing.T) {
 	event2.Image = "https://test.com/"
 	err = UpdateEvent(*event2)
 	if err != nil {
-		t.Errorf("Error updating event: %v", err)
+		t.Fatalf("Error updating event: %v", err)
 	}
 	event, _ = GetEvent("event2")
 	if event.AccessRestricted != event2.AccessRestricted {

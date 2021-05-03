@@ -17,7 +17,7 @@ func GetAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE AND email=?;",
+		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -51,7 +51,7 @@ func GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, name, email, type FROM account WHERE deleted=FALSE;",
+		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -79,7 +79,7 @@ func AddAccount(account types.Account) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO account(name, email, type) VALUES (?, ?, ?)",
+		"INSERT INTO account(account_name, account_email, type) VALUES (?, ?, ?)",
 		account.Name,
 		account.Email,
 		account.Type,
@@ -110,7 +110,7 @@ func DeleteAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET deleted=TRUE WHERE account_id=?",
+		"UPDATE account SET account_deleted=TRUE WHERE account_id=?",
 		account.Identifier,
 	)
 	if err != nil {
@@ -136,7 +136,7 @@ func ResurrectAccount(email string) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET deleted=FALSE WHERE email=?",
+		"UPDATE account SET account_deleted=FALSE WHERE account_email=?",
 		email,
 	)
 	if err != nil {
@@ -162,7 +162,7 @@ func GetDeletedAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, name, email, type FROM account WHERE deleted=TRUE AND email=?;",
+		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=TRUE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -196,7 +196,7 @@ func UpdateAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET name=?, email=?, type=? WHERE account_id=?",
+		"UPDATE account SET account_name=?, account_email=?, type=? WHERE account_id=?",
 		account.Name,
 		account.Email,
 		account.Type,

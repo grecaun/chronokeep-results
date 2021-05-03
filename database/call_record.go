@@ -17,7 +17,7 @@ func GetAccountCallRecords(email string) ([]types.CallRecord, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE email=?;",
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -50,7 +50,7 @@ func GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT acount_id, time, count FROM call_record NATURAL JOIN account WHERE email=? AND time=?;",
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=? AND time=?;",
 		email,
 		inTime,
 	)
@@ -84,7 +84,7 @@ func AddCallRecord(record types.CallRecord) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO call_record(account_id, time, count) VALUES (?, ?, ?);",
+		"INSERT INTO call_record(account_id, time, count) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count=VALUES(count);",
 		record.AccountIdentifier,
 		record.DateTime,
 		record.Count,
@@ -109,7 +109,7 @@ func AddCallRecords(records []types.CallRecord) error {
 	defer cancelfunc()
 	stmt, err := db.PrepareContext(
 		ctx,
-		"INSERT INTO call_record(account_id, time, count) VALUES (?,  ?, ?);",
+		"INSERT INTO call_record(account_id, time, count) VALUES (?,  ?, ?) ON DUPLICATE KEY UPDATE count=VALUES(count);",
 	)
 	if err != nil {
 		return fmt.Errorf("unable to prepare statement for multiple call record inserts: %v", err)

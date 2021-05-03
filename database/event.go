@@ -17,7 +17,7 @@ func GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE and slug=?;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE and slug=?;",
 		slug,
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func GetEvents() ([]types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE deleted=FALSE;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
@@ -92,7 +92,7 @@ func GetAccountEvents(email string) ([]types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE deleted=FALSE AND email=?;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -130,7 +130,7 @@ func AddEvent(event types.Event) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event(name, slug, website, image, contact_email, account_id, access_restricted) VALUES (?, ?, ?, ?, ?, ?, ?);",
+		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted) VALUES (?, ?, ?, ?, ?, ?, ?);",
 		event.Name,
 		event.Slug,
 		event.Website,
@@ -169,7 +169,7 @@ func DeleteEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET deleted=TRUE WHERE event_id=?",
+		"UPDATE event SET event_deleted=TRUE WHERE event_id=?",
 		event.Identifier,
 	)
 	if err != nil {
