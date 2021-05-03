@@ -43,15 +43,15 @@ func TestAddEvent(t *testing.T) {
 	}
 	t.Logf("New event ID: %v", event.Identifier)
 	if !event.Equals(&event1) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event1, event)
+		t.Errorf("Event expected: %v+; Event found: %v+;", event1, *event)
 	}
 	event, err = AddEvent(event2)
 	if err != nil {
 		t.Errorf("Error adding event: %v", err)
 	}
 	t.Logf("New event ID: %v", event.Identifier)
-	if !event.Equals(&event1) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event2, event)
+	if !event.Equals(&event2) {
+		t.Errorf("Event expected: %v+; Event found: %v+;", event2, *event)
 	}
 	_, err = AddEvent(event2)
 	if err == nil {
@@ -98,21 +98,21 @@ func TestGetEvent(t *testing.T) {
 		t.Errorf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event1) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event1, testEvent)
+		t.Errorf("Event expected: %v+; Event found: %v+;", event1, *testEvent)
 	}
 	testEvent, err = GetEvent(event2.Slug)
 	if err != nil {
 		t.Errorf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event2) {
-		t.Errorf("Event expected: %v+; Event found: %v+;", event2, testEvent)
+		t.Errorf("Event expected: %v+; Event found: %v+;", event2, *testEvent)
 	}
 	testEvent, err = GetEvent("test")
 	if err != nil {
 		t.Errorf("Error getting event: %v", err)
 	}
 	if testEvent != nil {
-		t.Errorf("Unexpected event found: %v+;", testEvent)
+		t.Errorf("Unexpected event found: %v+;", *testEvent)
 	}
 }
 
@@ -315,7 +315,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	event, _ := GetEvent(event1.Slug)
 	if event != nil {
-		t.Errorf("Found deleted event: %v+", event)
+		t.Errorf("Found deleted event: %v+", *event)
 	}
 	events, _ := GetEvents()
 	if len(events) != 1 {

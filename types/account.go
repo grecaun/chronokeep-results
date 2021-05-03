@@ -10,6 +10,8 @@ type Account struct {
 }
 
 // Equals is used to check if the fields of an Account other than the identifier are identical.
-func (this *Account) Equals(other *Account) bool {
-	return this.Name == other.Name && this.Email == other.Email && this.Type == other.Type
+func (a *Account) Equals(other *Account) bool {
+	return a.Name == other.Name &&
+		a.Email == other.Email &&
+		a.Type == other.Type
 }

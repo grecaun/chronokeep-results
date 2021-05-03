@@ -58,32 +58,32 @@ func TestAddCallRecord(t *testing.T) {
 	}
 	err = AddCallRecord(records[0])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	err = AddCallRecord(records[1])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	err = AddCallRecord(records[2])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	err = AddCallRecord(records[3])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	err = AddCallRecord(records[4])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	err = AddCallRecord(records[5])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	records[1].Count = 700
 	err = AddCallRecord(records[1])
 	if err != nil {
-		t.Errorf("Error adding multiple call records: %v", err)
+		t.Errorf("Error adding call record: %v", err)
 	}
 	rec, err := GetCallRecord(account1.Email, records[1].DateTime)
 	if err != nil {
@@ -223,7 +223,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Error getting call record: %v", err)
 	}
 	if *newRec != oldRec {
-		t.Errorf("Expected record %v+, found %v+.", oldRec, newRec)
+		t.Errorf("Expected record %v+, found %v+.", oldRec, *newRec)
 	}
 	oldRec = records[2]
 	AddCallRecord(oldRec)
@@ -232,7 +232,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Error getting call record: %v", err)
 	}
 	if *newRec != oldRec {
-		t.Errorf("Expected record %v+, found %v+.", oldRec, newRec)
+		t.Errorf("Expected record %v+, found %v+.", oldRec, *newRec)
 	}
 	oldRec = records[4]
 	AddCallRecord(oldRec)
@@ -241,7 +241,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Error getting call record: %v", err)
 	}
 	if *newRec != oldRec {
-		t.Errorf("Expected record %v+, found %v+.", oldRec, newRec)
+		t.Errorf("Expected record %v+, found %v+.", oldRec, *newRec)
 	}
 	oldRec = records[5]
 	AddCallRecord(oldRec)
@@ -250,14 +250,14 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Error getting call record: %v", err)
 	}
 	if *newRec != oldRec {
-		t.Errorf("Expected record %v+, found %v+.", oldRec, newRec)
+		t.Errorf("Expected record %v+, found %v+.", oldRec, *newRec)
 	}
 	newRec, err = GetCallRecord(account2.Email, time.Date(2020, 10, 5, 10, 35, 0, 0, nil).Unix())
 	if err != nil {
 		t.Errorf("Error getting call record: %v", err)
 	}
 	if newRec != nil {
-		t.Errorf("Found an unexpected call record: %v+", newRec)
+		t.Errorf("Found an unexpected call record: %v+", *newRec)
 	}
 }
 

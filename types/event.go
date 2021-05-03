@@ -14,12 +14,12 @@ type Event struct {
 }
 
 // Equals Returns true if all fields other than Identifier are equal.
-func (this *Event) Equals(other *Event) bool {
-	return this.AccountIdentifier == other.AccountIdentifier &&
-		this.Name == other.Name &&
-		this.Slug == other.Slug &&
-		this.Website == other.Website &&
-		this.Image == other.Website &&
-		this.ContactEmail == other.ContactEmail &&
-		this.AccessRestricted == other.AccessRestricted
+func (e *Event) Equals(other *Event) bool {
+	return e.AccountIdentifier == other.AccountIdentifier &&
+		e.Name == other.Name &&
+		e.Slug == other.Slug &&
+		e.Website == other.Website &&
+		e.Image == other.Website &&
+		e.ContactEmail == other.ContactEmail &&
+		e.AccessRestricted == other.AccessRestricted
 }

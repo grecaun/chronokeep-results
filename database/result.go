@@ -17,7 +17,7 @@ func GetResults(eventYearID int64) ([]types.Result, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
+		"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
 		eventYearID,
 	)
 	if err != nil {
@@ -37,6 +37,7 @@ func GetResults(eventYearID int64) ([]types.Result, error) {
 			&result.Distance,
 			&result.Seconds,
 			&result.Milliseconds,
+			&result.Segment,
 			&result.Location,
 			&result.Occurence,
 			&result.Ranking,
@@ -116,7 +117,7 @@ func AddResults(eventYearID int64, results []types.Result) ([]types.Result, erro
 	defer cancelfunc()
 	stmt, err := db.PrepareContext(
 		ctx,
-		"INSERT INTO result(event_year_id, bib, first, last, age, gender, age_group, distance, seconds, milliseconds, location, occurence, ranking, age_ranking, gender_ranking, finish) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		"INSERT INTO result(event_year_id, bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)
@@ -136,6 +137,7 @@ func AddResults(eventYearID int64, results []types.Result) ([]types.Result, erro
 			result.Distance,
 			result.Seconds,
 			result.Milliseconds,
+			result.Segment,
 			result.Location,
 			result.Occurence,
 			result.Ranking,

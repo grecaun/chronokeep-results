@@ -56,7 +56,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	oAccount = accounts[1]
 	nAccount, err = AddAccount(oAccount)
@@ -65,7 +65,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	oAccount = accounts[2]
 	nAccount, err = AddAccount(oAccount)
@@ -74,7 +74,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	oAccount = accounts[3]
 	nAccount, err = AddAccount(oAccount)
@@ -83,7 +83,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	if !oAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	// Test for collisions.
 	_, err = AddAccount(accounts[2])
@@ -143,8 +143,11 @@ func TestGetAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err := GetAccount(oAccount.Email)
+	if err != nil {
+		t.Errorf("Error getting account: %v", err)
+	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
@@ -156,8 +159,11 @@ func TestGetAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
+	if err != nil {
+		t.Errorf("Error getting account: %v", err)
+	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
@@ -169,8 +175,11 @@ func TestGetAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
+	if err != nil {
+		t.Errorf("Error getting account: %v", err)
+	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
@@ -182,8 +191,11 @@ func TestGetAccount(t *testing.T) {
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
 	dAccount, err = GetAccount(oAccount.Email)
+	if err != nil {
+		t.Errorf("Error getting account: %v", err)
+	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
@@ -316,6 +328,9 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// Ensure adding accounts works properly.
 	nAccount, err := AddAccount(accounts[0])
+	if err != nil {
+		t.Errorf("Error adding account: %v", err)
+	}
 	nAccount.Name = "New Name 1"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
@@ -323,12 +338,15 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	dAccount, _ := GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount, dAccount)
+		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
 	if dAccount.Name != "New Name 1" {
 		t.Errorf("Account name expected to be %v but found %v instead.", "New Name 1", dAccount.Name)
 	}
 	nAccount, err = AddAccount(accounts[1])
+	if err != nil {
+		t.Errorf("Error adding account: %v", err)
+	}
 	nAccount.Type = "New Type 1"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
@@ -336,12 +354,15 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount, dAccount)
+		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
 	if dAccount.Type != "New Type 1" {
 		t.Errorf("Account name expected to be %v but found %v instead.", "New Type 1", dAccount.Type)
 	}
 	nAccount, err = AddAccount(accounts[2])
+	if err != nil {
+		t.Errorf("Error adding account: %v", err)
+	}
 	nAccount.Name = "New Name 2"
 	err = UpdateAccount(*nAccount)
 	dAccount, _ = GetAccount(nAccount.Email)
@@ -349,12 +370,15 @@ func TestUpdateAccount(t *testing.T) {
 		t.Errorf("Error updating account: %v", err)
 	}
 	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount, dAccount)
+		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
 	if dAccount.Name != "New Name 2" {
 		t.Errorf("Account name expected to be %v but found %v instead.", "New Name 2", dAccount.Name)
 	}
 	nAccount, err = AddAccount(accounts[3])
+	if err != nil {
+		t.Errorf("Error adding account: %v", err)
+	}
 	nAccount.Type = "New Type 2"
 	err = UpdateAccount(*nAccount)
 	if err != nil {
@@ -362,7 +386,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	dAccount, _ = GetAccount(nAccount.Email)
 	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount, dAccount)
+		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
 	if dAccount.Type != "New Type 2" {
 		t.Errorf("Account name expected to be %v but found %v instead.", "New Type 2", dAccount.Type)

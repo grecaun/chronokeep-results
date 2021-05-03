@@ -12,6 +12,7 @@ type Result struct {
 	Distance      string `json:"distance"`
 	Seconds       int    `json:"seconds"`
 	Milliseconds  int    `json:"milliseconds"`
+	Segment       string `json:"segment"`
 	Location      string `json:"location"`
 	Occurence     int    `json:"occurence"`
 	Ranking       int    `json:"ranking"`

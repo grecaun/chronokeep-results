@@ -133,6 +133,9 @@ func dropTables() error {
 		ctx,
 		"DROP TABLE call_record; DROP TABLE result; DROP TABLE event_year; DROP TABLE event; DROP TABLE key; DROP TABLE account; DROP TABLE settings;",
 	)
+	if err != nil {
+		return fmt.Errorf("error dropping tables: %v", err)
+	}
 	_, err = res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error fetching rows on database drop tables: %v", err)
@@ -232,6 +235,7 @@ func createTables() error {
 			"distance VARCHAR(200) NOT NULL, " +
 			"seconds INT DEFAULT 0, " +
 			"milliseconds INT DEFAULT 0, " +
+			"segment VARCHAR(500), " +
 			"location VARCHAR(500), " +
 			"occurence INT DEFAULT -1, " +
 			"ranking INT DEFAULT -1, " +
@@ -240,7 +244,6 @@ func createTables() error {
 			"finish BOOL DEFAULT TRUE, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"CONSTRAINT one_finish UNIQUE (event_year_id, bib, finish) ON CONFLICT UPDATE, " +
 			"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence) ON CONFLICT UPDATE" +
 			");"
 
