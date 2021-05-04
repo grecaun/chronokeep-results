@@ -6,22 +6,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h Handler) GetAccount(c echo.Context) error {
+func (h Handler) GetEvents(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) GetAccounts(c echo.Context) error {
+func (h Handler) GetEvent(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) AddAccount(c echo.Context) error {
+func (h Handler) AddEvent(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) UpdateAccount(c echo.Context) error {
+func (h Handler) UpdateEvent(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) DeleteAccount(c echo.Context) error {
+func (h Handler) DeleteEvent(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }

@@ -37,9 +37,16 @@ func GetConfig() (*Config, error) {
 	}
 
 	recordInterval, err := strconv.Atoi(os.Getenv("RECORD_INTERVAL"))
-	if err != nil {
+	if err != nil && recordInterval < 60 {
 		recordInterval = 300
 	}
+
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil && port < 200 {
+		port = 8181
+	}
+
+	development := os.Getenv("VERSION") != "production"
 
 	return &Config{
 		DBName:         dbName,
@@ -49,6 +56,8 @@ func GetConfig() (*Config, error) {
 		DBPassword:     dbPassword,
 		DBDriver:       dbDriver,
 		RecordInterval: recordInterval,
+		Port:           port,
+		Development:    development,
 	}, nil
 }
 
@@ -61,4 +70,6 @@ type Config struct {
 	DBPassword     string
 	DBDriver       string
 	RecordInterval int
+	Port           int
+	Development    bool
 }

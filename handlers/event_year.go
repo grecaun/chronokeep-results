@@ -6,18 +6,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h Handler) GetKeys(c echo.Context) error {
+func (h Handler) GetEventYear(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) AddKey(c echo.Context) error {
+func (h Handler) AddEventYear(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) DeleteKey(c echo.Context) error {
+func (h Handler) UpdateEventYear(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
 
-func (h Handler) UpdateKey(c echo.Context) error {
+func (h Handler) DeleteEventYear(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }
