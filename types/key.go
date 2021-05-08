@@ -8,10 +8,10 @@ import "time"
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
 	AccountIdentifier int64     `json:"-"`
-	Value             string    `json:"value"`
-	Type              string    `json:"type"`
+	Value             string    `json:"value" validate:"required"`
+	Type              string    `json:"type" validate:"required"`
 	AllowedHosts      string    `json:"allowedHosts"`
-	ValidUntil        time.Time `json:"validUntil"`
+	ValidUntil        time.Time `json:"validUntil" validate:"datetime,required"`
 }
 
 func (k *Key) Equal(other *Key) bool {

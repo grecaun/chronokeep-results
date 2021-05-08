@@ -5,11 +5,11 @@ package types
 type Event struct {
 	AccountIdentifier int64  `json:"-"`
 	Identifier        int64  `json:"-"`
-	Name              string `json:"name"`
-	Slug              string `json:"slug"`
-	Website           string `json:"website"`
-	Image             string `json:"image"`
-	ContactEmail      string `json:"contactEmail"`
+	Name              string `json:"name" validate:"required"`
+	Slug              string `json:"slug" validate:"required"`
+	Website           string `json:"website" validate:"url"`
+	Image             string `json:"image" validate:"url"`
+	ContactEmail      string `json:"contactEmail" validate:"email,required"`
 	AccessRestricted  bool   `json:"accessRestricted"`
 }
 

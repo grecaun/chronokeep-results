@@ -8,7 +8,7 @@ type EventYear struct {
 	Identifier      int64     `json:"-"`
 	EventIdentifier int64     `json:"-"`
 	Year            string    `json:"year"`
-	DateTime        time.Time `json:"dateTime"`
+	DateTime        time.Time `json:"dateTime" validate:"datetime"`
 	Live            bool      `json:"live"`
 }
 

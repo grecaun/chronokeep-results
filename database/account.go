@@ -196,11 +196,10 @@ func UpdateAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_name=?, account_email=?, type=? WHERE account_id=?",
+		"UPDATE account SET account_name=?, type=? WHERE account_email=?",
 		account.Name,
-		account.Email,
 		account.Type,
-		account.Identifier,
+		account.Email,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating account: %v", err)
@@ -211,6 +210,60 @@ func UpdateAccount(account types.Account) error {
 	}
 	if rows != 1 {
 		return fmt.Errorf("error updating account, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// ChangePassword Updates a user's password.
+func ChangePassword(email, newPassword string) error {
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET account_password=? WHERE account_email=?;",
+		newPassword,
+		email,
+	)
+	if err != nil {
+		return fmt.Errorf("error changing password: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected on password change: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error changing password, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// ChangeEmail Updates an account email.
+func ChangeEmail(oldEmail, newEmail string) error {
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET account_email=? WHERE account_email=?;",
+		newEmail,
+		oldEmail,
+	)
+	if err != nil {
+		return fmt.Errorf("erorr updating account email: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affefcted on email change: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error changing email, rows affected: %v", rows)
 	}
 	return nil
 }

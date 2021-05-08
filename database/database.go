@@ -148,6 +148,9 @@ func createTables() error {
 			"account_id BIGINT NOT NULL AUTO_INCREMENT, " +
 			"account_name VARCHAR(100) NOT NULL, " +
 			"account_email VARCHAR(100) NOT NULL, " +
+			"account_password VARCHAR(300) NOT NULL, " +
+			"token VARCHAR(100), " +
+			"refresh_token VARCHAR(100), " +
 			"type VARCHAR(20) NOT NULL, " +
 			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +

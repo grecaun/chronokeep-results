@@ -3,18 +3,18 @@ package types
 // Result is a structure holding information about a specific time
 // result for a specific event.
 type Result struct {
-	Bib           string `json:"bib"`
-	First         string `json:"first"`
-	Last          string `json:"last"`
-	Age           int    `json:"age"`
-	Gender        string `json:"gender"`
+	Bib           string `json:"bib" validate:""`
+	First         string `json:"first" validate:""`
+	Last          string `json:"last" validate:""`
+	Age           int    `json:"age" validate:"gte=0,lte=130"`
+	Gender        string `json:"gender" validate:"required"`
 	AgeGroup      string `json:"ageGroup"`
 	Distance      string `json:"distance"`
-	Seconds       int    `json:"seconds"`
+	Seconds       int    `json:"seconds" validate:"gte=1"`
 	Milliseconds  int    `json:"milliseconds"`
 	Segment       string `json:"segment"`
-	Location      string `json:"location"`
-	Occurence     int    `json:"occurence"`
+	Location      string `json:"location" validate:"required"`
+	Occurence     int    `json:"occurence" validate:"gte=1"`
 	Ranking       int    `json:"ranking"`
 	AgeRanking    int    `json:"ageRanking"`
 	GenderRanking int    `json:"genderRanking"`
