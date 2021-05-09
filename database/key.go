@@ -8,7 +8,7 @@ import (
 )
 
 // GetAccountKeys Gets all keys associated with an account.
-func GetAccountKeys(accountID int64) ([]types.Key, error) {
+func GetAccountKeys(email string) ([]types.Key, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
@@ -17,8 +17,8 @@ func GetAccountKeys(accountID int64) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, value, type, allowed_hosts, valid_until FROM api_key WHERE api_key_deleted=FALSE AND account_id=?;",
-		accountID,
+		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
+		email,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("erorr retrieving key: %v", err)
@@ -52,7 +52,7 @@ func GetKey(key string) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, value, type, allowed_hosts, valid_until FROM api_key WHERE api_key_deleted=FALSE AND value=?;",
+		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=?;",
 		key,
 	)
 	if err != nil {
@@ -87,7 +87,7 @@ func AddKey(key types.Key) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO api_key(account_id, value, type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?);",
+		"INSERT INTO api_key(account_id, key_value, key_type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?);",
 		key.AccountIdentifier,
 		key.Value,
 		key.Type,
@@ -120,7 +120,7 @@ func DeleteKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET api_key_deleted=TRUE WHERE value=?;",
+		"UPDATE api_key SET key_deleted=TRUE WHERE key_value=?;",
 		key.Value,
 	)
 	if err != nil {
@@ -146,7 +146,7 @@ func UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET type=?, allowed_hosts=?, valid_until=? WHERE value=?;",
+		"UPDATE api_key SET key_type=?, allowed_hosts=?, valid_until=? WHERE key_value=?;",
 		key.Type,
 		key.AllowedHosts,
 		key.ValidUntil,

@@ -6,25 +6,19 @@ package types
 
 // GetAccountResponse Struct used for the response of the Get Account Request.
 type GetAccountResponse struct {
-	Code     int     `json:"code"`
-	Response string  `json:"response"`
-	Account  Account `json:"account"`
-	Keys     []Key   `json:"keys"`
-	Events   []Event `json:"events"`
+	Account Account `json:"account"`
+	Keys    []Key   `json:"keys"`
+	Events  []Event `json:"events"`
 }
 
 // GetAllAccountsResponse Struct used to get all of the accounts.
 type GetAllAccountsResponse struct {
-	Code     int       `json:"code"`
-	Response string    `json:"response"`
 	Accounts []Account `json:"accounts"`
 }
 
 // ModifyAccountResponse Struct used to respond to add/update account requests.
 type ModifyAccountResponse struct {
-	Code     int     `json:"code"`
-	Response string  `json:"response"`
-	Account  Account `json:"account"`
+	Account Account `json:"account"`
 }
 
 /*
@@ -36,9 +30,15 @@ type GetAccountRequest struct {
 	Email string `json:"email"`
 }
 
-// ModifyAccountRequest Struct used to request to add/update an account.
-type ModifyAccountRequest struct {
+// ModifyAccountRequest Struct used to request to update an account.
+type UpdateAccountRequest struct {
 	Account Account `json:"account"`
+}
+
+// AddAccountRequest Struct used to add an account.
+type AddAccountRequest struct {
+	Account  Account `json:"account"`
+	Password string  `json:"password"`
 }
 
 // DeleteAccountRequest Struct used to delete an account.

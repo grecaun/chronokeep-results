@@ -17,7 +17,7 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND event_year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -53,7 +53,7 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND event_year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -121,7 +121,7 @@ func DeleteEventYear(year types.EventYear) error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"UPDATE event_year SET event_year_deleted=TRUE WHERE event_year_id=?",
+		"UPDATE event_year SET year_deleted=TRUE WHERE event_year_id=?",
 		year.Identifier,
 	)
 	if err != nil {

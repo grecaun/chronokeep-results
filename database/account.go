@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -17,7 +18,7 @@ func GetAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=FALSE AND account_email=?;",
+		"SELECT account_id, account_name, account_email, account_type, account_password FROM account WHERE account_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -31,6 +32,7 @@ func GetAccount(email string) (*types.Account, error) {
 			&outAccount.Name,
 			&outAccount.Email,
 			&outAccount.Type,
+			&outAccount.Password,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
@@ -51,7 +53,7 @@ func GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=FALSE;",
+		"SELECT account_id, account_name, account_email, account_type, account_password FROM account WHERE account_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -60,7 +62,7 @@ func GetAccounts() ([]types.Account, error) {
 	var outAccounts []types.Account
 	for res.Next() {
 		var account types.Account
-		err := res.Scan(&account.Identifier, &account.Name, &account.Email, &account.Type)
+		err := res.Scan(&account.Identifier, &account.Name, &account.Email, &account.Type, &account.Password)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
 		}
@@ -71,6 +73,10 @@ func GetAccounts() ([]types.Account, error) {
 
 // AddAccount Adds an account to the database.
 func AddAccount(account types.Account) (*types.Account, error) {
+	// Check if password has been hashed.
+	if !account.PasswordIsHashed() {
+		return nil, errors.New("password not hashed")
+	}
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
@@ -79,10 +85,11 @@ func AddAccount(account types.Account) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO account(account_name, account_email, type) VALUES (?, ?, ?)",
+		"INSERT INTO account(account_name, account_email, account_type, account_password) VALUES (?, ?, ?, ?)",
 		account.Name,
 		account.Email,
 		account.Type,
+		account.Password,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add account: %v", err)
@@ -101,7 +108,7 @@ func AddAccount(account types.Account) (*types.Account, error) {
 
 // DeleteAccount Deletes an account from view, does not permanently delete from database.
 // This does not cascade down.  Must be done manually.
-func DeleteAccount(account types.Account) error {
+func DeleteAccount(email string) error {
 	db, err := GetDB()
 	if err != nil {
 		return err
@@ -110,8 +117,8 @@ func DeleteAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_deleted=TRUE WHERE account_id=?",
-		account.Identifier,
+		"UPDATE account SET account_deleted=TRUE WHERE account_email=?",
+		email,
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting account: %v", err)
@@ -162,7 +169,7 @@ func GetDeletedAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, type FROM account WHERE account_deleted=TRUE AND account_email=?;",
+		"SELECT account_id, account_name, account_email, account_type FROM account WHERE account_deleted=TRUE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -196,7 +203,7 @@ func UpdateAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_name=?, type=? WHERE account_email=?",
+		"UPDATE account SET account_name=?, account_type=? WHERE account_email=?",
 		account.Name,
 		account.Type,
 		account.Email,

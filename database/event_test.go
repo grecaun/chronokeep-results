@@ -12,14 +12,16 @@ func TestAddEvent(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -66,14 +68,16 @@ func TestGetEvent(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -123,14 +127,16 @@ func TestGetEvents(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -189,19 +195,22 @@ func TestGetAccountEvents(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account3 := &types.Account{
-		Name:  "Tia Johnson",
-		Email: "tiatheway@test.com",
-		Type:  "free",
+		Name:     "Tia Johnson",
+		Email:    "tiatheway@test.com",
+		Type:     "free",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -237,6 +246,7 @@ func TestGetAccountEvents(t *testing.T) {
 	t.Log("Adding one event for each account.")
 	AddEvent(event1)
 	AddEvent(event2)
+	t.Logf("Account email: %v", account1.Email)
 	events, err := GetAccountEvents(account1.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
@@ -244,6 +254,7 @@ func TestGetAccountEvents(t *testing.T) {
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
+	t.Logf("Account email: %v", account2.Email)
 	events, err = GetAccountEvents(account2.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
@@ -285,14 +296,16 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -333,14 +346,16 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)

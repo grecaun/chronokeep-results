@@ -48,6 +48,17 @@ func GetConfig() (*Config, error) {
 
 	development := os.Getenv("VERSION") != "production"
 
+	autotls := os.Getenv("AUTOTLS") == "enabled"
+
+	secret_key := os.Getenv("SECRET_KEY")
+	if secret_key == "" || len(secret_key) < 20 {
+		return nil, errors.New("SECRET_KEY not set or under 20 characters")
+	}
+
+	admin_email := os.Getenv("ADMIN_EMAIL")
+	admin_name := os.Getenv("ADMIN_NAME")
+	admin_pass := os.Getenv("ADMIN_PASS")
+
 	return &Config{
 		DBName:         dbName,
 		DBHost:         dbHost,
@@ -58,6 +69,11 @@ func GetConfig() (*Config, error) {
 		RecordInterval: recordInterval,
 		Port:           port,
 		Development:    development,
+		AutoTLS:        autotls,
+		SecretKey:      secret_key,
+		AdminEmail:     admin_email,
+		AdminName:      admin_name,
+		AdminPass:      admin_pass,
 	}, nil
 }
 
@@ -72,4 +88,9 @@ type Config struct {
 	RecordInterval int
 	Port           int
 	Development    bool
+	AutoTLS        bool
+	SecretKey      string
+	AdminEmail     string
+	AdminName      string
+	AdminPass      string
 }

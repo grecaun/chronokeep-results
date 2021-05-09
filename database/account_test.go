@@ -13,39 +13,46 @@ func TestAddAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	// Ensure adding accounts works properly.
@@ -101,39 +108,46 @@ func TestGetAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	// Test getting known accounts.
@@ -219,39 +233,46 @@ func TestGetAccounts(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	retAccounts, err := GetAccounts()
@@ -292,39 +313,46 @@ func TestUpdateAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	// Ensure adding accounts works properly.
@@ -407,43 +435,50 @@ func TestDeleteAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	nAccount, _ := AddAccount(accounts[0])
-	err = DeleteAccount(*nAccount)
+	err = DeleteAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -456,7 +491,7 @@ func TestDeleteAccount(t *testing.T) {
 		t.Error("No error found when trying to add a deleted account.")
 	}
 	nAccount, _ = AddAccount(accounts[1])
-	err = DeleteAccount(*nAccount)
+	err = DeleteAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -469,7 +504,7 @@ func TestDeleteAccount(t *testing.T) {
 		t.Error("No error found when trying to add a deleted account.")
 	}
 	nAccount, _ = AddAccount(accounts[2])
-	err = DeleteAccount(*nAccount)
+	err = DeleteAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -491,43 +526,50 @@ func TestResurrectAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	nAccount, _ := AddAccount(accounts[0])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -537,7 +579,7 @@ func TestResurrectAccount(t *testing.T) {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = AddAccount(accounts[1])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -547,7 +589,7 @@ func TestResurrectAccount(t *testing.T) {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = AddAccount(accounts[4])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -566,43 +608,50 @@ func TestGetDeletedAccount(t *testing.T) {
 	defer finalize(t)
 	accounts := []types.Account{
 		{
-			Name:  "John Smith",
-			Email: "j@test.com",
-			Type:  "admin",
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Jerry Garcia",
-			Email: "jgarcia@test.com",
-			Type:  "free",
+			Name:     "Jerry Garcia",
+			Email:    "jgarcia@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Rose MacDonald",
-			Email: "rose2004@test.com",
-			Type:  "paid",
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Tia Johnson",
-			Email: "tiatheway@test.com",
-			Type:  "free",
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Thomas Donaldson",
-			Email: "tdon@test.com",
-			Type:  "admin",
+			Name:     "Thomas Donaldson",
+			Email:    "tdon@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ester White",
-			Email: "white@test.com",
-			Type:  "test",
+			Name:     "Ester White",
+			Email:    "white@test.com",
+			Type:     "test",
+			Password: testHashPassword("password"),
 		},
 		{
-			Name:  "Ricky Reagan",
-			Email: "rreagan@test.com",
-			Type:  "free",
+			Name:     "Ricky Reagan",
+			Email:    "rreagan@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
 		},
 	}
 	nAccount, _ := AddAccount(accounts[0])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	dAccount, err := GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -611,7 +660,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[3])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -620,7 +669,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[5])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -629,7 +678,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[6])
-	DeleteAccount(*nAccount)
+	DeleteAccount(nAccount.Email)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -637,5 +686,12 @@ func TestGetDeletedAccount(t *testing.T) {
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
 	}
+}
 
+func TestChangePassword(t *testing.T) {
+	t.Error("Not yet implemented.")
+}
+
+func TestChangeEmail(t *testing.T) {
+	t.Error("Not yet implemented.")
 }

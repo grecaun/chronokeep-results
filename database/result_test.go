@@ -13,9 +13,10 @@ func TestAddResults(t *testing.T) {
 	}
 	defer finalize(t)
 	account := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account, _ = AddAccount(*account)
 	event := &types.Event{
@@ -170,9 +171,10 @@ func TestGetResults(t *testing.T) {
 	}
 	defer finalize(t)
 	account := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account, _ = AddAccount(*account)
 	event := &types.Event{
@@ -306,9 +308,10 @@ func TestDeleteResults(t *testing.T) {
 	}
 	defer finalize(t)
 	account := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account, _ = AddAccount(*account)
 	event := &types.Event{
@@ -424,9 +427,10 @@ func TestDeleteEventResults(t *testing.T) {
 	}
 	defer finalize(t)
 	account := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account, _ = AddAccount(*account)
 	event := &types.Event{

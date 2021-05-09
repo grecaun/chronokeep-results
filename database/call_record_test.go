@@ -13,14 +13,16 @@ func TestAddCallRecord(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	acc1, _ := AddAccount(account1)
 	acc2, _ := AddAccount(account2)
@@ -101,14 +103,16 @@ func TestAddCallRecords(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	acc1, _ := AddAccount(account1)
 	acc2, _ := AddAccount(account2)
@@ -173,14 +177,16 @@ func TestGetCallRecord(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	acc1, _ := AddAccount(account1)
 	acc2, _ := AddAccount(account2)
@@ -273,19 +279,22 @@ func TestGetAccountCallRecords(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account3 := types.Account{
-		Name:  "Tia Johnson",
-		Email: "tiatheway@test.com",
-		Type:  "free",
+		Name:     "Tia Johnson",
+		Email:    "tiatheway@test.com",
+		Type:     "free",
+		Password: testHashPassword("password"),
 	}
 	acc1, _ := AddAccount(account1)
 	acc2, _ := AddAccount(account2)

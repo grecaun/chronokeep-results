@@ -1,7 +1,10 @@
 package database
 
 import (
+	"chronokeep/results/auth"
+	"chronokeep/results/types"
 	"chronokeep/results/util"
+
 	"context"
 	"errors"
 	"fmt"
@@ -10,12 +13,15 @@ import (
 
 	"database/sql"
 
+	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
-	db     *sql.DB
-	config *util.Config
+	db       *sql.DB
+	config   *util.Config
+	validate = validator.New()
 )
 
 const (
@@ -72,6 +78,7 @@ func GetDB() (*sql.DB, error) {
 
 // Setup Automatically creates and updates tables for all of our information.
 func Setup(config *util.Config) error {
+	log.Info("Setting up database.")
 	// Connect to DB with database name.
 	_, err := GetDatabase(config)
 	if err != nil {
@@ -83,15 +90,47 @@ func Setup(config *util.Config) error {
 
 	// Error checking version, most likely means tables are not created.
 	if dbVersion < 1 {
+		log.Info("Creating database tables.")
 		err = createTables()
 		if err != nil {
 			return err
 		}
 		// Otherwise check if our database is out of date and update if necessary.
 	} else if dbVersion < CurrentVersion {
+		log.Info(fmt.Sprintf("Updating database from version %v to %v", dbVersion, CurrentVersion))
 		err = updateTables(dbVersion, CurrentVersion)
 		if err != nil {
 			return err
+		}
+	}
+
+	// Check if there's an account created.
+	accounts, err := GetAccounts()
+	if err != nil {
+		return fmt.Errorf("error checking for account: %v", err)
+	}
+	if len(accounts) < 1 {
+		log.Info("Creating admin user.")
+		if config.AdminName == "" || config.AdminEmail == "" || config.AdminPass == "" {
+			return errors.New("admin account doesn't exist and proper credentions have not been supplied")
+		}
+		acc := types.Account{
+			Name:     config.AdminName,
+			Email:    config.AdminEmail,
+			Password: config.AdminPass,
+			Type:     "admin",
+		}
+		err = validate.Struct(acc)
+		if err != nil {
+			return fmt.Errorf("error validating base admin account on setup: %v", err)
+		}
+		acc.Password, err = auth.HashPassword(config.AdminPass)
+		if err != nil {
+			return fmt.Errorf("error hashing admin account password on setup: %v", err)
+		}
+		_, err = AddAccount(acc)
+		if err != nil {
+			return fmt.Errorf("error adding admin account on setup: %v", err)
 		}
 	}
 	return nil
@@ -149,11 +188,9 @@ func createTables() error {
 			"account_name VARCHAR(100) NOT NULL, " +
 			"account_email VARCHAR(100) NOT NULL, " +
 			"account_password VARCHAR(300) NOT NULL, " +
-			"token VARCHAR(100), " +
-			"refresh_token VARCHAR(100), " +
-			"type VARCHAR(20) NOT NULL, " +
-			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"account_type VARCHAR(20) NOT NULL, " +
+			"account_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"account_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 			"account_deleted BOOL DEFAULT FALSE, " +
 			"UNIQUE(account_email), " +
 			"PRIMARY KEY (account_id)" +
@@ -161,14 +198,14 @@ func createTables() error {
 
 		keyTable = "CREATE TABLE IF NOT EXISTS api_key(" +
 			"account_id BIGINT NOT NULL, " +
-			"value CHAR(100) NOT NULL, " +
-			"type VARCHAR(20) NOT NULL, " +
+			"key_value CHAR(100) NOT NULL, " +
+			"key_type VARCHAR(20) NOT NULL, " +
 			"allowed_hosts TEXT, " +
 			"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
-			"api_key_deleted BOOL DEFAULT FALSE, " +
-			"UNIQUE(value), " +
+			"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+			"key_deleted BOOL DEFAULT FALSE, " +
+			"UNIQUE(key_value), " +
 			"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 			");"
 
@@ -181,8 +218,8 @@ func createTables() error {
 			"image VARCHAR(200), " +
 			"contact_email VARCHAR(100), " +
 			"access_restricted BOOL DEFAULT FALSE, " +
-			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"event_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"event_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 			"event_deleted BOOL DEFAULT FALSE, " +
 			"UNIQUE(event_name), " +
 			"UNIQUE(slug)," +
@@ -196,9 +233,9 @@ func createTables() error {
 			"year VARCHAR(20) NOT NULL, " +
 			"date_time DATETIME NOT NULL, " +
 			"live BOOL DEFAULT FALSE, " +
-			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-			"event_year_deleted BOOL DEFAULT FALSE, " +
+			"year_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"year_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"year_deleted BOOL DEFAULT FALSE, " +
 			"CONSTRAINT year_slug UNIQUE (event_id, year)," +
 			"FOREIGN KEY (event_id) REFERENCES event(event_id)," +
 			"PRIMARY KEY (event_year_id)" +
@@ -222,8 +259,8 @@ func createTables() error {
 			"age_ranking INT DEFAULT -1, " +
 			"gender_ranking INT DEFAULT -1, " +
 			"finish BOOL DEFAULT TRUE, " +
-			"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-			"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+			"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 			"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
 			"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 			");"

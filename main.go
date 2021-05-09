@@ -44,6 +44,9 @@ func main() {
 
 	handler := handlers.Handler{}
 	handler.Bind(e.Group(""))
+	r := e.Group("")
+	r.Use(middleware.JWT([]byte(config.SecretKey)))
+	handler.BindRestricted(r)
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
@@ -58,6 +61,8 @@ func main() {
 			},
 			Skipper: healthEndpointSkipper,
 		}))
+	}
+	if !config.AutoTLS {
 		log.Fatal(e.Start(":" + strconv.Itoa(config.Port)))
 	} else {
 		// Set up TLS with auto certificate if not a debug environment.

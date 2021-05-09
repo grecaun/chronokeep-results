@@ -1,6 +1,7 @@
 package database
 
 import (
+	"chronokeep/results/auth"
 	"chronokeep/results/util"
 	"context"
 	"errors"
@@ -19,13 +20,36 @@ const (
 	dbDriver   = "mysql"
 )
 
+func testHashPassword(pass string) string {
+	hash, _ := auth.HashPassword(pass)
+	return hash
+}
+
 func setupTests(t *testing.T) (func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
 	config = getTestConfig()
 	t.Log("Initializing database.")
-	err := Setup(config)
+	// Connect to DB with database name.
+	_, err := GetDatabase(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error connecting to database: %v", err)
+	}
+
+	// Check our database version.
+	dbVersion := checkVersion()
+
+	// Error checking version, most likely means tables are not created.
+	if dbVersion < 1 {
+		err = createTables()
+		if err != nil {
+			return nil, err
+		}
+		// Otherwise check if our database is out of date and update if necessary.
+	} else if dbVersion < CurrentVersion {
+		err = updateTables(dbVersion, CurrentVersion)
+		if err != nil {
+			return nil, err
+		}
 	}
 	t.Log("Database initialized.")
 	return func(t *testing.T) {
@@ -52,6 +76,7 @@ func setupOld(version int) error {
 		case "postgres":
 			return errors.New("postgres not yet supported")
 		case "mysql":
+
 			settingsTable = "CREATE TABLE IF NOT EXISTS settings(" +
 				"name VARCHAR(200) NOT NULL, " +
 				"value VARCHAR(200) NOT NULL, " +
@@ -62,11 +87,9 @@ func setupOld(version int) error {
 				"account_name VARCHAR(100) NOT NULL, " +
 				"account_email VARCHAR(100) NOT NULL, " +
 				"account_password VARCHAR(300) NOT NULL, " +
-				"token VARCHAR(100), " +
-				"refresh_token VARCHAR(100), " +
-				"type VARCHAR(20) NOT NULL, " +
-				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"account_type VARCHAR(20) NOT NULL, " +
+				"account_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"account_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 				"account_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(account_email), " +
 				"PRIMARY KEY (account_id)" +
@@ -74,14 +97,14 @@ func setupOld(version int) error {
 
 			keyTable = "CREATE TABLE IF NOT EXISTS api_key(" +
 				"account_id BIGINT NOT NULL, " +
-				"value CHAR(100) NOT NULL, " +
-				"type VARCHAR(20) NOT NULL, " +
+				"key_value CHAR(100) NOT NULL, " +
+				"key_type VARCHAR(20) NOT NULL, " +
 				"allowed_hosts TEXT, " +
 				"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
-				"api_key_deleted BOOL DEFAULT FALSE, " +
-				"UNIQUE(value), " +
+				"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+				"key_deleted BOOL DEFAULT FALSE, " +
+				"UNIQUE(key_value), " +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");"
 
@@ -94,8 +117,8 @@ func setupOld(version int) error {
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
 				"access_restricted BOOL DEFAULT FALSE, " +
-				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"event_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"event_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 				"event_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(event_name), " +
 				"UNIQUE(slug)," +
@@ -109,9 +132,9 @@ func setupOld(version int) error {
 				"year VARCHAR(20) NOT NULL, " +
 				"date_time DATETIME NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
-				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"event_year_deleted BOOL DEFAULT FALSE, " +
+				"year_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"year_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"year_deleted BOOL DEFAULT FALSE, " +
 				"CONSTRAINT year_slug UNIQUE (event_id, year)," +
 				"FOREIGN KEY (event_id) REFERENCES event(event_id)," +
 				"PRIMARY KEY (event_year_id)" +
@@ -135,8 +158,8 @@ func setupOld(version int) error {
 				"age_ranking INT DEFAULT -1, " +
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
-				"created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");"
@@ -280,5 +303,8 @@ func getTestConfig() *util.Config {
 		DBUser:     dbUser,
 		DBPassword: dbPassword,
 		DBDriver:   dbDriver,
+		AdminEmail: "admin@test.com",
+		AdminName:  "tester number 1",
+		AdminPass:  "password",
 	}
 }

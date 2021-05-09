@@ -13,14 +13,16 @@ func TestAddEventYear(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -101,14 +103,16 @@ func TestGetEventYear(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -207,14 +211,16 @@ func TestGetEventYears(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -308,14 +314,16 @@ func TestDeleteEventYear(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -392,14 +400,16 @@ func TestUpdateEventYear(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)

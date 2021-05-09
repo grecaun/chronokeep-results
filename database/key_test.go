@@ -13,14 +13,16 @@ func TestAddKey(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -95,14 +97,16 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -136,7 +140,7 @@ func TestGetAccountKeys(t *testing.T) {
 			ValidUntil:        time.Now().Add(time.Hour * 3).Truncate(time.Second),
 		},
 	}
-	k, err := GetAccountKeys(account1.Identifier)
+	k, err := GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -145,14 +149,14 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	AddKey(keys[0])
 	AddKey(keys[2])
-	k, err = GetAccountKeys(account1.Identifier)
+	k, err = GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 1 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
 	}
-	k, err = GetAccountKeys(account2.Identifier)
+	k, err = GetAccountKeys(account2.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -161,14 +165,14 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	AddKey(keys[1])
 	AddKey(keys[3])
-	k, err = GetAccountKeys(account1.Identifier)
+	k, err = GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 2 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
 	}
-	k, err = GetAccountKeys(account2.Identifier)
+	k, err = GetAccountKeys(account2.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -184,14 +188,16 @@ func TestGetKey(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -273,14 +279,16 @@ func TestDeleteKey(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account2 := &types.Account{
-		Name:  "Rose MacDonald",
-		Email: "rose2004@test.com",
-		Type:  "paid",
+		Name:     "Rose MacDonald",
+		Email:    "rose2004@test.com",
+		Type:     "paid",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	account2, _ = AddAccount(*account2)
@@ -363,9 +371,10 @@ func TestUpdateKey(t *testing.T) {
 	}
 	defer finalize(t)
 	account1 := &types.Account{
-		Name:  "John Smith",
-		Email: "j@test.com",
-		Type:  "admin",
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
 	}
 	account1, _ = AddAccount(*account1)
 	keys := []types.Key{
