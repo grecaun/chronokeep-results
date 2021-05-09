@@ -8,7 +8,6 @@ import (
 // APIError holds information on an error from the API
 type APIError struct {
 	Message string `json:"message,omitempty"`
-	Details string `json:"message,omitempty"`
 }
 
 func getAPIError(c echo.Context, code int, message string, err error) error {

@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	MaxLoginAttempts = 4
+)
+
 // GetAccount Gets an account based on the email address provided.
 func GetAccount(email string) (*types.Account, error) {
 	db, err := GetDB()
@@ -18,7 +22,7 @@ func GetAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, account_type, account_password FROM account WHERE account_deleted=FALSE AND account_email=?;",
+		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account WHERE account_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -33,6 +37,8 @@ func GetAccount(email string) (*types.Account, error) {
 			&outAccount.Email,
 			&outAccount.Type,
 			&outAccount.Password,
+			&outAccount.Locked,
+			&outAccount.WrongPassAttempts,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
@@ -53,7 +59,7 @@ func GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, account_type, account_password FROM account WHERE account_deleted=FALSE;",
+		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account WHERE account_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -62,7 +68,15 @@ func GetAccounts() ([]types.Account, error) {
 	var outAccounts []types.Account
 	for res.Next() {
 		var account types.Account
-		err := res.Scan(&account.Identifier, &account.Name, &account.Email, &account.Type, &account.Password)
+		err := res.Scan(
+			&account.Identifier,
+			&account.Name,
+			&account.Email,
+			&account.Type,
+			&account.Password,
+			&account.Locked,
+			&account.WrongPassAttempts,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
 		}
@@ -267,10 +281,41 @@ func ChangeEmail(oldEmail, newEmail string) error {
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error checking rows affefcted on email change: %v", err)
+		return fmt.Errorf("error checking rows affected on email change: %v", err)
 	}
 	if rows != 1 {
 		return fmt.Errorf("error changing email, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// InvalidPassword Increments/locks an account due to an invalid password.
+func InvalidPassword(account types.Account) error {
+	db, err := GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	locked := false
+	if account.WrongPassAttempts >= MaxLoginAttempts {
+		locked = true
+	}
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;",
+		locked,
+		account.Email,
+	)
+	if err != nil {
+		return fmt.Errorf("erorr updating invalid password information: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affefcted on invalid password information update: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error updating invalid password information, rows affected: %v", rows)
 	}
 	return nil
 }

@@ -695,3 +695,7 @@ func TestChangePassword(t *testing.T) {
 func TestChangeEmail(t *testing.T) {
 	t.Error("Not yet implemented.")
 }
+
+func TestInvalidPassword(t *testing.T) {
+	t.Error("Not yet implemented.")
+}

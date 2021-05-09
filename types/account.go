@@ -5,11 +5,13 @@ import "golang.org/x/crypto/bcrypt"
 // Account is a structure holding information on accounts that have access
 // to this module
 type Account struct {
-	Identifier int64  `json:"-"`
-	Password   string `json:"-" validate:"required,min=8"`
-	Name       string `json:"name" validate:"required"`
-	Email      string `json:"email" validate:"email,required"`
-	Type       string `json:"type" validate:"required"`
+	Identifier        int64  `json:"-"`
+	Password          string `json:"-" validate:"required,min=8"`
+	Name              string `json:"name" validate:"required"`
+	Email             string `json:"email" validate:"email,required"`
+	Type              string `json:"type" validate:"required"`
+	Locked            bool   `json:"-"`
+	WrongPassAttempts int    `json:"-"`
 }
 
 // Equals is used to check if the fields of an Account other than the identifier are identical.

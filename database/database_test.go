@@ -88,6 +88,8 @@ func setupOld(version int) error {
 				"account_email VARCHAR(100) NOT NULL, " +
 				"account_password VARCHAR(300) NOT NULL, " +
 				"account_type VARCHAR(20) NOT NULL, " +
+				"account_wrong_pass INT NOT NULL DEFAULT 0, " +
+				"account_locked BOOL DEFAULT FALSE, " +
 				"account_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"account_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 				"account_deleted BOOL DEFAULT FALSE, " +
