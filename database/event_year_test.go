@@ -6,26 +6,34 @@ import (
 	"time"
 )
 
+func setupEventYearTests() {
+	if len(accounts) < 1 {
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Rose MacDonald",
+				Email:    "rose2004@test.com",
+				Type:     "paid",
+				Password: testHashPassword("password"),
+			},
+		}
+	}
+}
+
 func TestAddEventYear(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventYearTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -102,20 +110,9 @@ func TestGetEventYear(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventYearTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -210,20 +207,9 @@ func TestGetEventYears(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventYearTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -313,20 +299,9 @@ func TestDeleteEventYear(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventYearTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -399,20 +374,9 @@ func TestUpdateEventYear(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventYearTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",

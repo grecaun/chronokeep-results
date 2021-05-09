@@ -6,26 +6,40 @@ import (
 	"time"
 )
 
+func setupCallRecordTests() {
+	if len(accounts) < 1 {
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Rose MacDonald",
+				Email:    "rose2004@test.com",
+				Type:     "paid",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Tia Johnson",
+				Email:    "tiatheway@test.com",
+				Type:     "free",
+				Password: testHashPassword("password"),
+			},
+		}
+	}
+}
+
 func TestAddCallRecord(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	acc1, _ := AddAccount(account1)
-	acc2, _ := AddAccount(account2)
+	setupCallRecordTests()
+	acc1, _ := AddAccount(accounts[0])
+	acc2, _ := AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -87,7 +101,7 @@ func TestAddCallRecord(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	rec, err := GetCallRecord(account1.Email, records[1].DateTime)
+	rec, err := GetCallRecord(accounts[0].Email, records[1].DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -102,20 +116,9 @@ func TestAddCallRecords(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	acc1, _ := AddAccount(account1)
-	acc2, _ := AddAccount(account2)
+	setupCallRecordTests()
+	acc1, _ := AddAccount(accounts[0])
+	acc2, _ := AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -152,7 +155,7 @@ func TestAddCallRecords(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ := GetAccountCallRecords(account1.Email)
+	recs, _ := GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
@@ -160,11 +163,11 @@ func TestAddCallRecords(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ = GetAccountCallRecords(account1.Email)
+	recs, _ = GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
-	recs, _ = GetAccountCallRecords(account2.Email)
+	recs, _ = GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
@@ -176,20 +179,9 @@ func TestGetCallRecord(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	acc1, _ := AddAccount(account1)
-	acc2, _ := AddAccount(account2)
+	setupCallRecordTests()
+	acc1, _ := AddAccount(accounts[0])
+	acc2, _ := AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -225,7 +217,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 1")
 	oldRec := records[0]
 	AddCallRecord(oldRec)
-	newRec, err := GetCallRecord(account1.Email, oldRec.DateTime)
+	newRec, err := GetCallRecord(accounts[0].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -235,7 +227,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 2")
 	oldRec = records[2]
 	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(account1.Email, oldRec.DateTime)
+	newRec, err = GetCallRecord(accounts[0].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -245,7 +237,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 3")
 	oldRec = records[4]
 	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(account2.Email, oldRec.DateTime)
+	newRec, err = GetCallRecord(accounts[1].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -255,7 +247,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 4")
 	oldRec = records[5]
 	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(account2.Email, oldRec.DateTime)
+	newRec, err = GetCallRecord(accounts[1].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -263,7 +255,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Expected record %+v, found %+v.", oldRec, *newRec)
 	}
 	t.Log("Record 5 (empty)")
-	newRec, err = GetCallRecord(account2.Email, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
+	newRec, err = GetCallRecord(accounts[1].Email, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -278,27 +270,10 @@ func TestGetAccountCallRecords(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account3 := types.Account{
-		Name:     "Tia Johnson",
-		Email:    "tiatheway@test.com",
-		Type:     "free",
-		Password: testHashPassword("password"),
-	}
-	acc1, _ := AddAccount(account1)
-	acc2, _ := AddAccount(account2)
-	AddAccount(account3)
+	setupCallRecordTests()
+	acc1, _ := AddAccount(accounts[0])
+	acc2, _ := AddAccount(accounts[1])
+	AddAccount(accounts[2])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -332,21 +307,21 @@ func TestGetAccountCallRecords(t *testing.T) {
 		},
 	}
 	AddCallRecords(records)
-	recs, err := GetAccountCallRecords(account1.Email)
+	recs, err := GetAccountCallRecords(accounts[0].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = GetAccountCallRecords(account2.Email)
+	recs, err = GetAccountCallRecords(accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = GetAccountCallRecords(account3.Email)
+	recs, err = GetAccountCallRecords(accounts[2].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}

@@ -5,26 +5,40 @@ import (
 	"testing"
 )
 
+func setupEventTests() {
+	if len(accounts) < 1 {
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Rose MacDonald",
+				Email:    "rose2004@test.com",
+				Type:     "paid",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Tia Johnson",
+				Email:    "tiatheway@test.com",
+				Type:     "free",
+				Password: testHashPassword("password"),
+			},
+		}
+	}
+}
+
 func TestAddEvent(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -67,20 +81,9 @@ func TestGetEvent(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -126,20 +129,9 @@ func TestGetEvents(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -194,27 +186,10 @@ func TestGetAccountEvents(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account3 := &types.Account{
-		Name:     "Tia Johnson",
-		Email:    "tiatheway@test.com",
-		Type:     "free",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
-	account3, _ = AddAccount(*account3)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
+	account3, _ := AddAccount(accounts[2])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -295,20 +270,9 @@ func TestDeleteEvent(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -345,20 +309,9 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupEventTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",

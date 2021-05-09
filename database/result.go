@@ -3,23 +3,35 @@ package database
 import (
 	"chronokeep/results/types"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 )
 
-// GetResults Gets results for an event year.
-func GetResults(eventYearID int64) ([]types.Result, error) {
+func getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(
-		ctx,
-		"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
-		eventYearID,
+	var (
+		res *sql.Rows
 	)
+	if bib != nil {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=? AND bib=?;",
+			eventYearID,
+			bib,
+		)
+	} else {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
+			eventYearID,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving results: %v", err)
 	}
@@ -51,6 +63,16 @@ func GetResults(eventYearID int64) ([]types.Result, error) {
 		outResults = append(outResults, result)
 	}
 	return outResults, nil
+}
+
+// GetResults Gets results for an event year.
+func GetResults(eventYearID int64) ([]types.Result, error) {
+	return getResultsInternal(eventYearID, nil)
+}
+
+// GetBibResults Gets results for an event year of a specific individual specified by their bib.
+func GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
+	return getResultsInternal(eventYearID, &bib)
 }
 
 // DeleteResults Deletes results from the database.

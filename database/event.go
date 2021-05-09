@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -45,18 +46,26 @@ func GetEvent(slug string) (*types.Event, error) {
 	return &outEvent, nil
 }
 
-// GetEvents Gets all events.
-func GetEvents() ([]types.Event, error) {
+func getEventsInternal(email *string) ([]types.Event, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(
-		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE;",
-	)
+	var res *sql.Rows
+	if email == nil {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE;",
+		)
+	} else {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=?;",
+			email,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
 	}
@@ -82,42 +91,14 @@ func GetEvents() ([]types.Event, error) {
 	return outEvents, nil
 }
 
+// GetEvents Gets all events.
+func GetEvents() ([]types.Event, error) {
+	return getEventsInternal(nil)
+}
+
 // GetAccountsEvents Gets all events associated with an account.
 func GetAccountEvents(email string) ([]types.Event, error) {
-	db, err := GetDB()
-	if err != nil {
-		return nil, err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	res, err := db.QueryContext(
-		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=?;",
-		email,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving event: %v", err)
-	}
-	defer res.Close()
-	var outEvents []types.Event
-	for res.Next() {
-		var event types.Event
-		err := res.Scan(
-			&event.Identifier,
-			&event.Name,
-			&event.Slug,
-			&event.Website,
-			&event.Image,
-			&event.AccountIdentifier,
-			&event.ContactEmail,
-			&event.AccessRestricted,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting event: %v", err)
-		}
-		outEvents = append(outEvents, event)
-	}
-	return outEvents, nil
+	return getEventsInternal(&email)
 }
 
 // AddEvent Adds an event to the database.

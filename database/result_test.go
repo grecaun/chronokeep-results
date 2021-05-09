@@ -6,19 +6,125 @@ import (
 	"time"
 )
 
+var (
+	results []types.Result
+)
+
+func setupResultTests() {
+	if len(accounts) < 1 {
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+		}
+	}
+	if len(results) < 1 {
+		results = []types.Result{
+			{
+				Bib:           "100",
+				First:         "John",
+				Last:          "Smith",
+				Age:           24,
+				Gender:        "M",
+				AgeGroup:      "20-29",
+				Distance:      "1 Mile",
+				Seconds:       377,
+				Milliseconds:  0,
+				Segment:       "",
+				Location:      "Start/Finish",
+				Occurence:     1,
+				Ranking:       1,
+				AgeRanking:    1,
+				GenderRanking: 1,
+				Finish:        true,
+			},
+			{
+				Bib:           "106",
+				First:         "Rose",
+				Last:          "Johnson",
+				Age:           55,
+				Gender:        "F",
+				AgeGroup:      "50-59",
+				Distance:      "1 Mile",
+				Seconds:       577,
+				Milliseconds:  100,
+				Segment:       "",
+				Location:      "Start/Finish",
+				Occurence:     1,
+				Ranking:       3,
+				AgeRanking:    1,
+				GenderRanking: 1,
+				Finish:        true,
+			},
+			{
+				Bib:           "209",
+				First:         "Tony",
+				Last:          "Starke",
+				Age:           45,
+				Gender:        "M",
+				AgeGroup:      "40-49",
+				Distance:      "1 Mile",
+				Seconds:       405,
+				Milliseconds:  20,
+				Segment:       "",
+				Location:      "Start/Finish",
+				Occurence:     1,
+				Ranking:       2,
+				AgeRanking:    1,
+				GenderRanking: 2,
+				Finish:        true,
+			},
+			{
+				Bib:           "287",
+				First:         "Jamie",
+				Last:          "Fischer",
+				Age:           35,
+				Gender:        "F",
+				AgeGroup:      "30-39",
+				Distance:      "1 Mile",
+				Seconds:       653,
+				Milliseconds:  0,
+				Segment:       "",
+				Location:      "Start/Finish",
+				Occurence:     1,
+				Ranking:       4,
+				AgeRanking:    1,
+				GenderRanking: 2,
+				Finish:        false,
+			},
+			{
+				Bib:           "287",
+				First:         "Jamie",
+				Last:          "Fischer",
+				Age:           35,
+				Gender:        "F",
+				AgeGroup:      "30-39",
+				Distance:      "1 Mile",
+				Seconds:       1003,
+				Milliseconds:  0,
+				Segment:       "",
+				Location:      "Start/Finish",
+				Occurence:     2,
+				Ranking:       4,
+				AgeRanking:    1,
+				GenderRanking: 2,
+				Finish:        true,
+			},
+		}
+	}
+}
+
 func TestAddResults(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account, _ = AddAccount(*account)
+	setupResultTests()
+	account, _ := AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
@@ -31,80 +137,6 @@ func TestAddResults(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
-	results := []types.Result{
-		{
-			Bib:           "100",
-			First:         "John",
-			Last:          "Smith",
-			Age:           24,
-			Gender:        "M",
-			AgeGroup:      "20-29",
-			Distance:      "1 Mile",
-			Seconds:       377,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       1,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "106",
-			First:         "Rose",
-			Last:          "Johnson",
-			Age:           55,
-			Gender:        "F",
-			AgeGroup:      "50-59",
-			Distance:      "1 Mile",
-			Seconds:       577,
-			Milliseconds:  100,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       3,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "209",
-			First:         "Tony",
-			Last:          "Starke",
-			Age:           45,
-			Gender:        "M",
-			AgeGroup:      "40-49",
-			Distance:      "1 Mile",
-			Seconds:       405,
-			Milliseconds:  20,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       2,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-		{
-			Bib:           "287",
-			First:         "Jamie",
-			Last:          "Fischer",
-			Age:           35,
-			Gender:        "F",
-			AgeGroup:      "30-39",
-			Distance:      "1 Mile",
-			Seconds:       653,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       4,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-	}
 	res, err := AddResults(eventYear.Identifier, results)
 	if err != nil {
 		t.Fatalf("Error adding results: %v", err)
@@ -170,13 +202,8 @@ func TestGetResults(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account, _ = AddAccount(*account)
+	setupResultTests()
+	account, _ := AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
@@ -189,80 +216,6 @@ func TestGetResults(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
-	results := []types.Result{
-		{
-			Bib:           "100",
-			First:         "John",
-			Last:          "Smith",
-			Age:           24,
-			Gender:        "M",
-			AgeGroup:      "20-29",
-			Distance:      "1 Mile",
-			Seconds:       377,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       1,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "106",
-			First:         "Rose",
-			Last:          "Johnson",
-			Age:           55,
-			Gender:        "F",
-			AgeGroup:      "50-59",
-			Distance:      "1 Mile",
-			Seconds:       577,
-			Milliseconds:  100,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       3,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "209",
-			First:         "Tony",
-			Last:          "Starke",
-			Age:           45,
-			Gender:        "M",
-			AgeGroup:      "40-49",
-			Distance:      "1 Mile",
-			Seconds:       405,
-			Milliseconds:  20,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       2,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-		{
-			Bib:           "287",
-			First:         "Jamie",
-			Last:          "Fischer",
-			Age:           35,
-			Gender:        "F",
-			AgeGroup:      "30-39",
-			Distance:      "1 Mile",
-			Seconds:       653,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       4,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-	}
 	res, err := GetResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error getting results: %v", err)
@@ -307,13 +260,8 @@ func TestDeleteResults(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account, _ = AddAccount(*account)
+	setupResultTests()
+	account, _ := AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
@@ -326,80 +274,6 @@ func TestDeleteResults(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
-	results := []types.Result{
-		{
-			Bib:           "100",
-			First:         "John",
-			Last:          "Smith",
-			Age:           24,
-			Gender:        "M",
-			AgeGroup:      "20-29",
-			Distance:      "1 Mile",
-			Seconds:       377,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       1,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "106",
-			First:         "Rose",
-			Last:          "Johnson",
-			Age:           55,
-			Gender:        "F",
-			AgeGroup:      "50-59",
-			Distance:      "1 Mile",
-			Seconds:       577,
-			Milliseconds:  100,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       3,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "209",
-			First:         "Tony",
-			Last:          "Starke",
-			Age:           45,
-			Gender:        "M",
-			AgeGroup:      "40-49",
-			Distance:      "1 Mile",
-			Seconds:       405,
-			Milliseconds:  20,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       2,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-		{
-			Bib:           "287",
-			First:         "Jamie",
-			Last:          "Fischer",
-			Age:           35,
-			Gender:        "F",
-			AgeGroup:      "30-39",
-			Distance:      "1 Mile",
-			Seconds:       653,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       4,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-	}
 	AddResults(eventYear.Identifier, results)
 	err = DeleteResults(eventYear.Identifier, results[1:2])
 	if err != nil {
@@ -426,13 +300,8 @@ func TestDeleteEventResults(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account, _ = AddAccount(*account)
+	setupResultTests()
+	account, _ := AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
@@ -445,80 +314,6 @@ func TestDeleteEventResults(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = AddEventYear(*eventYear)
-	results := []types.Result{
-		{
-			Bib:           "100",
-			First:         "John",
-			Last:          "Smith",
-			Age:           24,
-			Gender:        "M",
-			AgeGroup:      "20-29",
-			Distance:      "1 Mile",
-			Seconds:       377,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       1,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "106",
-			First:         "Rose",
-			Last:          "Johnson",
-			Age:           55,
-			Gender:        "F",
-			AgeGroup:      "50-59",
-			Distance:      "1 Mile",
-			Seconds:       577,
-			Milliseconds:  100,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       3,
-			AgeRanking:    1,
-			GenderRanking: 1,
-			Finish:        true,
-		},
-		{
-			Bib:           "209",
-			First:         "Tony",
-			Last:          "Starke",
-			Age:           45,
-			Gender:        "M",
-			AgeGroup:      "40-49",
-			Distance:      "1 Mile",
-			Seconds:       405,
-			Milliseconds:  20,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       2,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-		{
-			Bib:           "287",
-			First:         "Jamie",
-			Last:          "Fischer",
-			Age:           35,
-			Gender:        "F",
-			AgeGroup:      "30-39",
-			Distance:      "1 Mile",
-			Seconds:       653,
-			Milliseconds:  0,
-			Segment:       "",
-			Location:      "Start/Finish",
-			Occurence:     1,
-			Ranking:       4,
-			AgeRanking:    1,
-			GenderRanking: 2,
-			Finish:        true,
-		},
-	}
 	AddResults(eventYear.Identifier, results)
 	count, err := DeleteEventResults(eventYear.Identifier)
 	if err != nil {
@@ -530,5 +325,61 @@ func TestDeleteEventResults(t *testing.T) {
 	res, _ := GetResults(eventYear.Identifier)
 	if len(res) != 0 {
 		t.Errorf("Expected %v results after delete but found %v.", 0, len(res))
+	}
+}
+
+func TestGetBibResults(t *testing.T) {
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupResultTests()
+	account, _ := AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = AddEventYear(*eventYear)
+	lastIX := len(results) - 1
+	res, err := GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	if err != nil {
+		t.Fatalf("Error getting bib results: %v", err)
+	}
+	if len(res) != 0 {
+		t.Errorf("Expected %v results to be added, %v added.", 0, len(res))
+	}
+	AddResults(eventYear.Identifier, results[0:lastIX])
+	res, err = GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	if err != nil {
+		t.Fatalf("Error getting bib results: %v", err)
+	}
+	if len(res) != 1 {
+		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
+	}
+	AddResults(eventYear.Identifier, results)
+	res, err = GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	if err != nil {
+		t.Fatalf("Error getting bib results: %v", err)
+	}
+	if len(res) != 2 {
+		t.Errorf("Expected %v results to be added, %v added.", 2, len(res))
+	}
+	// Verify that we've got correct information for our results.
+	found := false
+	for _, result := range res {
+		if result == results[lastIX] {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Unable to find our first result in the database. %+v", res)
 	}
 }

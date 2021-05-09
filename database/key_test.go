@@ -6,26 +6,34 @@ import (
 	"time"
 )
 
+func setupKeyTests() {
+	if len(accounts) < 1 {
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Rose MacDonald",
+				Email:    "rose2004@test.com",
+				Type:     "paid",
+				Password: testHashPassword("password"),
+			},
+		}
+	}
+}
+
 func TestAddKey(t *testing.T) {
 	finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupKeyTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
@@ -96,20 +104,9 @@ func TestGetAccountKeys(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupKeyTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
@@ -187,20 +184,9 @@ func TestGetKey(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupKeyTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
@@ -278,20 +264,9 @@ func TestDeleteKey(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account2 := &types.Account{
-		Name:     "Rose MacDonald",
-		Email:    "rose2004@test.com",
-		Type:     "paid",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
-	account2, _ = AddAccount(*account2)
+	setupKeyTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
@@ -370,13 +345,8 @@ func TestUpdateKey(t *testing.T) {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
-	account1 := &types.Account{
-		Name:     "John Smith",
-		Email:    "j@test.com",
-		Type:     "admin",
-		Password: testHashPassword("password"),
-	}
-	account1, _ = AddAccount(*account1)
+	setupKeyTests()
+	account1, _ := AddAccount(accounts[0])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
