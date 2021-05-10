@@ -494,88 +494,19 @@ func TestInvalidPassword(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := AddAccount(accounts[0])
-	// 1
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 1, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != false {
-		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 1, 5)
-	}
-	if nAccount.WrongPassAttempts != 1 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 1)
-	}
-	// 2
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 2, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != false {
-		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 2, 5)
-	}
-	if nAccount.WrongPassAttempts != 2 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 2)
-	}
-	// 3
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 3, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != false {
-		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 3, 5)
-	}
-	if nAccount.WrongPassAttempts != 3 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 3)
-	}
-	// 4
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 4, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != false {
-		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 4, 5)
-	}
-	if nAccount.WrongPassAttempts != 4 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 4)
-	}
-	// 5
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 5, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != true {
-		t.Errorf("account is not locked after (%v) invalid password attempts", 5)
-	}
-	if nAccount.WrongPassAttempts != 5 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 5)
-	}
-	// 6
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 6, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != true {
-		t.Errorf("account is not locked after (%v) invalid password attempts", 6)
-	}
-	if nAccount.WrongPassAttempts != 6 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 6)
-	}
-	// 7
-	err = InvalidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("(%v) error telling the database about an invalid password: %v", 7, err)
-	}
-	nAccount, _ = GetAccount(nAccount.Email)
-	if nAccount.Locked != true {
-		t.Errorf("account is not locked after (%v) invalid password attempts", 7)
-	}
-	if nAccount.WrongPassAttempts != 7 {
-		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 7)
+	for i := 1; i <= MaxLoginAttempts+3; i++ {
+		err = InvalidPassword(*nAccount)
+		if err != nil {
+			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
+		}
+		nAccount, _ = GetAccount(nAccount.Email)
+		if nAccount.WrongPassAttempts > MaxLoginAttempts && nAccount.Locked == false {
+			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, MaxLoginAttempts+1)
+		} else if nAccount.WrongPassAttempts <= MaxLoginAttempts && nAccount.Locked == true {
+			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, MaxLoginAttempts+1)
+		}
+		if nAccount.WrongPassAttempts != i {
+			t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, i)
+		}
 	}
 }

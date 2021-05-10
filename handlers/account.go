@@ -6,6 +6,7 @@ import (
 	"chronokeep/results/types"
 	"chronokeep/results/util"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -201,8 +202,15 @@ func (h Handler) Login(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", errors.New("user not found"))
 	}
+	// Check if account locked. Do this before verifying password.
+	// If done after a bad actor could potentially figure out if they had a correct password by trying
+	// even after it was locked until they received the locked message.
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", fmt.Errorf("account locked: %+v", account))
+	}
 	err = auth.VerifyPassword(account.Password, request.Password)
 	if err != nil {
+		database.InvalidPassword(*account)
 		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
 	}
 	config, err := util.GetConfig()
