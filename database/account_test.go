@@ -1,12 +1,15 @@
 package database
 
 import (
+	"chronokeep/results/auth"
 	"chronokeep/results/types"
 	"testing"
 )
 
 var (
-	accounts []types.Account
+	accounts      []types.Account
+	testPassword1 string = "password"
+	testPassword2 string = "newpassword"
 )
 
 func setupAccountTests() {
@@ -16,43 +19,43 @@ func setupAccountTests() {
 				Name:     "John Smith",
 				Email:    "j@test.com",
 				Type:     "admin",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Jerry Garcia",
 				Email:    "jgarcia@test.com",
 				Type:     "free",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Rose MacDonald",
 				Email:    "rose2004@test.com",
 				Type:     "paid",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Tia Johnson",
 				Email:    "tiatheway@test.com",
 				Type:     "free",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Thomas Donaldson",
 				Email:    "tdon@test.com",
 				Type:     "admin",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Ester White",
 				Email:    "white@test.com",
 				Type:     "test",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 			{
 				Name:     "Ricky Reagan",
 				Email:    "rreagan@test.com",
 				Type:     "free",
-				Password: testHashPassword("password"),
+				Password: testHashPassword(testPassword1),
 			},
 		}
 	}
@@ -441,13 +444,138 @@ func TestGetDeletedAccount(t *testing.T) {
 }
 
 func TestChangePassword(t *testing.T) {
-	t.Error("Not yet implemented.")
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	nAccount, _ := AddAccount(accounts[0])
+	hashPass, _ := auth.HashPassword(testPassword2)
+	err = ChangePassword(nAccount.Email, hashPass)
+	if err != nil {
+		t.Fatalf("error changing password: %v", err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	err = auth.VerifyPassword(nAccount.Password, testPassword2)
+	if err != nil {
+		t.Errorf("password doesn't match: %v", err)
+	}
 }
 
 func TestChangeEmail(t *testing.T) {
-	t.Error("Not yet implemented.")
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	nAccount, _ := AddAccount(accounts[0])
+	newEmail := "new_email2020@test.com"
+	err = ChangeEmail(nAccount.Email, newEmail)
+	if err != nil {
+		t.Fatalf("error changing email: %v", err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount != nil {
+		t.Errorf("account retrieved when the email should have changed: %v", nAccount)
+	}
+	nAccount, _ = GetAccount(newEmail)
+	if nAccount == nil {
+		t.Error("account with new email not found")
+	}
 }
 
 func TestInvalidPassword(t *testing.T) {
-	t.Error("Not yet implemented.")
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	nAccount, _ := AddAccount(accounts[0])
+	// 1
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 1, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != false {
+		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 1, 5)
+	}
+	if nAccount.WrongPassAttempts != 1 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 1)
+	}
+	// 2
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 2, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != false {
+		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 2, 5)
+	}
+	if nAccount.WrongPassAttempts != 2 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 2)
+	}
+	// 3
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 3, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != false {
+		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 3, 5)
+	}
+	if nAccount.WrongPassAttempts != 3 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 3)
+	}
+	// 4
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 4, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != false {
+		t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", 4, 5)
+	}
+	if nAccount.WrongPassAttempts != 4 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 4)
+	}
+	// 5
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 5, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != true {
+		t.Errorf("account is not locked after (%v) invalid password attempts", 5)
+	}
+	if nAccount.WrongPassAttempts != 5 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 5)
+	}
+	// 6
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 6, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != true {
+		t.Errorf("account is not locked after (%v) invalid password attempts", 6)
+	}
+	if nAccount.WrongPassAttempts != 6 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 6)
+	}
+	// 7
+	err = InvalidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("(%v) error telling the database about an invalid password: %v", 7, err)
+	}
+	nAccount, _ = GetAccount(nAccount.Email)
+	if nAccount.Locked != true {
+		t.Errorf("account is not locked after (%v) invalid password attempts", 7)
+	}
+	if nAccount.WrongPassAttempts != 7 {
+		t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, 7)
+	}
 }

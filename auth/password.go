@@ -16,6 +16,6 @@ func HashPassword(password string) (string, error) {
 }
 
 // VerifyPassword checks the input password while verifying it with the database password.
-func VerifyPassword(userPassword, providedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
+func VerifyPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
