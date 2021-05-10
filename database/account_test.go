@@ -4,6 +4,7 @@ import (
 	"chronokeep/results/auth"
 	"chronokeep/results/types"
 	"testing"
+	"time"
 )
 
 var (
@@ -132,10 +133,10 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
-		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 	oAccount = accounts[1]
 	nAccount, err = AddAccount(oAccount)
@@ -148,10 +149,10 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
-		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 	oAccount = accounts[2]
 	nAccount, err = AddAccount(oAccount)
@@ -164,10 +165,10 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
-		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 	oAccount = accounts[3]
 	nAccount, err = AddAccount(oAccount)
@@ -180,10 +181,10 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error getting account: %v", err)
 	}
 	if !dAccount.Equals(nAccount) {
-		t.Errorf("Account expected to be equal. %+v was expected, found %+v", oAccount, *nAccount)
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
 	}
 	if dAccount.Identifier != nAccount.Identifier {
-		t.Errorf("Account id expected to be %v but found %v.", dAccount.Identifier, nAccount.Identifier)
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 	// Test getting unknown accounts.
 	dAccount, err = GetAccount("random@test.com")
@@ -508,5 +509,89 @@ func TestInvalidPassword(t *testing.T) {
 		if nAccount.WrongPassAttempts != i {
 			t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, i)
 		}
+	}
+}
+
+func TestGetAccountByKey(t *testing.T) {
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	// Test getting known accounts.
+	nAccount1, _ := AddAccount(accounts[0])
+	nAccount2, _ := AddAccount(accounts[1])
+	keys := []types.Key{
+		{
+			AccountIdentifier: nAccount1.Identifier,
+			Value:             "030001-1ACSDD-K2389A-00123B",
+			Type:              "default",
+			AllowedHosts:      "",
+			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		},
+		{
+			AccountIdentifier: nAccount2.Identifier,
+			Value:             "030001-1ACSDD-K2389A-22123B",
+			Type:              "write",
+			AllowedHosts:      "",
+			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		},
+	}
+	AddKey(keys[0])
+	AddKey(keys[1])
+	dAccount, err := GetAccountByKey(keys[0].Value)
+	if err != nil {
+		t.Fatalf("Error getting account: %v", err)
+	}
+	if !dAccount.Equals(nAccount1) {
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount1, *dAccount)
+	}
+	if dAccount.Identifier != nAccount1.Identifier {
+		t.Errorf("Account id expected to be %v but found %v.", nAccount1.Identifier, dAccount.Identifier)
+	}
+	dAccount, err = GetAccountByKey(keys[1].Value)
+	if err != nil {
+		t.Fatalf("Error getting account: %v", err)
+	}
+	if !dAccount.Equals(nAccount2) {
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount2, *dAccount)
+	}
+	if dAccount.Identifier != nAccount2.Identifier {
+		t.Errorf("Account id expected to be %v but found %v.", nAccount2.Identifier, dAccount.Identifier)
+	}
+}
+
+func TestGetAccountByID(t *testing.T) {
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	// Test getting known accounts.
+	oAccount := accounts[0]
+	nAccount, _ := AddAccount(oAccount)
+	dAccount, err := GetAccountByID(nAccount.Identifier)
+	if err != nil {
+		t.Fatalf("Error getting account: %v", err)
+	}
+	if !dAccount.Equals(nAccount) {
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
+	}
+	if dAccount.Identifier != nAccount.Identifier {
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
+	}
+	oAccount = accounts[1]
+	nAccount, _ = AddAccount(oAccount)
+	dAccount, err = GetAccountByID(nAccount.Identifier)
+	if err != nil {
+		t.Fatalf("Error getting account: %v", err)
+	}
+	if !dAccount.Equals(nAccount) {
+		t.Errorf("Account expected to be equal. %+v was expected, found %+v", *nAccount, *dAccount)
+	}
+	if dAccount.Identifier != nAccount.Identifier {
+		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 }

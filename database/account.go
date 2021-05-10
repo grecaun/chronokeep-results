@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -12,19 +13,35 @@ const (
 	MaxLoginAttempts = 4
 )
 
-// GetAccount Gets an account based on the email address provided.
-func GetAccount(email string) (*types.Account, error) {
+func getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
 	db, err := GetDB()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(
-		ctx,
-		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account WHERE account_deleted=FALSE AND account_email=?;",
-		email,
-	)
+	var res *sql.Rows
+	if email != nil {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account WHERE account_deleted=FALSE AND account_email=?;",
+			email,
+		)
+	} else if key != nil {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_value=?;",
+			key,
+		)
+	} else if id != nil {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass FROM account WHERE account_deleted=FALSE AND account_id=?;",
+			id,
+		)
+	} else {
+		return nil, errors.New("no valid identifying value provided to internal method")
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving account: %v", err)
 	}
@@ -47,6 +64,21 @@ func GetAccount(email string) (*types.Account, error) {
 		return nil, nil
 	}
 	return &outAccount, nil
+}
+
+// GetAccount Gets an account based on the email address provided.
+func GetAccount(email string) (*types.Account, error) {
+	return getAccountInternal(&email, nil, nil)
+}
+
+// GetAccountByKey Gets an account based upon an API key provided.
+func GetAccountByKey(key string) (*types.Account, error) {
+	return getAccountInternal(nil, &key, nil)
+}
+
+// GetAccoutByID Gets an account based upon the Account ID.
+func GetAccountByID(id int64) (*types.Account, error) {
+	return getAccountInternal(nil, nil, &id)
 }
 
 // GetAccounts Get all accounts that have not been deleted.
