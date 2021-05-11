@@ -6,16 +6,12 @@ package types
 
 // ModifyKeyResponse Struct used to respond to a Add/Update Key Request.
 type ModifyKeyResponse struct {
-	Code     int    `json:"code"`
-	Response string `json:"response"`
-	Key      Key    `json:"key"`
+	Key Key `json:"key"`
 }
 
 // GetKeysResponse Struct used to respond to the requets for account keys.
 type GetKeysResponse struct {
-	Code     int    `json:"code"`
-	Response string `json:"response"`
-	Keys     []Key  `json:"keys"`
+	Keys []Key `json:"keys"`
 }
 
 /*
