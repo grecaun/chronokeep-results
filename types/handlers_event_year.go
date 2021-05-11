@@ -4,18 +4,8 @@ package types
 	Responses
 */
 
-// GetEventYearResponse Struct used for the response of a Get EventYear request.
-type GetEventYearResponse struct {
-	Code      int       `json:"code"`
-	Response  string    `json:"response"`
-	Event     Event     `json:"event"`
-	EventYear EventYear `json:"eventYear"`
-}
-
-// ModifyEventYearResponse Struct used for the response of an Add/Update EventYear Request.
-type ModifyEventYearResponse struct {
-	Code      int       `json:"code"`
-	Response  string    `json:"response"`
+// EventYearResponse Struct used for the response of a Get/Add/Update EventYear request.
+type EventYearResponse struct {
 	Event     Event     `json:"event"`
 	EventYear EventYear `json:"eventYear"`
 }
@@ -31,16 +21,10 @@ type GetEventYearRequest struct {
 	Year string `json:"year"`
 }
 
-// AddEventYearRequest Struct used to add an Event Year.
-type AddEventYearRequest struct {
+// ModifyEventYearRequest Struct used to add an Event Year.
+type ModifyEventYearRequest struct {
 	Key       string    `json:"key"`
 	Slug      string    `json:"slug"`
-	EventYear EventYear `json:"eventYear"`
-}
-
-// UpdateEventYearRequest Struct used to update an Event Year.
-type UpdateEventYearRequest struct {
-	Key       string    `json:"key"`
 	EventYear EventYear `json:"eventYear"`
 }
 
