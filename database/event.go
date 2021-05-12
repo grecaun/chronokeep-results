@@ -25,8 +25,8 @@ func GetEvent(slug string) (*types.Event, error) {
 		return nil, fmt.Errorf("error retrieving event: %v", err)
 	}
 	defer res.Close()
-	var outEvent types.Event
 	if res.Next() {
+		var outEvent types.Event
 		err := res.Scan(
 			&outEvent.Identifier,
 			&outEvent.Name,
@@ -40,10 +40,9 @@ func GetEvent(slug string) (*types.Event, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
 		}
-	} else {
-		return nil, nil
+		return &outEvent, nil
 	}
-	return &outEvent, nil
+	return nil, nil
 }
 
 func getEventsInternal(email *string) ([]types.Event, error) {
