@@ -295,7 +295,7 @@ func TestDeleteEvent(t *testing.T) {
 		Name:              "Event 2",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
-		AccessRestricted:  true,
+		AccessRestricted:  false,
 	}
 	event1, _ = AddEvent(*event1)
 	eventYear1 := &types.EventYear{

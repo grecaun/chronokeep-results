@@ -125,28 +125,132 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	AddEventYear(eventYear2)
 	mult, err := GetAccountEventAndYear(event1.Slug, eventYear1.Year)
 	if err != nil {
-		t.Fatalf("Error getting account and event: %v", err)
+		t.Fatalf("Error getting account, event, and year: %v", err)
 	}
-	if mult == nil {
-		t.Fatal("Mult was nil")
-	}
-	if mult.Account == nil || mult.Event == nil || mult.EventYear == nil {
-		t.Fatal("Account or Event or EventYear was nil.")
+	if mult == nil || mult.Account == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Account, Event, or EventYear was nil.")
 	}
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
 		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
 	mult, err = GetAccountEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
-		t.Fatalf("Error getting account and event: %v", err)
+		t.Fatalf("Error getting account, event, and year: %v", err)
 	}
-	if mult == nil {
-		t.Fatal("Mult was nil")
-	}
-	if mult.Account == nil || mult.Event == nil || mult.EventYear == nil {
-		t.Fatal("Account or Event or EventYear was nil.")
+	if mult == nil || mult.Account == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Account, Event, or EventYear was nil.")
 	}
 	if !mult.Account.Equals(&accounts[1]) || !mult.Event.Equals(event2) || !mult.EventYear.Equals(&eventYear2) {
 		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[1], *mult.Account, *event2, *mult.Event, eventYear2, *mult.EventYear)
+	}
+}
+
+func TestGetEventAndYear(t *testing.T) {
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up test. %v", err)
+	}
+	defer finalize(t)
+	setupMultiTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
+	event1 := &types.Event{
+		AccountIdentifier: account1.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+		ContactEmail:      "event1@test.com",
+		AccessRestricted:  false,
+	}
+	event2 := &types.Event{
+		AccountIdentifier: account2.Identifier,
+		Name:              "Event 2",
+		Slug:              "event2",
+		ContactEmail:      "event2@test.com",
+		AccessRestricted:  true,
+	}
+	event1, _ = AddEvent(*event1)
+	event2, _ = AddEvent(*event2)
+	eventYear1 := types.EventYear{
+		EventIdentifier: event1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2 := types.EventYear{
+		EventIdentifier: event2.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	AddEventYear(eventYear1)
+	AddEventYear(eventYear2)
+	mult, err := GetAccountEventAndYear(event1.Slug, eventYear1.Year)
+	if err != nil {
+		t.Fatalf("Error getting event and year: %v", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Event or EventYear was nil.")
+	}
+	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
+		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
+	}
+	mult, err = GetAccountEventAndYear(event2.Slug, eventYear2.Year)
+	if err != nil {
+		t.Fatalf("Error getting event and year: %v", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Event or EventYear was nil.")
+	}
+	if !mult.Event.Equals(event2) || !mult.EventYear.Equals(&eventYear2) {
+		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event2, *mult.Event, eventYear2, *mult.EventYear)
+	}
+}
+
+func TestGetKeyAndAccount(t *testing.T) {
+	finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up test. %v", err)
+	}
+	defer finalize(t)
+	setupMultiTests()
+	account1, _ := AddAccount(accounts[0])
+	account2, _ := AddAccount(accounts[1])
+	keys := []types.Key{
+		{
+			AccountIdentifier: account1.Identifier,
+			Value:             "030001-1ACSDD-K2389A-00123B",
+			Type:              "default",
+			AllowedHosts:      "",
+			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		},
+		{
+			AccountIdentifier: account2.Identifier,
+			Value:             "030001-1ACSDD-KH789A-00123B",
+			Type:              "delete",
+			AllowedHosts:      "https://test.com/",
+			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+		},
+	}
+	AddKey(keys[0])
+	AddKey(keys[1])
+	mult, err := GetKeyAndAccount(keys[0].Value)
+	if err != nil {
+		t.Fatalf("Error getting key and account: %v", err)
+	}
+	if mult == nil || mult.Key == nil || mult.Account == nil {
+		t.Fatal("Key or Account was nil.")
+	}
+	if !mult.Account.Equals(account1) || !mult.Key.Equal(&keys[0]) {
+		t.Errorf("Account expected: %+v; Found %+v;\nKey expected: %+v; Found %+v;", *account1, *mult.Account, keys[0], *mult.Key)
+	}
+	mult, err = GetKeyAndAccount(keys[1].Value)
+	if err != nil {
+		t.Fatalf("Error getting key and account: %v", err)
+	}
+	if mult == nil || mult.Key == nil || mult.Account == nil {
+		t.Fatal("Key or Account was nil.")
+	}
+	if !mult.Account.Equals(account2) || !mult.Key.Equal(&keys[1]) {
+		t.Errorf("Account expected: %+v; Found %+v;\nKey expected: %+v; Found %+v;", *account2, *mult.Account, keys[1], *mult.Key)
 	}
 }

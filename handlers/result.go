@@ -14,43 +14,31 @@ func (h Handler) GetResults(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	// Get Account
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	event, err := database.GetEvent(request.Slug)
+	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if event == nil {
-		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Not Found", nil)
 	}
-	if account.Type != "admin" && event.AccessRestricted && account.Identifier != event.AccountIdentifier {
+	if mkey.Account.Type != "admin" && mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	eventYear, err := database.GetEventYear(request.Slug, request.Year)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
-	}
-	if eventYear == nil {
-		return getAPIError(c, http.StatusNotFound, "Year Not Found", nil)
-	}
-	results, err := database.GetResults(eventYear.Identifier)
+	results, err := database.GetResults(mult.EventYear.Identifier)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
-		Event:     *event,
-		EventYear: *eventYear,
+		Event:     *mult.Event,
+		EventYear: *mult.EventYear,
 		Results:   results,
 		Count:     len(results),
 	})
@@ -62,38 +50,26 @@ func (h Handler) AddResults(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	// Get Account
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	event, err := database.GetEvent(request.Slug)
+	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if event == nil {
-		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Not Found", nil)
 	}
 	// Check if the account is an admin or if they own this event.
-	if account.Type != "admin" && event.AccountIdentifier != account.Identifier {
+	if mkey.Account.Type != "admin" && mult.Event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	eventYear, err := database.GetEventYear(request.Slug, request.Year)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
-	}
-	if eventYear == nil {
-		return getAPIError(c, http.StatusNotFound, "Year Not Found", nil)
-	}
-	results, err := database.AddResults(eventYear.Identifier, request.Results)
+	results, err := database.AddResults(mult.EventYear.Identifier, request.Results)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
@@ -108,38 +84,26 @@ func (h Handler) DeleteResults(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	// Get Account
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	event, err := database.GetEvent(request.Slug)
+	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if event == nil {
-		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Not Found", nil)
 	}
 	// Check if the account is an admin or if they own this event.
-	if account.Type != "admin" && event.AccountIdentifier != account.Identifier {
+	if mkey.Account.Type != "admin" && mult.Event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	eventYear, err := database.GetEventYear(request.Slug, request.Year)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
-	}
-	if eventYear == nil {
-		return getAPIError(c, http.StatusNotFound, "Year Not Found", nil)
-	}
-	count, err := database.DeleteEventResults(eventYear.Identifier)
+	count, err := database.DeleteEventResults(mult.EventYear.Identifier)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}

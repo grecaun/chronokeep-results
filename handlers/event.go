@@ -19,11 +19,11 @@ func (h Handler) GetEvents(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	events, err := database.GetEvents()
@@ -44,16 +44,12 @@ func (h Handler) GetEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	event, err := database.GetEvent(request.EventSlug)
 	if err != nil {
@@ -62,7 +58,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if account.Type != "admin" && event.AccessRestricted && account.Identifier != event.AccountIdentifier {
+	if mkey.Account.Type != "admin" && event.AccessRestricted && mkey.Account.Identifier != event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	eventYears, err := database.GetEventYears(event.Slug)
@@ -84,26 +80,22 @@ func (h Handler) AddEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
-	if key.Type == "read" {
+	if mkey.Key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
-	}
-	if account.Type != "admin" && request.AccountEmail != account.Email {
+	if mkey.Account.Type != "admin" && request.AccountEmail != mkey.Account.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	event, err := database.AddEvent(types.Event{
-		AccountIdentifier: account.Identifier,
+		AccountIdentifier: mkey.Account.Identifier,
 		Name:              request.Event.Name,
 		Slug:              request.Event.Slug,
 		Website:           request.Event.Website,
@@ -128,20 +120,16 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
-	if key.Type == "read" {
+	if mkey.Key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	event, err := database.GetEvent(request.Event.Slug)
 	if err != nil {
@@ -150,7 +138,7 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if account.Type != "admin" && event.AccountIdentifier != account.Identifier {
+	if mkey.Account.Type != "admin" && event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	err = database.UpdateEvent(request.Event)
@@ -175,20 +163,16 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	key, err := database.GetKey(request.Key)
+	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if key == nil {
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	// Verify access level. Delete is the only level that can delete values.
-	if key.Type != "delete" {
+	if mkey.Key.Type != "delete" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	account, err := database.GetAccountByID(key.AccountIdentifier)
-	if err != nil || account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
@@ -197,7 +181,7 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if account.Type != "admin" && event.AccountIdentifier != account.Identifier {
+	if mkey.Account.Type != "admin" && event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	err = database.DeleteEvent(*event)
