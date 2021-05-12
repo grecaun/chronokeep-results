@@ -3,6 +3,7 @@ package database
 import (
 	"chronokeep/results/types"
 	"testing"
+	"time"
 )
 
 func setupEventTests() {
@@ -173,11 +174,20 @@ func TestGetEvents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
-	if len(events) != 2 {
-		t.Errorf("Expected %v events but found %v.", 2, len(events))
+	// GetEvents does not get restricted events.  The second event added is restricted.
+	if len(events) != 1 {
+		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
 	AddEvent(event3)
 	AddEvent(event4)
+	events, err = GetEvents()
+	if err != nil {
+		t.Fatalf("Error attempting to get events: %v", err)
+	}
+	// GetEvents does not get restricted events.  The second event added is restricted.
+	if len(events) != 3 {
+		t.Errorf("Expected %v events but found %v.", 3, len(events))
+	}
 }
 
 func TestGetAccountEvents(t *testing.T) {
@@ -288,6 +298,20 @@ func TestDeleteEvent(t *testing.T) {
 		AccessRestricted:  true,
 	}
 	event1, _ = AddEvent(*event1)
+	eventYear1 := &types.EventYear{
+		EventIdentifier: event1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2 := &types.EventYear{
+		EventIdentifier: event1.Identifier,
+		Year:            "2020",
+		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	AddEventYear(*eventYear1)
+	AddEventYear(*eventYear2)
 	AddEvent(*event2)
 	err = DeleteEvent(*event1)
 	if err != nil {
@@ -300,6 +324,10 @@ func TestDeleteEvent(t *testing.T) {
 	events, _ := GetEvents()
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
+	}
+	eventYears, _ := GetEventYears(event1.Slug)
+	if len(eventYears) != 0 {
+		t.Errorf("Expected to find %v event years after deletion of event but found %v.", 0, len(eventYears))
 	}
 }
 

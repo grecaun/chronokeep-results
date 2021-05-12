@@ -122,7 +122,14 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 	if claims["type"].(string) != "admin" && claims["email"].(string) != request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	err := database.DeleteAccount(request.Email)
+	account, err := database.GetAccount(request.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	}
+	err = database.DeleteAccount(account.Identifier)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}

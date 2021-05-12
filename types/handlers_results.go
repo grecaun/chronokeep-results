@@ -6,17 +6,15 @@ package types
 
 // GetResultsResponse Struct used for the response of a GetResults request.
 type GetResultsResponse struct {
-	Code     int      `json:"code"`
-	Response string   `json:"response"`
-	Count    int      `json:"count"`
-	Results  []Result `json:"results"`
+	Count     int       `json:"count"`
+	Event     Event     `json:"event"`
+	EventYear EventYear `json:"eventYear"`
+	Results   []Result  `json:"results"`
 }
 
 // AddResultsResponse Struct used for the response to an Add/Update/Delete Results request.
 type AddResultsResponse struct {
-	Code     int    `json:"code"`
-	Response string `json:"response"`
-	Count    int    `json:"count"`
+	Count int `json:"count"`
 }
 
 /*
@@ -40,6 +38,7 @@ type AddResultsRequest struct {
 
 // DeleteResultsRequest Struct used to delete results for an EventYear.
 type DeleteResultsRequest struct {
-	Key                 string `json:"key"`
-	EventYearIdentifier string `json:"eventYearID"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
+	Year string `json:"year"`
 }

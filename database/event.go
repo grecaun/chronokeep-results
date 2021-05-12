@@ -57,7 +57,7 @@ func getEventsInternal(email *string) ([]types.Event, error) {
 	if email == nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 		)
 	} else {
 		res, err = db.QueryContext(
@@ -150,7 +150,7 @@ func DeleteEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET event_deleted=TRUE WHERE event_id=?",
+		"UPDATE event SET event_deleted=TRUE WHERE event_id=?;",
 		event.Identifier,
 	)
 	if err != nil {
@@ -162,6 +162,14 @@ func DeleteEvent(event types.Event) error {
 	}
 	if rows != 1 {
 		return fmt.Errorf("error deleting event, rows affected: %v", rows)
+	}
+	_, err = db.ExecContext(
+		ctx,
+		"UPDATE event_year SET year_deleted=TRUE where event_id=?;",
+		event.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting event: %v", err)
 	}
 	return nil
 }

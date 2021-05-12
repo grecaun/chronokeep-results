@@ -320,7 +320,25 @@ func TestDeleteAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := AddAccount(accounts[0])
-	err = DeleteAccount(nAccount.Email)
+	keys := []types.Key{
+		{
+			AccountIdentifier: nAccount.Identifier,
+			Value:             "030001-1ACSDD-K2389A-00123B",
+			Type:              "default",
+			AllowedHosts:      "",
+			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		},
+		{
+			AccountIdentifier: nAccount.Identifier,
+			Value:             "030001-1ACSDD-K2389A-22123B",
+			Type:              "write",
+			AllowedHosts:      "",
+			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		},
+	}
+	AddKey(keys[0])
+	AddKey(keys[1])
+	err = DeleteAccount(nAccount.Identifier)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -328,12 +346,16 @@ func TestDeleteAccount(t *testing.T) {
 	if dAccount != nil {
 		t.Error("Unexpectedly found a deleted account.")
 	}
+	keys, _ = GetAccountKeys(nAccount.Email)
+	if len(keys) != 0 {
+		t.Errorf("expected to find %v keys after deleting account, found %v", 0, len(keys))
+	}
 	_, err = AddAccount(accounts[0])
 	if err == nil {
 		t.Error("No error found when trying to add a deleted account.")
 	}
 	nAccount, _ = AddAccount(accounts[1])
-	err = DeleteAccount(nAccount.Email)
+	err = DeleteAccount(nAccount.Identifier)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -346,7 +368,7 @@ func TestDeleteAccount(t *testing.T) {
 		t.Error("No error found when trying to add a deleted account.")
 	}
 	nAccount, _ = AddAccount(accounts[2])
-	err = DeleteAccount(nAccount.Email)
+	err = DeleteAccount(nAccount.Identifier)
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
@@ -368,7 +390,7 @@ func TestResurrectAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := AddAccount(accounts[0])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -378,7 +400,7 @@ func TestResurrectAccount(t *testing.T) {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = AddAccount(accounts[1])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -388,7 +410,7 @@ func TestResurrectAccount(t *testing.T) {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = AddAccount(accounts[4])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	err = ResurrectAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
@@ -407,7 +429,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := AddAccount(accounts[0])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	dAccount, err := GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -416,7 +438,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[3])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -425,7 +447,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[5])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
@@ -434,7 +456,7 @@ func TestGetDeletedAccount(t *testing.T) {
 		t.Error("Deleted account not found.")
 	}
 	nAccount, _ = AddAccount(accounts[6])
-	DeleteAccount(nAccount.Email)
+	DeleteAccount(nAccount.Identifier)
 	dAccount, err = GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)

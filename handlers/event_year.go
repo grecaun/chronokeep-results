@@ -13,7 +13,7 @@ func (h Handler) GetEventYear(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key
+	// Get Key :: TODO :: Add verification of HOST value.
 	key, err := database.GetKey(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
@@ -50,12 +50,16 @@ func (h Handler) AddEventYear(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key
+	// Get Key :: TODO :: Add verification of HOST value.
 	key, err := database.GetKey(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	if key == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	// Verify key access level.  Readonly cannot write or modify values.
+	if key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	account, err := database.GetAccountByID(key.AccountIdentifier)
@@ -93,12 +97,16 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key
+	// Get Key :: TODO :: Add verification of HOST value.
 	key, err := database.GetKey(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	if key == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	// Verify key access level.  Readonly cannot write or modify values.
+	if key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	account, err := database.GetAccountByID(key.AccountIdentifier)
@@ -145,12 +153,16 @@ func (h Handler) DeleteEventYear(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key
+	// Get Key :: TODO :: Add verification of HOST value.
 	key, err := database.GetKey(request.Key)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	if key == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	// Verify access level. Delete is the only level that can delete values.
+	if key.Type != "delete" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	account, err := database.GetAccountByID(key.AccountIdentifier)

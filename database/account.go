@@ -153,8 +153,8 @@ func AddAccount(account types.Account) (*types.Account, error) {
 }
 
 // DeleteAccount Deletes an account from view, does not permanently delete from database.
-// This does not cascade down.  Must be done manually.
-func DeleteAccount(email string) error {
+// This does not delete events associated with this account, but does set keys to deleted.
+func DeleteAccount(id int64) error {
 	db, err := GetDB()
 	if err != nil {
 		return err
@@ -163,8 +163,8 @@ func DeleteAccount(email string) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_deleted=TRUE WHERE account_email=?",
-		email,
+		"UPDATE account SET account_deleted=TRUE WHERE account_id=?",
+		id,
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting account: %v", err)
@@ -175,6 +175,14 @@ func DeleteAccount(email string) error {
 	}
 	if rows != 1 {
 		return fmt.Errorf("error deleting account, rows affected: %v", rows)
+	}
+	_, err = db.ExecContext(
+		ctx,
+		"UPDATE api_key SET key_deleted=TRUE WHERE account_id=?",
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting keys attached to account: %v", err)
 	}
 	return nil
 }
