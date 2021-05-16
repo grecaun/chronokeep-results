@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"net/http"
 

@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -32,14 +32,14 @@ func setupMultiTests() {
 }
 
 func TestGetAccountAndEvent(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupMultiTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -54,9 +54,9 @@ func TestGetAccountAndEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	AddEvent(event1)
-	AddEvent(event2)
-	mult, err := GetAccountAndEvent(event1.Slug)
+	db.AddEvent(event1)
+	db.AddEvent(event2)
+	mult, err := db.GetAccountAndEvent(event1.Slug)
 	if err != nil {
 		t.Fatalf("Error getting account and event: %v", err)
 	}
@@ -69,7 +69,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(&event1) {
 		t.Errorf("Account expected: %+v; Found: %+v;\nEvent Expected: %+v; Found: %+v;", accounts[0], *mult.Account, event1, *mult.Event)
 	}
-	mult, err = GetAccountAndEvent(event2.Slug)
+	mult, err = db.GetAccountAndEvent(event2.Slug)
 	if err != nil {
 		t.Fatalf("Error getting account and event: %v", err)
 	}
@@ -85,14 +85,14 @@ func TestGetAccountAndEvent(t *testing.T) {
 }
 
 func TestGetAccountEventAndYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupMultiTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -107,8 +107,8 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -121,9 +121,9 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(eventYear1)
-	AddEventYear(eventYear2)
-	mult, err := GetAccountEventAndYear(event1.Slug, eventYear1.Year)
+	db.AddEventYear(eventYear1)
+	db.AddEventYear(eventYear2)
+	mult, err := db.GetAccountEventAndYear(event1.Slug, eventYear1.Year)
 	if err != nil {
 		t.Fatalf("Error getting account, event, and year: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
 		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
-	mult, err = GetAccountEventAndYear(event2.Slug, eventYear2.Year)
+	mult, err = db.GetAccountEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
 		t.Fatalf("Error getting account, event, and year: %v", err)
 	}
@@ -146,14 +146,14 @@ func TestGetAccountEventAndYear(t *testing.T) {
 }
 
 func TestGetEventAndYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupMultiTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -168,8 +168,8 @@ func TestGetEventAndYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -182,9 +182,9 @@ func TestGetEventAndYear(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(eventYear1)
-	AddEventYear(eventYear2)
-	mult, err := GetAccountEventAndYear(event1.Slug, eventYear1.Year)
+	db.AddEventYear(eventYear1)
+	db.AddEventYear(eventYear2)
+	mult, err := db.GetAccountEventAndYear(event1.Slug, eventYear1.Year)
 	if err != nil {
 		t.Fatalf("Error getting event and year: %v", err)
 	}
@@ -194,7 +194,7 @@ func TestGetEventAndYear(t *testing.T) {
 	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
 		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
-	mult, err = GetAccountEventAndYear(event2.Slug, eventYear2.Year)
+	mult, err = db.GetAccountEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
 		t.Fatalf("Error getting event and year: %v", err)
 	}
@@ -207,14 +207,14 @@ func TestGetEventAndYear(t *testing.T) {
 }
 
 func TestGetKeyAndAccount(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupMultiTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
@@ -231,9 +231,9 @@ func TestGetKeyAndAccount(t *testing.T) {
 			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
 		},
 	}
-	AddKey(keys[0])
-	AddKey(keys[1])
-	mult, err := GetKeyAndAccount(keys[0].Value)
+	db.AddKey(keys[0])
+	db.AddKey(keys[1])
+	mult, err := db.GetKeyAndAccount(keys[0].Value)
 	if err != nil {
 		t.Fatalf("Error getting key and account: %v", err)
 	}
@@ -243,7 +243,7 @@ func TestGetKeyAndAccount(t *testing.T) {
 	if !mult.Account.Equals(account1) || !mult.Key.Equal(&keys[0]) {
 		t.Errorf("Account expected: %+v; Found %+v;\nKey expected: %+v; Found %+v;", *account1, *mult.Account, keys[0], *mult.Key)
 	}
-	mult, err = GetKeyAndAccount(keys[1].Value)
+	mult, err = db.GetKeyAndAccount(keys[1].Value)
 	if err != nil {
 		t.Fatalf("Error getting key and account: %v", err)
 	}

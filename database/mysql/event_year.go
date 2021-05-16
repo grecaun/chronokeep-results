@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -8,8 +8,8 @@ import (
 )
 
 // GetEventYear Gets an event year for an event with a slug and a specific year.
-func GetEventYear(event_slug, year string) (*types.EventYear, error) {
-	db, err := GetDB()
+func (m *MySQL) GetEventYear(event_slug, year string) (*types.EventYear, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +44,8 @@ func GetEventYear(event_slug, year string) (*types.EventYear, error) {
 }
 
 // GetEventYears Gets all event years for a specific event based on the slug.
-func GetEventYears(event_slug string) ([]types.EventYear, error) {
-	db, err := GetDB()
+func (m *MySQL) GetEventYears(event_slug string) ([]types.EventYear, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +79,8 @@ func GetEventYears(event_slug string) ([]types.EventYear, error) {
 }
 
 // AddEventYear Adds an event year to the database.
-func AddEventYear(year types.EventYear) (*types.EventYear, error) {
-	db, err := GetDB()
+func (m *MySQL) AddEventYear(year types.EventYear) (*types.EventYear, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +112,8 @@ func AddEventYear(year types.EventYear) (*types.EventYear, error) {
 
 // DeleteEventYear Deletes an EventYear from view, does not permanently delete from database.
 // This does not cascade down.  Must be done manually.
-func DeleteEventYear(year types.EventYear) error {
-	db, err := GetDB()
+func (m *MySQL) DeleteEventYear(year types.EventYear) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -131,8 +131,8 @@ func DeleteEventYear(year types.EventYear) error {
 }
 
 // UpdateEventYear Updates an Event Year information in the database. Year cannot be changed once set.
-func UpdateEventYear(year types.EventYear) error {
-	db, err := GetDB()
+func (m *MySQL) UpdateEventYear(year types.EventYear) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}

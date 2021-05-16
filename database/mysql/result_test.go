@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -118,26 +118,26 @@ func setupResultTests() {
 }
 
 func TestAddResults(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	setupResultTests()
-	account, _ := AddAccount(accounts[0])
+	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
-	event, _ = AddEvent(*event)
+	event, _ = db.AddEvent(*event)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
-	eventYear, _ = AddEventYear(*eventYear)
-	res, err := AddResults(eventYear.Identifier, results)
+	eventYear, _ = db.AddEventYear(*eventYear)
+	res, err := db.AddResults(eventYear.Identifier, results)
 	if err != nil {
 		t.Fatalf("Error adding results: %v", err)
 	}
@@ -158,14 +158,14 @@ func TestAddResults(t *testing.T) {
 	results[0].AgeRanking = 23
 	results[0].GenderRanking = 45
 	results[0].Finish = false
-	res, err = AddResults(eventYear.Identifier, results[0:1])
+	res, err = db.AddResults(eventYear.Identifier, results[0:1])
 	if err != nil {
 		t.Fatalf("Error adding results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
-	res, _ = GetResults(eventYear.Identifier)
+	res, _ = db.GetResults(eventYear.Identifier)
 	if len(res) != len(results) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results), len(res))
 	}
@@ -183,48 +183,48 @@ func TestAddResults(t *testing.T) {
 	results[1].Ranking = 121
 	results[1].AgeRanking = 231
 	results[1].GenderRanking = 451
-	res, err = AddResults(eventYear.Identifier, results[1:2])
+	res, err = db.AddResults(eventYear.Identifier, results[1:2])
 	if err != nil {
 		t.Fatalf("Error adding results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
-	res, _ = GetResults(eventYear.Identifier)
+	res, _ = db.GetResults(eventYear.Identifier)
 	if len(res) != (len(results) + 1) {
 		t.Errorf("Expected %v results to be added, %v added.", (len(results) + 1), len(res))
 	}
 }
 
 func TestGetResults(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	setupResultTests()
-	account, _ := AddAccount(accounts[0])
+	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
-	event, _ = AddEvent(*event)
+	event, _ = db.AddEvent(*event)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
-	eventYear, _ = AddEventYear(*eventYear)
-	res, err := GetResults(eventYear.Identifier)
+	eventYear, _ = db.AddEventYear(*eventYear)
+	res, err := db.GetResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error getting results: %v", err)
 	}
 	if len(res) != 0 {
 		t.Errorf("Results not added but we've found %v results.", len(res))
 	}
-	AddResults(eventYear.Identifier, results[0:1])
-	res, err = GetResults(eventYear.Identifier)
+	db.AddResults(eventYear.Identifier, results[0:1])
+	res, err = db.GetResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error getting results: %v", err)
 	}
@@ -234,8 +234,8 @@ func TestGetResults(t *testing.T) {
 	if res[0] != results[0] {
 		t.Errorf("Expected results %+v, found %+v.", results[0], res[0])
 	}
-	AddResults(eventYear.Identifier, results)
-	res, err = GetResults(eventYear.Identifier)
+	db.AddResults(eventYear.Identifier, results)
+	res, err = db.GetResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error getting results: %v", err)
 	}
@@ -255,31 +255,31 @@ func TestGetResults(t *testing.T) {
 }
 
 func TestDeleteResults(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	setupResultTests()
-	account, _ := AddAccount(accounts[0])
+	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
-	event, _ = AddEvent(*event)
+	event, _ = db.AddEvent(*event)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
-	eventYear, _ = AddEventYear(*eventYear)
-	AddResults(eventYear.Identifier, results)
-	err = DeleteResults(eventYear.Identifier, results[1:2])
+	eventYear, _ = db.AddEventYear(*eventYear)
+	db.AddResults(eventYear.Identifier, results)
+	err = db.DeleteResults(eventYear.Identifier, results[1:2])
 	if err != nil {
 		t.Fatalf("Error deleting specific results: %v", err)
 	}
-	res, _ := GetResults(eventYear.Identifier)
+	res, _ := db.GetResults(eventYear.Identifier)
 	if len(res) != (len(results) - 1) {
 		t.Errorf("Expected %v results after delete but found %v.", (len(results) - 1), len(res))
 	}
@@ -295,77 +295,77 @@ func TestDeleteResults(t *testing.T) {
 }
 
 func TestDeleteEventResults(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	setupResultTests()
-	account, _ := AddAccount(accounts[0])
+	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
-	event, _ = AddEvent(*event)
+	event, _ = db.AddEvent(*event)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
-	eventYear, _ = AddEventYear(*eventYear)
-	AddResults(eventYear.Identifier, results)
-	count, err := DeleteEventResults(eventYear.Identifier)
+	eventYear, _ = db.AddEventYear(*eventYear)
+	db.AddResults(eventYear.Identifier, results)
+	count, err := db.DeleteEventResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error deleting specific results: %v", err)
 	}
 	if (count) != int64(len(results)) {
 		t.Errorf("Expected to find out %v results were deleted, %v were deleted.", len(results), count)
 	}
-	res, _ := GetResults(eventYear.Identifier)
+	res, _ := db.GetResults(eventYear.Identifier)
 	if len(res) != 0 {
 		t.Errorf("Expected %v results after delete but found %v.", 0, len(res))
 	}
 }
 
 func TestGetBibResults(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
 	}
 	defer finalize(t)
 	setupResultTests()
-	account, _ := AddAccount(accounts[0])
+	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
-	event, _ = AddEvent(*event)
+	event, _ = db.AddEvent(*event)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
-	eventYear, _ = AddEventYear(*eventYear)
+	eventYear, _ = db.AddEventYear(*eventYear)
 	lastIX := len(results) - 1
-	res, err := GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	res, err := db.GetBibResults(eventYear.Identifier, results[lastIX].Bib)
 	if err != nil {
 		t.Fatalf("Error getting bib results: %v", err)
 	}
 	if len(res) != 0 {
 		t.Errorf("Expected %v results to be added, %v added.", 0, len(res))
 	}
-	AddResults(eventYear.Identifier, results[0:lastIX])
-	res, err = GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	db.AddResults(eventYear.Identifier, results[0:lastIX])
+	res, err = db.GetBibResults(eventYear.Identifier, results[lastIX].Bib)
 	if err != nil {
 		t.Fatalf("Error getting bib results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
-	AddResults(eventYear.Identifier, results)
-	res, err = GetBibResults(eventYear.Identifier, results[lastIX].Bib)
+	db.AddResults(eventYear.Identifier, results)
+	res, err = db.GetBibResults(eventYear.Identifier, results[lastIX].Bib)
 	if err != nil {
 		t.Fatalf("Error getting bib results: %v", err)
 	}

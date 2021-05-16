@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -8,8 +8,8 @@ import (
 )
 
 // GetAccountCallRecords Gets all api call records for a specific account.
-func GetAccountCallRecords(email string) ([]types.CallRecord, error) {
-	db, err := GetDB()
+func (m *MySQL) GetAccountCallRecords(email string) ([]types.CallRecord, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +41,8 @@ func GetAccountCallRecords(email string) ([]types.CallRecord, error) {
 }
 
 // GetCallRecord Checks the database for a specific call record.
-func GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
-	db, err := GetDB()
+func (m *MySQL) GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +75,8 @@ func GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
 }
 
 // AddCallRecord Add a call record to the database.
-func AddCallRecord(record types.CallRecord) error {
-	db, err := GetDB()
+func (m *MySQL) AddCallRecord(record types.CallRecord) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -100,8 +100,8 @@ func AddCallRecord(record types.CallRecord) error {
 }
 
 // AddCallRecords Add multiple call records to the database.
-func AddCallRecords(records []types.CallRecord) error {
-	db, err := GetDB()
+func (m *MySQL) AddCallRecords(records []types.CallRecord) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -130,8 +130,8 @@ func AddCallRecords(records []types.CallRecord) error {
 }
 
 /*
-func deleteCallRecords() (int64, error) {
-	db, err := GetDB()
+func (m *MySQL) deleteCallRecords() (int64, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return 0, err
 	}
@@ -151,8 +151,8 @@ func deleteCallRecords() (int64, error) {
 	return count, nil
 }
 
-func deleteCallRecord(record types.CallRecord) (int64, error) {
-	db, err := GetDB()
+func (m *MySQL) deleteCallRecord(record types.CallRecord) (int64, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return 0, err
 	}

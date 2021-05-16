@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -32,14 +32,14 @@ func setupEventTests() {
 }
 
 func TestAddEvent(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -54,7 +54,7 @@ func TestAddEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event, err := AddEvent(event1)
+	event, err := db.AddEvent(event1)
 	if err != nil {
 		t.Fatalf("Error adding event: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestAddEvent(t *testing.T) {
 	if !event.Equals(&event1) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *event)
 	}
-	event, err = AddEvent(event2)
+	event, err = db.AddEvent(event2)
 	if err != nil {
 		t.Fatalf("Error adding event: %v", err)
 	}
@@ -70,21 +70,21 @@ func TestAddEvent(t *testing.T) {
 	if !event.Equals(&event2) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event2, *event)
 	}
-	_, err = AddEvent(event2)
+	_, err = db.AddEvent(event2)
 	if err == nil {
 		t.Error("Expected an error when adding duplicate event.")
 	}
 }
 
 func TestGetEvent(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -99,23 +99,23 @@ func TestGetEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	AddEvent(event1)
-	AddEvent(event2)
-	testEvent, err := GetEvent(event1.Slug)
+	db.AddEvent(event1)
+	db.AddEvent(event2)
+	testEvent, err := db.GetEvent(event1.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event1) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *testEvent)
 	}
-	testEvent, err = GetEvent(event2.Slug)
+	testEvent, err = db.GetEvent(event2.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event2) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event2, *testEvent)
 	}
-	testEvent, err = GetEvent("test")
+	testEvent, err = db.GetEvent("test")
 	if err != nil {
 		t.Fatalf("Error getting event: %v", err)
 	}
@@ -125,14 +125,14 @@ func TestGetEvent(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -161,45 +161,45 @@ func TestGetEvents(t *testing.T) {
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
 	}
-	events, err := GetEvents()
+	events, err := db.GetEvents()
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 0 {
 		t.Errorf("Expected %v events but found %v.", 0, len(events))
 	}
-	AddEvent(event1)
-	AddEvent(event2)
-	events, err = GetEvents()
+	db.AddEvent(event1)
+	db.AddEvent(event2)
+	events, err = db.GetEvents()
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
-	// GetEvents does not get restricted events.  The second event added is restricted.
+	// db.GetEvents does not get restricted events.  The second event added is restricted.
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
-	AddEvent(event3)
-	AddEvent(event4)
-	events, err = GetEvents()
+	db.AddEvent(event3)
+	db.AddEvent(event4)
+	events, err = db.GetEvents()
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
-	// GetEvents does not get restricted events.  The second event added is restricted.
+	// db.GetEvents does not get restricted events.  The second event added is restricted.
 	if len(events) != 3 {
 		t.Errorf("Expected %v events but found %v.", 3, len(events))
 	}
 }
 
 func TestGetAccountEvents(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
-	account3, _ := AddAccount(accounts[2])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	account3, _ := db.AddAccount(accounts[2])
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -229,10 +229,10 @@ func TestGetAccountEvents(t *testing.T) {
 		AccessRestricted:  false,
 	}
 	t.Log("Adding one event for each account.")
-	AddEvent(event1)
-	AddEvent(event2)
+	db.AddEvent(event1)
+	db.AddEvent(event2)
 	t.Logf("Account email: %v", account1.Email)
-	events, err := GetAccountEvents(account1.Email)
+	events, err := db.GetAccountEvents(account1.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestGetAccountEvents(t *testing.T) {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
 	t.Logf("Account email: %v", account2.Email)
-	events, err = GetAccountEvents(account2.Email)
+	events, err = db.GetAccountEvents(account2.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -248,16 +248,16 @@ func TestGetAccountEvents(t *testing.T) {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
 	t.Log("Adding the final two events.")
-	AddEvent(event3)
-	AddEvent(event4)
-	events, err = GetAccountEvents(account1.Email)
+	db.AddEvent(event3)
+	db.AddEvent(event4)
+	events, err = db.GetAccountEvents(account1.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 2 {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
-	events, err = GetAccountEvents(account2.Email)
+	events, err = db.GetAccountEvents(account2.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -265,7 +265,7 @@ func TestGetAccountEvents(t *testing.T) {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
 	t.Log("Testing an account with no events.")
-	events, err = GetAccountEvents(account3.Email)
+	events, err = db.GetAccountEvents(account3.Email)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -275,14 +275,14 @@ func TestGetAccountEvents(t *testing.T) {
 }
 
 func TestDeleteEvent(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -297,7 +297,7 @@ func TestDeleteEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  false,
 	}
-	event1, _ = AddEvent(*event1)
+	event1, _ = db.AddEvent(*event1)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -310,36 +310,36 @@ func TestDeleteEvent(t *testing.T) {
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(*eventYear1)
-	AddEventYear(*eventYear2)
-	AddEvent(*event2)
-	err = DeleteEvent(*event1)
+	db.AddEventYear(*eventYear1)
+	db.AddEventYear(*eventYear2)
+	db.AddEvent(*event2)
+	err = db.DeleteEvent(*event1)
 	if err != nil {
 		t.Fatalf("Error deleting event: %v", err)
 	}
-	event, _ := GetEvent(event1.Slug)
+	event, _ := db.GetEvent(event1.Slug)
 	if event != nil {
 		t.Errorf("Found deleted event: %+v", *event)
 	}
-	events, _ := GetEvents()
+	events, _ := db.GetEvents()
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
-	eventYears, _ := GetEventYears(event1.Slug)
+	eventYears, _ := db.GetEventYears(event1.Slug)
 	if len(eventYears) != 0 {
 		t.Errorf("Expected to find %v event years after deletion of event but found %v.", 0, len(eventYears))
 	}
 }
 
 func TestUpdateEvent(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -354,18 +354,18 @@ func TestUpdateEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	event1.AccountIdentifier = account2.Identifier
 	event1.Name = "Updated Event Name"
 	event1.Slug = "update"
 	event1.ContactEmail = "event1_test@test.com"
 	event1.Website = "https://test.com/"
-	err = UpdateEvent(*event1)
+	err = db.UpdateEvent(*event1)
 	if err != nil {
 		t.Fatalf("Error updating event: %v", err)
 	}
-	event, _ := GetEvent("event1")
+	event, _ := db.GetEvent("event1")
 	if event.AccountIdentifier != account1.Identifier {
 		t.Errorf("Event account id changed from %v to %v.", account1.Identifier, event.AccountIdentifier)
 	}
@@ -383,11 +383,11 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	event2.AccessRestricted = false
 	event2.Image = "https://test.com/"
-	err = UpdateEvent(*event2)
+	err = db.UpdateEvent(*event2)
 	if err != nil {
 		t.Fatalf("Error updating event: %v", err)
 	}
-	event, _ = GetEvent("event2")
+	event, _ = db.GetEvent("event2")
 	if event.AccessRestricted != event2.AccessRestricted {
 		t.Errorf("Expected access restricted value %v, found %v.", event2.AccessRestricted, event.AccessRestricted)
 	}

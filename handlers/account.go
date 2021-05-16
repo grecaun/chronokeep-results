@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"chronokeep/results/auth"
-	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"chronokeep/results/util"
 	"errors"

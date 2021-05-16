@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -26,14 +26,14 @@ func setupEventYearTests() {
 }
 
 func TestAddEventYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventYearTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -48,8 +48,8 @@ func TestAddEventYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -74,28 +74,28 @@ func TestAddEventYear(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	out, err := AddEventYear(*eventYear1)
+	out, err := db.AddEventYear(*eventYear1)
 	if err != nil {
 		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear1) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *out)
 	}
-	out, err = AddEventYear(*eventYear2)
+	out, err = db.AddEventYear(*eventYear2)
 	if err != nil {
 		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear2) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear2, *out)
 	}
-	out, err = AddEventYear(*eventYear3)
+	out, err = db.AddEventYear(*eventYear3)
 	if err != nil {
 		t.Fatalf("Error adding event year: %v", err)
 	}
 	if !out.Equals(eventYear3) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear3, *out)
 	}
-	out, err = AddEventYear(*eventYear4)
+	out, err = db.AddEventYear(*eventYear4)
 	if err != nil {
 		t.Fatalf("Error adding event year: %v", err)
 	}
@@ -105,14 +105,14 @@ func TestAddEventYear(t *testing.T) {
 }
 
 func TestGetEventYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventYearTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -127,8 +127,8 @@ func TestGetEventYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -153,46 +153,46 @@ func TestGetEventYear(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(*eventYear1)
-	AddEventYear(*eventYear2)
-	AddEventYear(*eventYear3)
-	AddEventYear(*eventYear4)
-	eyear, err := GetEventYear(event1.Slug, eventYear1.Year)
+	db.AddEventYear(*eventYear1)
+	db.AddEventYear(*eventYear2)
+	db.AddEventYear(*eventYear3)
+	db.AddEventYear(*eventYear4)
+	eyear, err := db.GetEventYear(event1.Slug, eventYear1.Year)
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear1) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *eyear)
 	}
-	eyear, err = GetEventYear(event1.Slug, eventYear2.Year)
+	eyear, err = db.GetEventYear(event1.Slug, eventYear2.Year)
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear2) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear2, *eyear)
 	}
-	eyear, err = GetEventYear(event2.Slug, eventYear3.Year)
+	eyear, err = db.GetEventYear(event2.Slug, eventYear3.Year)
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear3) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear3, *eyear)
 	}
-	eyear, err = GetEventYear(event2.Slug, eventYear4.Year)
+	eyear, err = db.GetEventYear(event2.Slug, eventYear4.Year)
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
 	if !eyear.Equals(eventYear4) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear4, *eyear)
 	}
-	eyear, err = GetEventYear(event1.Slug, "2000")
+	eyear, err = db.GetEventYear(event1.Slug, "2000")
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
 	if eyear != nil {
 		t.Errorf("Expected a nil event year but found %+v.", *eyear)
 	}
-	eyear, err = GetEventYear("testevent", "2000")
+	eyear, err = db.GetEventYear("testevent", "2000")
 	if err != nil {
 		t.Fatalf("Error getting event year: %v", err)
 	}
@@ -202,14 +202,14 @@ func TestGetEventYear(t *testing.T) {
 }
 
 func TestGetEventYears(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventYearTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -231,9 +231,9 @@ func TestGetEventYears(t *testing.T) {
 		ContactEmail:      "event3@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
-	event3, _ = AddEvent(*event3)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
+	event3, _ = db.AddEvent(*event3)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -258,11 +258,11 @@ func TestGetEventYears(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(*eventYear1)
-	AddEventYear(*eventYear2)
-	AddEventYear(*eventYear3)
-	AddEventYear(*eventYear4)
-	years, err := GetEventYears(event1.Slug)
+	db.AddEventYear(*eventYear1)
+	db.AddEventYear(*eventYear2)
+	db.AddEventYear(*eventYear3)
+	db.AddEventYear(*eventYear4)
+	years, err := db.GetEventYears(event1.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event years: %v", err)
 	}
@@ -273,7 +273,7 @@ func TestGetEventYears(t *testing.T) {
 		(!years[1].Equals(eventYear1) && !years[1].Equals(eventYear2)) {
 		t.Errorf("Event years expected %+v %+v; Found %+v %+v;", *eventYear1, *eventYear2, years[0], years[1])
 	}
-	years, err = GetEventYears(event2.Slug)
+	years, err = db.GetEventYears(event2.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event years: %v", err)
 	}
@@ -284,7 +284,7 @@ func TestGetEventYears(t *testing.T) {
 		(!years[1].Equals(eventYear3) && !years[1].Equals(eventYear4)) {
 		t.Errorf("Event years expected %+v %+v; Found %+v %+v;", *eventYear3, *eventYear4, years[0], years[1])
 	}
-	years, err = GetEventYears(event3.Slug)
+	years, err = db.GetEventYears(event3.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event years: %v", err)
 	}
@@ -294,14 +294,14 @@ func TestGetEventYears(t *testing.T) {
 }
 
 func TestDeleteEventYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventYearTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -316,8 +316,8 @@ func TestDeleteEventYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -342,41 +342,41 @@ func TestDeleteEventYear(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	AddEventYear(*eventYear1)
-	eventYear2, _ = AddEventYear(*eventYear2)
-	eventYear3, _ = AddEventYear(*eventYear3)
-	AddEventYear(*eventYear4)
-	err = DeleteEventYear(*eventYear2)
+	db.AddEventYear(*eventYear1)
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	eventYear3, _ = db.AddEventYear(*eventYear3)
+	db.AddEventYear(*eventYear4)
+	err = db.DeleteEventYear(*eventYear2)
 	if err != nil {
 		t.Fatalf("Error deleting event year: %v", err)
 	}
-	year, _ := GetEventYear(event1.Slug, eventYear2.Year)
+	year, _ := db.GetEventYear(event1.Slug, eventYear2.Year)
 	if year != nil {
 		t.Errorf("Unexpectedly found deleted event year %+v.", year)
 	}
-	err = DeleteEventYear(*eventYear3)
+	err = db.DeleteEventYear(*eventYear3)
 	if err != nil {
 		t.Fatalf("Error deleting event year: %v", err)
 	}
-	year, _ = GetEventYear(event2.Slug, eventYear3.Year)
+	year, _ = db.GetEventYear(event2.Slug, eventYear3.Year)
 	if year != nil {
 		t.Errorf("Unexpectedly found deleted event year %+v.", *year)
 	}
-	years, _ := GetEventYears(event1.Slug)
+	years, _ := db.GetEventYears(event1.Slug)
 	if len(years) != 1 {
 		t.Errorf("Expected to find %v event years, found %v.", 1, len(years))
 	}
 }
 
 func TestUpdateEventYear(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupEventYearTests()
-	account1, _ := AddAccount(accounts[0])
-	account2, _ := AddAccount(accounts[1])
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -391,8 +391,8 @@ func TestUpdateEventYear(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	event1, _ = AddEvent(*event1)
-	event2, _ = AddEvent(*event2)
+	event1, _ = db.AddEvent(*event1)
+	event2, _ = db.AddEvent(*event2)
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
@@ -405,26 +405,26 @@ func TestUpdateEventYear(t *testing.T) {
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	}
-	eventYear1, _ = AddEventYear(*eventYear1)
-	eventYear2, _ = AddEventYear(*eventYear2)
+	eventYear1, _ = db.AddEventYear(*eventYear1)
+	eventYear2, _ = db.AddEventYear(*eventYear2)
 	eventYear1.DateTime = time.Date(2000, 10, 05, 10, 10, 0, 0, time.Local)
 	eventYear1.Live = true
-	err = UpdateEventYear(*eventYear1)
+	err = db.UpdateEventYear(*eventYear1)
 	if err != nil {
 		t.Fatalf("Error updating event year: %v", err)
 	}
-	event, _ := GetEventYear(event1.Slug, eventYear1.Year)
+	event, _ := db.GetEventYear(event1.Slug, eventYear1.Year)
 	if !event.Equals(eventYear1) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *event)
 	}
 	eventYear2.EventIdentifier = event2.Identifier
 	eventYear2.Identifier = eventYear2.Identifier + 200
 	eventYear2.Year = "1999"
-	err = UpdateEventYear(*eventYear2)
+	err = db.UpdateEventYear(*eventYear2)
 	if err != nil {
 		t.Fatalf("Error updating event year: %v", err)
 	}
-	event, _ = GetEventYear(event1.Slug, "2020")
+	event, _ = db.GetEventYear(event1.Slug, "2020")
 	if event.EventIdentifier == eventYear2.EventIdentifier {
 		t.Errorf("Event identifier changed, found %v", event.EventIdentifier)
 	}

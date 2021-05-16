@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -8,8 +8,8 @@ import (
 )
 
 // GetAccountKeys Gets all keys associated with an account.
-func GetAccountKeys(email string) ([]types.Key, error) {
-	db, err := GetDB()
+func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func GetAccountKeys(email string) ([]types.Key, error) {
 }
 
 // GetKey Gets a key based on its key value.
-func GetKey(key string) (*types.Key, error) {
-	db, err := GetDB()
+func (m *MySQL) GetKey(key string) (*types.Key, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func GetKey(key string) (*types.Key, error) {
 }
 
 // AddKey Adds a key to the database.
-func AddKey(key types.Key) (*types.Key, error) {
-	db, err := GetDB()
+func (m *MySQL) AddKey(key types.Key) (*types.Key, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +111,8 @@ func AddKey(key types.Key) (*types.Key, error) {
 }
 
 // DeleteKey Deletes a key from view. Does not permanently delete a key.
-func DeleteKey(key types.Key) error {
-	db, err := GetDB()
+func (m *MySQL) DeleteKey(key types.Key) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -137,8 +137,8 @@ func DeleteKey(key types.Key) error {
 }
 
 // UpdateKey Updates information for a key.  Cannot change account_id or value.
-func UpdateKey(key types.Key) error {
-	db, err := GetDB()
+func (m *MySQL) UpdateKey(key types.Key) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}

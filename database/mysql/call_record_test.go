@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -32,14 +32,14 @@ func setupCallRecordTests() {
 }
 
 func TestAddCallRecord(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupCallRecordTests()
-	acc1, _ := AddAccount(accounts[0])
-	acc2, _ := AddAccount(accounts[1])
+	acc1, _ := db.AddAccount(accounts[0])
+	acc2, _ := db.AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -72,36 +72,36 @@ func TestAddCallRecord(t *testing.T) {
 			Count:             35,
 		},
 	}
-	err = AddCallRecord(records[0])
+	err = db.AddCallRecord(records[0])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	err = AddCallRecord(records[1])
+	err = db.AddCallRecord(records[1])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	err = AddCallRecord(records[2])
+	err = db.AddCallRecord(records[2])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	err = AddCallRecord(records[3])
+	err = db.AddCallRecord(records[3])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	err = AddCallRecord(records[4])
+	err = db.AddCallRecord(records[4])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	err = AddCallRecord(records[5])
+	err = db.AddCallRecord(records[5])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
 	records[1].Count = 700
-	err = AddCallRecord(records[1])
+	err = db.AddCallRecord(records[1])
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	rec, err := GetCallRecord(accounts[0].Email, records[1].DateTime)
+	rec, err := db.GetCallRecord(accounts[0].Email, records[1].DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -111,14 +111,14 @@ func TestAddCallRecord(t *testing.T) {
 }
 
 func TestAddCallRecords(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupCallRecordTests()
-	acc1, _ := AddAccount(accounts[0])
-	acc2, _ := AddAccount(accounts[1])
+	acc1, _ := db.AddAccount(accounts[0])
+	acc2, _ := db.AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -151,37 +151,37 @@ func TestAddCallRecords(t *testing.T) {
 			Count:             35,
 		},
 	}
-	err = AddCallRecords(records[0:3])
+	err = db.AddCallRecords(records[0:3])
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ := GetAccountCallRecords(accounts[0].Email)
+	recs, _ := db.GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
-	err = AddCallRecords(records[2:6])
+	err = db.AddCallRecords(records[2:6])
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ = GetAccountCallRecords(accounts[0].Email)
+	recs, _ = db.GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
-	recs, _ = GetAccountCallRecords(accounts[0].Email)
+	recs, _ = db.GetAccountCallRecords(accounts[0].Email)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
 }
 
 func TestGetCallRecord(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupCallRecordTests()
-	acc1, _ := AddAccount(accounts[0])
-	acc2, _ := AddAccount(accounts[1])
+	acc1, _ := db.AddAccount(accounts[0])
+	acc2, _ := db.AddAccount(accounts[1])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -216,8 +216,8 @@ func TestGetCallRecord(t *testing.T) {
 	}
 	t.Log("Record 1")
 	oldRec := records[0]
-	AddCallRecord(oldRec)
-	newRec, err := GetCallRecord(accounts[0].Email, oldRec.DateTime)
+	db.AddCallRecord(oldRec)
+	newRec, err := db.GetCallRecord(accounts[0].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -226,8 +226,8 @@ func TestGetCallRecord(t *testing.T) {
 	}
 	t.Log("Record 2")
 	oldRec = records[2]
-	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(accounts[0].Email, oldRec.DateTime)
+	db.AddCallRecord(oldRec)
+	newRec, err = db.GetCallRecord(accounts[0].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -236,8 +236,8 @@ func TestGetCallRecord(t *testing.T) {
 	}
 	t.Log("Record 3")
 	oldRec = records[4]
-	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(accounts[1].Email, oldRec.DateTime)
+	db.AddCallRecord(oldRec)
+	newRec, err = db.GetCallRecord(accounts[1].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -246,8 +246,8 @@ func TestGetCallRecord(t *testing.T) {
 	}
 	t.Log("Record 4")
 	oldRec = records[5]
-	AddCallRecord(oldRec)
-	newRec, err = GetCallRecord(accounts[1].Email, oldRec.DateTime)
+	db.AddCallRecord(oldRec)
+	newRec, err = db.GetCallRecord(accounts[1].Email, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Expected record %+v, found %+v.", oldRec, *newRec)
 	}
 	t.Log("Record 5 (empty)")
-	newRec, err = GetCallRecord(accounts[1].Email, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
+	newRec, err = db.GetCallRecord(accounts[1].Email, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -265,15 +265,15 @@ func TestGetCallRecord(t *testing.T) {
 }
 
 func TestGetAccountCallRecords(t *testing.T) {
-	finalize, err := setupTests(t)
+	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("Error setting up test. %v", err)
 	}
 	defer finalize(t)
 	setupCallRecordTests()
-	acc1, _ := AddAccount(accounts[0])
-	acc2, _ := AddAccount(accounts[1])
-	AddAccount(accounts[2])
+	acc1, _ := db.AddAccount(accounts[0])
+	acc2, _ := db.AddAccount(accounts[1])
+	db.AddAccount(accounts[2])
 	records := []types.CallRecord{
 		{
 			AccountIdentifier: acc1.Identifier,
@@ -306,22 +306,22 @@ func TestGetAccountCallRecords(t *testing.T) {
 			Count:             35,
 		},
 	}
-	AddCallRecords(records)
-	recs, err := GetAccountCallRecords(accounts[0].Email)
+	db.AddCallRecords(records)
+	recs, err := db.GetAccountCallRecords(accounts[0].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = GetAccountCallRecords(accounts[1].Email)
+	recs, err = db.GetAccountCallRecords(accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = GetAccountCallRecords(accounts[2].Email)
+	recs, err = db.GetAccountCallRecords(accounts[2].Email)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}

@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -13,8 +13,8 @@ const (
 	MaxLoginAttempts = 4
 )
 
-func getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
-	db, err := GetDB()
+func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -67,23 +67,23 @@ func getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
 }
 
 // GetAccount Gets an account based on the email address provided.
-func GetAccount(email string) (*types.Account, error) {
-	return getAccountInternal(&email, nil, nil)
+func (m *MySQL) GetAccount(email string) (*types.Account, error) {
+	return m.getAccountInternal(&email, nil, nil)
 }
 
 // GetAccountByKey Gets an account based upon an API key provided.
-func GetAccountByKey(key string) (*types.Account, error) {
-	return getAccountInternal(nil, &key, nil)
+func (m *MySQL) GetAccountByKey(key string) (*types.Account, error) {
+	return m.getAccountInternal(nil, &key, nil)
 }
 
 // GetAccoutByID Gets an account based upon the Account ID.
-func GetAccountByID(id int64) (*types.Account, error) {
-	return getAccountInternal(nil, nil, &id)
+func (m *MySQL) GetAccountByID(id int64) (*types.Account, error) {
+	return m.getAccountInternal(nil, nil, &id)
 }
 
 // GetAccounts Get all accounts that have not been deleted.
-func GetAccounts() ([]types.Account, error) {
-	db, err := GetDB()
+func (m *MySQL) GetAccounts() ([]types.Account, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -118,12 +118,12 @@ func GetAccounts() ([]types.Account, error) {
 }
 
 // AddAccount Adds an account to the database.
-func AddAccount(account types.Account) (*types.Account, error) {
+func (m *MySQL) AddAccount(account types.Account) (*types.Account, error) {
 	// Check if password has been hashed.
 	if !account.PasswordIsHashed() {
 		return nil, errors.New("password not hashed")
 	}
-	db, err := GetDB()
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -154,8 +154,8 @@ func AddAccount(account types.Account) (*types.Account, error) {
 
 // DeleteAccount Deletes an account from view, does not permanently delete from database.
 // This does not delete events associated with this account, but does set keys to deleted.
-func DeleteAccount(id int64) error {
-	db, err := GetDB()
+func (m *MySQL) DeleteAccount(id int64) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -188,8 +188,8 @@ func DeleteAccount(id int64) error {
 }
 
 // ResurrectAccount Brings an account out of the deleted state.
-func ResurrectAccount(email string) error {
-	db, err := GetDB()
+func (m *MySQL) ResurrectAccount(email string) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -214,8 +214,8 @@ func ResurrectAccount(email string) error {
 }
 
 // GetDeletedAccount Returns a deleted account.
-func GetDeletedAccount(email string) (*types.Account, error) {
-	db, err := GetDB()
+func (m *MySQL) GetDeletedAccount(email string) (*types.Account, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -248,8 +248,8 @@ func GetDeletedAccount(email string) (*types.Account, error) {
 }
 
 // UpdateAccount Updates account information in the database.
-func UpdateAccount(account types.Account) error {
-	db, err := GetDB()
+func (m *MySQL) UpdateAccount(account types.Account) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -276,8 +276,8 @@ func UpdateAccount(account types.Account) error {
 }
 
 // ChangePassword Updates a user's password.
-func ChangePassword(email, newPassword string) error {
-	db, err := GetDB()
+func (m *MySQL) ChangePassword(email, newPassword string) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -303,8 +303,8 @@ func ChangePassword(email, newPassword string) error {
 }
 
 // ChangeEmail Updates an account email.
-func ChangeEmail(oldEmail, newEmail string) error {
-	db, err := GetDB()
+func (m *MySQL) ChangeEmail(oldEmail, newEmail string) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -330,8 +330,8 @@ func ChangeEmail(oldEmail, newEmail string) error {
 }
 
 // InvalidPassword Increments/locks an account due to an invalid password.
-func InvalidPassword(account types.Account) error {
-	db, err := GetDB()
+func (m *MySQL) InvalidPassword(account types.Account) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}

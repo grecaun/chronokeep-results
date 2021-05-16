@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -9,8 +9,8 @@ import (
 )
 
 // GetEvent Gets an event with a slug.
-func GetEvent(slug string) (*types.Event, error) {
-	db, err := GetDB()
+func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
-func getEventsInternal(email *string) ([]types.Event, error) {
-	db, err := GetDB()
+func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -91,18 +91,18 @@ func getEventsInternal(email *string) ([]types.Event, error) {
 }
 
 // GetEvents Gets all events.
-func GetEvents() ([]types.Event, error) {
-	return getEventsInternal(nil)
+func (m *MySQL) GetEvents() ([]types.Event, error) {
+	return m.getEventsInternal(nil)
 }
 
 // GetAccountsEvents Gets all events associated with an account.
-func GetAccountEvents(email string) ([]types.Event, error) {
-	return getEventsInternal(&email)
+func (m *MySQL) GetAccountEvents(email string) ([]types.Event, error) {
+	return m.getEventsInternal(&email)
 }
 
 // AddEvent Adds an event to the database.
-func AddEvent(event types.Event) (*types.Event, error) {
-	db, err := GetDB()
+func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +140,8 @@ func AddEvent(event types.Event) (*types.Event, error) {
 
 // DeleteEvent Deletes and event from view, does not permanently delete from database.
 // This does not cascade down. Must be done manually.
-func DeleteEvent(event types.Event) error {
-	db, err := GetDB()
+func (m *MySQL) DeleteEvent(event types.Event) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -174,8 +174,8 @@ func DeleteEvent(event types.Event) error {
 }
 
 // UpdateEvent Updates an Event in the database. Name and Slug cannot be changed once set.
-func UpdateEvent(event types.Event) error {
-	db, err := GetDB()
+func (m *MySQL) UpdateEvent(event types.Event) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) {
-	db, err := GetDB()
+func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -66,18 +66,18 @@ func getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) 
 }
 
 // GetResults Gets results for an event year.
-func GetResults(eventYearID int64) ([]types.Result, error) {
-	return getResultsInternal(eventYearID, nil)
+func (m *MySQL) GetResults(eventYearID int64) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
-func GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return getResultsInternal(eventYearID, &bib)
+func (m *MySQL) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, &bib)
 }
 
 // DeleteResults Deletes results from the database.
-func DeleteResults(eventYearID int64, results []types.Result) error {
-	db, err := GetDB()
+func (m *MySQL) DeleteResults(eventYearID int64, results []types.Result) error {
+	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
@@ -107,8 +107,8 @@ func DeleteResults(eventYearID int64, results []types.Result) error {
 }
 
 // DeleteEventResults Deletes results for an event year.
-func DeleteEventResults(eventYearID int64) (int64, error) {
-	db, err := GetDB()
+func (m *MySQL) DeleteEventResults(eventYearID int64) (int64, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return 0, err
 	}
@@ -130,8 +130,8 @@ func DeleteEventResults(eventYearID int64) (int64, error) {
 }
 
 // AddResults Adds results to the database. (Also updates.)
-func AddResults(eventYearID int64, results []types.Result) ([]types.Result, error) {
-	db, err := GetDB()
+func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.Result, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}

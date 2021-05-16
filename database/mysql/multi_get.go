@@ -1,4 +1,4 @@
-package database
+package mysql
 
 import (
 	"chronokeep/results/types"
@@ -8,8 +8,8 @@ import (
 )
 
 // GetAccountAndEvent Gets an event and its corresponding account.
-func GetAccountAndEvent(slug string) (*MultiGet, error) {
-	db, err := GetDB()
+func (m *MySQL) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func GetAccountAndEvent(slug string) (*MultiGet, error) {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
 	if res.Next() {
-		outVal := MultiGet{
+		outVal := types.MultiGet{
 			Account: &types.Account{},
 			Event:   &types.Event{},
 		}
@@ -55,8 +55,8 @@ func GetAccountAndEvent(slug string) (*MultiGet, error) {
 }
 
 // GetAccountEventAndYear Gets an eventyear and its corresponding event and account.
-func GetAccountEventAndYear(slug, year string) (*MultiGet, error) {
-	db, err := GetDB()
+func (m *MySQL) GetAccountEventAndYear(slug, year string) (*types.MultiGet, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func GetAccountEventAndYear(slug, year string) (*MultiGet, error) {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
 	if res.Next() {
-		outVal := MultiGet{
+		outVal := types.MultiGet{
 			Account:   &types.Account{},
 			Event:     &types.Event{},
 			EventYear: &types.EventYear{},
@@ -110,8 +110,8 @@ func GetAccountEventAndYear(slug, year string) (*MultiGet, error) {
 }
 
 // GetEventAndYear Gets an event and eventyear.
-func GetEventAndYear(slug, year string) (*MultiGet, error) {
-	db, err := GetDB()
+func (m *MySQL) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func GetEventAndYear(slug, year string) (*MultiGet, error) {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
 	if res.Next() {
-		outVal := MultiGet{
+		outVal := types.MultiGet{
 			Event:     &types.Event{},
 			EventYear: &types.EventYear{},
 		}
@@ -158,8 +158,8 @@ func GetEventAndYear(slug, year string) (*MultiGet, error) {
 }
 
 // GetKeyAndAccount Gets an account and key based upon the key value.
-func GetKeyAndAccount(key string) (*MultiKey, error) {
-	db, err := GetDB()
+func (m *MySQL) GetKeyAndAccount(key string) (*types.MultiKey, error) {
+	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func GetKeyAndAccount(key string) (*MultiKey, error) {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
 	if res.Next() {
-		outVal := MultiKey{
+		outVal := types.MultiKey{
 			Key:     &types.Key{},
 			Account: &types.Account{},
 		}
@@ -199,15 +199,4 @@ func GetKeyAndAccount(key string) (*MultiKey, error) {
 		return &outVal, nil
 	}
 	return nil, nil
-}
-
-type MultiGet struct {
-	Account   *types.Account
-	Event     *types.Event
-	EventYear *types.EventYear
-}
-
-type MultiKey struct {
-	Key     *types.Key
-	Account *types.Account
 }
