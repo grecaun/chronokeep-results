@@ -50,9 +50,14 @@ func GetConfig() (*Config, error) {
 
 	autotls := os.Getenv("AUTOTLS") == "enabled"
 
-	secret_key := os.Getenv("SECRET_KEY")
-	if secret_key == "" || len(secret_key) < 20 {
-		return nil, errors.New("SECRET_KEY not set or under 20 characters")
+	session_auth := os.Getenv("SESSION_AUTH_KEY")
+	if session_auth == "" || (len(session_auth) != 32 && len(session_auth) != 64) {
+		return nil, errors.New("SESSION_AUTH_KEY not set or not 32/64 bytes")
+	}
+
+	session_encr := os.Getenv("SESSION_ENCRY_KEY")
+	if session_encr == "" || (len(session_encr) != 32 && len(session_encr) != 64) {
+		return nil, errors.New("SESSION_ENCRY_KEY not set or not 32/64 bytes")
 	}
 
 	admin_email := os.Getenv("ADMIN_EMAIL")
@@ -70,7 +75,8 @@ func GetConfig() (*Config, error) {
 		Port:           port,
 		Development:    development,
 		AutoTLS:        autotls,
-		SecretKey:      secret_key,
+		SessionAuthKey: session_auth,
+		SessionEncrKey: session_encr,
 		AdminEmail:     admin_email,
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
@@ -89,7 +95,8 @@ type Config struct {
 	Port           int
 	Development    bool
 	AutoTLS        bool
-	SecretKey      string
+	SessionAuthKey string
+	SessionEncrKey string
 	AdminEmail     string
 	AdminName      string
 	AdminPass      string

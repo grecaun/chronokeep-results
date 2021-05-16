@@ -4,6 +4,10 @@ import (
 	"chronokeep/results/types"
 	"chronokeep/results/util"
 	"database/sql"
+	"fmt"
+
+	"github.com/gorilla/sessions"
+	"github.com/srinathgs/mysqlstore"
 )
 
 type Database interface {
@@ -60,4 +64,29 @@ type Database interface {
 	GetAccountEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
+}
+
+func GetSessionStore(config util.Config) (sessions.Store, error) {
+	switch config.DBDriver {
+	case "mysql":
+		store, err := mysqlstore.NewMySQLStore(fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true&loc=Local",
+			config.DBUser,
+			config.DBPassword,
+			config.DBHost,
+			config.DBPort,
+			config.DBName,
+		),
+			"sessions",
+			"/",
+			3600,
+			[]byte(config.SessionAuthKey),
+			[]byte(config.SessionEncrKey),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error attempting to set up session store: %v", err)
+		}
+		return store, nil
+	default:
+		return nil, fmt.Errorf("database driver not supported: %v", config.DBDriver)
+	}
 }
