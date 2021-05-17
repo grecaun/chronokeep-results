@@ -6,11 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"chronokeep/results/database"
 	"chronokeep/results/handlers"
 	"chronokeep/results/util"
 
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/crypto/acme/autocert"
@@ -38,16 +36,12 @@ func main() {
 		},
 	}))
 
-	log.Info("Setting up API handlers.")
+	// Handlers has a setup function which sets up the database for use.
+	handlers.Setup(config)
+	// Set up API handlers.
 	handler := handlers.Handler{}
 	handler.Bind(e.Group(""))
 	r := e.Group("")
-	log.Info("Setting up Session middleware for authenticated routes.")
-	store, err := database.GetSessionStore(*config)
-	if err != nil {
-		log.Fatal("Unable to set up store. ", err)
-	}
-	r.Use(session.Middleware(store))
 	handler.BindRestricted(r)
 
 	e.GET("/health", func(c echo.Context) error {

@@ -9,9 +9,11 @@ import (
 
 var (
 	database db.Database
+	config   *util.Config
 )
 
-func Setup(config *util.Config) error {
+func Setup(inCfg *util.Config) error {
+	config = inCfg
 	switch config.DBDriver {
 	case "mysql":
 		database = &mysql.MySQL{}
