@@ -25,6 +25,7 @@ type Database interface {
 	ChangePassword(email, newPassword string) error
 	ChangeEmail(oldEmail, newEmail string) error
 	InvalidPassword(account types.Account) error
+	UpdateTokens(account types.Account) error
 	// Call Record Functions
 	GetAccountCallRecords(email string) ([]types.CallRecord, error)
 	GetCallRecord(email string, inTime int64) (*types.CallRecord, error)

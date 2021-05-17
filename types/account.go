@@ -12,6 +12,8 @@ type Account struct {
 	Type              string `json:"type" validate:"required"`
 	Locked            bool   `json:"-"`
 	WrongPassAttempts int    `json:"-"`
+	Token             string `json:"-"`
+	RefreshToken      string `json:"-"`
 }
 
 // Equals is used to check if the fields of an Account other than the identifier are identical.

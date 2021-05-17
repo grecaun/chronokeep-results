@@ -14,20 +14,23 @@ import (
 )
 
 const (
-	expirationWindow = time.Hour * 3
+	expirationWindow = time.Minute * 15
+	refreshWindow    = time.Hour * 24 * 7
 )
 
 func (h Handler) GetAccount(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
 	var request types.GetAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	if claims["type"].(string) != "admin" && claims["email"].(string) != request.Email {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	if account.Type != "admin" && account.Email != request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	account, err := database.GetAccount(request.Email)
+	account, err = database.GetAccount(request.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
@@ -50,9 +53,11 @@ func (h Handler) GetAccount(c echo.Context) error {
 }
 
 func (h Handler) GetAccounts(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	if claims["type"].(string) != "admin" {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	if account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	accounts, err := database.GetAccounts()
@@ -65,21 +70,23 @@ func (h Handler) GetAccounts(c echo.Context) error {
 }
 
 func (h Handler) AddAccount(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	if claims["type"].(string) != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
 	var request types.AddAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	if account.Type != "admin" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	password, err := auth.HashPassword(request.Password)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
 	request.Account.Password = password
-	account, err := database.AddAccount(request.Account)
+	account, err = database.AddAccount(request.Account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
@@ -89,20 +96,23 @@ func (h Handler) AddAccount(c echo.Context) error {
 }
 
 func (h Handler) UpdateAccount(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
 	var request types.UpdateAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	if claims["type"].(string) != "admin" && claims["email"].(string) != request.Account.Email {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// Only admins and the owner of an account can update it.
+	if account.Type != "admin" && account.Email != request.Account.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	err := database.UpdateAccount(request.Account)
+	err = database.UpdateAccount(request.Account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
-	account, err := database.GetAccount(request.Account.Email)
+	account, err = database.GetAccount(request.Account.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
@@ -112,21 +122,21 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 }
 
 func (h Handler) DeleteAccount(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
 	var request types.DeleteAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	if claims["type"].(string) != "admin" && claims["email"].(string) != request.Email {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// Only admins and the owner of an account can delete it.
+	if account.Type != "admin" && account.Email != request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	account, err := database.GetAccount(request.Email)
+	account, err = database.GetAccount(request.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
-	}
-	if account == nil {
-		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
 	err = database.DeleteAccount(account.Identifier)
 	if err != nil {
@@ -136,59 +146,56 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 }
 
 func (h Handler) ChangePassword(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
 	var request types.ChangePasswordRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
 	hashedPassword, err := auth.HashPassword(request.NewPassword)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
-	// Let admins change passwords.
-	if claims["type"].(string) == "admin" {
+	// If the user is changing their own password they need to know their old password.
+	if account.Email == request.Email {
+		// Verify they knew their old password.
+		err = auth.VerifyPassword(account.Password, request.OldPassword)
+		if err != nil {
+			return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
+		}
+		err = database.ChangePassword(request.Email, hashedPassword)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+		}
+		return c.NoContent(http.StatusOK)
+		// Otherwise if an admin is changing a password for a user let them.
+	} else if account.Type == "admin" {
 		err = database.ChangePassword(request.Email, hashedPassword)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 		}
 		return c.NoContent(http.StatusOK)
 	}
-	// Verify we're changing a specific user's password.
-	if claims["email"].(string) != request.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	// Verify they knew their old password.
-	account, err := database.GetAccount(request.Email)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
-	}
-	if account == nil {
-		return getAPIError(c, http.StatusInternalServerError, "Account Not Found", nil)
-	}
-	err = auth.VerifyPassword(account.Password, request.OldPassword)
-	if err != nil {
-		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
-	}
-	err = database.ChangePassword(request.Email, hashedPassword)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
-	}
-	return c.NoContent(http.StatusOK)
+	// Not their own account and not an admin, unauthorized.
+	return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 }
 
 func (h Handler) ChangeEmail(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
 	var request types.ChangeEmailRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Only let admins change passwords.
-	if claims["type"].(string) != "admin" {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// Only let admins change emails.
+	if account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	err := database.ChangeEmail(request.OldEmail, request.NewEmail)
+	err = database.ChangeEmail(request.OldEmail, request.NewEmail)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
@@ -224,19 +231,64 @@ func (h Handler) Login(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Config Error", err)
 	}
 	// Create token
-	token := jwt.New(jwt.SigningMethodHS256)
-	// Set claims
-	claims := token.Claims.(jwt.MapClaims)
-	claims["name"] = account.Name
+	claims := jwt.MapClaims{}
 	claims["email"] = account.Email
-	claims["type"] = account.Type
-	claims["exp"] = time.Now().Add(expirationWindow)
-
+	claims["authorized"] = true
+	claims["exp"] = time.Now().Add(expirationWindow).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.SecretKey))
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
 	}
+	// Create refresh token
+	claims = jwt.MapClaims{}
+	claims["email"] = account.Email
+	claims["exp"] = time.Now().Add(refreshWindow).Unix()
+	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	r, err := refresh.SignedString([]byte(config.RefreshKey))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
+	}
+	account.Token = t
+	account.RefreshToken = r
+	err = database.UpdateTokens(*account)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
 	return c.JSON(http.StatusOK, map[string]string{
-		"token": t,
+		"access_token":  t,
+		"refresh_token": r,
 	})
+}
+
+func (h Handler) Logout(c echo.Context) error {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	account.Token = ""
+	account.RefreshToken = ""
+	err = database.UpdateTokens(*account)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func verifyToken(r *http.Request) (*types.Account, error) {
+	token, email, err := util.GetTokenAndEmail(r)
+	if err != nil || token == nil || email == nil {
+		return nil, fmt.Errorf("error retrieving token(%v)/email(%v)/err(%v)", token, email, err)
+	}
+	account, err := database.GetAccount(*email)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, errors.New("account not found")
+	}
+	if account.Token != *token {
+		return nil, errors.New("token no longer valid")
+	}
+	return account, nil
 }

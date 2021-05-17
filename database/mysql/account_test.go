@@ -617,3 +617,27 @@ func TestGetAccountByID(t *testing.T) {
 		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
 }
+
+func TestUpdateTokens(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	oAccount := accounts[0]
+	nAccount, _ := db.AddAccount(oAccount)
+	nAccount.Token = "testtoken1"
+	nAccount.RefreshToken = "refreshtoken1"
+	err = db.UpdateTokens(*nAccount)
+	if err != nil {
+		t.Fatalf("Error updating tokens: %v", err)
+	}
+	dAccount, _ := db.GetAccount(nAccount.Email)
+	if dAccount.Token != nAccount.Token {
+		t.Errorf("Expected token %v, found %v.", nAccount.Token, dAccount.Token)
+	}
+	if dAccount.RefreshToken != nAccount.RefreshToken {
+		t.Errorf("Expected refresh token %v, found %v.", nAccount.RefreshToken, dAccount.RefreshToken)
+	}
+}

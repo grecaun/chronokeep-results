@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"chronokeep/results/database"
 	"chronokeep/results/handlers"
 	"chronokeep/results/util"
 
@@ -25,11 +24,6 @@ func main() {
 	e := echo.New()
 	e.Debug = config.Development
 
-	err = database.Setup(config)
-	if err != nil {
-		log.Fatal("Unable to setup database. ", err)
-	}
-
 	// Set up Recover and Logger middleware.
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -42,10 +36,12 @@ func main() {
 		},
 	}))
 
+	// Handlers has a setup function which sets up the database for use.
+	handlers.Setup(config)
+	// Set up API handlers.
 	handler := handlers.Handler{}
 	handler.Bind(e.Group(""))
 	r := e.Group("")
-	r.Use(middleware.JWT([]byte(config.SecretKey)))
 	handler.BindRestricted(r)
 
 	e.GET("/health", func(c echo.Context) error {

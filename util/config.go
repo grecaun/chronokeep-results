@@ -55,6 +55,11 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New("SECRET_KEY not set or under 20 characters")
 	}
 
+	refresh_key := os.Getenv("REFRESH_KEY")
+	if refresh_key == "" || len(refresh_key) < 20 {
+		return nil, errors.New("REFRESH_KEY not set or under 20 characters")
+	}
+
 	admin_email := os.Getenv("ADMIN_EMAIL")
 	admin_name := os.Getenv("ADMIN_NAME")
 	admin_pass := os.Getenv("ADMIN_PASS")
@@ -71,6 +76,7 @@ func GetConfig() (*Config, error) {
 		Development:    development,
 		AutoTLS:        autotls,
 		SecretKey:      secret_key,
+		RefreshKey:     refresh_key,
 		AdminEmail:     admin_email,
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
@@ -90,6 +96,7 @@ type Config struct {
 	Development    bool
 	AutoTLS        bool
 	SecretKey      string
+	RefreshKey     string
 	AdminEmail     string
 	AdminName      string
 	AdminPass      string
