@@ -58,6 +58,11 @@ type ChangeEmailRequest struct {
 	NewEmail string `json:"newEmail"`
 }
 
+// RefreshTokenRequest Struct used to request a fresh token.
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 // ChangePasswordRequest Struct used to change the password on an account.
 type ChangePasswordRequest struct {
 	Email       string `json:"email"`

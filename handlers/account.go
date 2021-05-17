@@ -3,10 +3,10 @@ package handlers
 import (
 	"chronokeep/results/auth"
 	"chronokeep/results/types"
-	"chronokeep/results/util"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -226,38 +226,19 @@ func (h Handler) Login(c echo.Context) error {
 		database.InvalidPassword(*account)
 		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
 	}
-	config, err := util.GetConfig()
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Config Error", err)
-	}
-	// Create token
-	claims := jwt.MapClaims{}
-	claims["email"] = account.Email
-	claims["authorized"] = true
-	claims["exp"] = time.Now().Add(expirationWindow).Unix()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(config.SecretKey))
+	token, refresh, err := createTokens(account.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
 	}
-	// Create refresh token
-	claims = jwt.MapClaims{}
-	claims["email"] = account.Email
-	claims["exp"] = time.Now().Add(refreshWindow).Unix()
-	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	r, err := refresh.SignedString([]byte(config.RefreshKey))
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
-	}
-	account.Token = t
-	account.RefreshToken = r
+	account.Token = *token
+	account.RefreshToken = *refresh
 	err = database.UpdateTokens(*account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	return c.JSON(http.StatusOK, map[string]string{
-		"access_token":  t,
-		"refresh_token": r,
+		"access_token":  *token,
+		"refresh_token": *refresh,
 	})
 }
 
@@ -275,20 +256,113 @@ func (h Handler) Logout(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func verifyToken(r *http.Request) (*types.Account, error) {
-	token, email, err := util.GetTokenAndEmail(r)
-	if err != nil || token == nil || email == nil {
-		return nil, fmt.Errorf("error retrieving token(%v)/email(%v)/err(%v)", token, email, err)
+func (h Handler) Refresh(c echo.Context) error {
+	request := types.RefreshTokenRequest{}
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	account, err := database.GetAccount(*email)
+	rtoken, err := jwt.Parse(request.RefreshToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.RefreshKey), nil
+	})
+	// Probably expired or doesn't exist.
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", err)
+	}
+	// Check if valid or the claims are set
+	claims, ok := rtoken.Claims.(jwt.MapClaims)
+	if !ok || !rtoken.Valid {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("token not valid or claims issue"))
+	}
+	// Valid not expired token.
+	email, ok := claims["email"].(string)
+	if !ok {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("email not set in token"))
+	}
+	account, err := database.GetAccount(email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	if account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account not found"))
+	}
+	// Verify the token matches, throw in an empty check for if the user logged out as well.
+	if account.RefreshToken != request.RefreshToken || account.RefreshToken == "" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("refresh token does not match account token"))
+	}
+	token, refresh, err := createTokens(account.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
+	}
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(*account)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	return c.JSON(http.StatusOK, map[string]string{
+		"access_token":  *token,
+		"refresh_token": *refresh,
+	})
+}
+
+func verifyToken(r *http.Request) (*types.Account, error) {
+	bearToken := r.Header.Get("Authorization")
+	strArr := strings.Split(bearToken, " ")
+	if len(strArr) != 2 {
+		return nil, errors.New("unknown authorization header")
+	}
+	token, err := jwt.Parse(strArr[1], func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.SecretKey), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("claims not set or token is not valid")
+	}
+	email, ok := claims["email"].(string)
+	if !ok {
+		return nil, errors.New("email not found in token claims")
+	}
+	account, err := database.GetAccount(email)
 	if err != nil {
 		return nil, err
 	}
 	if account == nil {
 		return nil, errors.New("account not found")
 	}
-	if account.Token != *token {
+	if account.Token != strArr[1] || account.Token == "" {
 		return nil, errors.New("token no longer valid")
 	}
 	return account, nil
+}
+
+func createTokens(email string) (token, refresh *string, err error) {
+	// Create token
+	claims := jwt.MapClaims{}
+	claims["email"] = email
+	claims["authorized"] = true
+	claims["exp"] = time.Now().Add(expirationWindow).Unix()
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	*token, err = t.SignedString([]byte(config.SecretKey))
+	if err != nil {
+		return nil, nil, err
+	}
+	// Create refresh token
+	claims = jwt.MapClaims{}
+	claims["email"] = email
+	claims["exp"] = time.Now().Add(refreshWindow).Unix()
+	r := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	*refresh, err = r.SignedString([]byte(config.RefreshKey))
+	if err != nil {
+		return nil, nil, err
+	}
+	return token, refresh, nil
 }
