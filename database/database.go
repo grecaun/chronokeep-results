@@ -61,4 +61,6 @@ type Database interface {
 	GetAccountEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
+	// Close the database.
+	Close()
 }

@@ -24,3 +24,7 @@ func Setup(inCfg *util.Config) error {
 		return errors.New("unknown sql driver specified")
 	}
 }
+
+func Finalize() {
+	database.Close()
+}

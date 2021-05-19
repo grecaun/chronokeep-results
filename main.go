@@ -37,7 +37,11 @@ func main() {
 	}))
 
 	// Handlers has a setup function which sets up the database for use.
-	handlers.Setup(config)
+	err = handlers.Setup(config)
+	defer handlers.Finalize()
+	if err != nil {
+		log.Fatalf("Error setting up database. %v", err)
+	}
 	// Set up API handlers.
 	handler := handlers.Handler{}
 	handler.Bind(e.Group(""))
