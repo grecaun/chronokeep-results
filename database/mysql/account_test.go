@@ -480,9 +480,27 @@ func TestChangePassword(t *testing.T) {
 		t.Fatalf("error changing password: %v", err)
 	}
 	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount == nil {
+		t.Fatal("get account failure")
+	}
 	err = auth.VerifyPassword(nAccount.Password, testPassword2)
 	if err != nil {
 		t.Errorf("password doesn't match: %v", err)
+	}
+	nAccount.Token = "testToken1"
+	nAccount.RefreshToken = "testToken2"
+	_ = db.UpdateTokens(*nAccount)
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.Token == "" || nAccount.RefreshToken == "" {
+		t.Error("Expected tokens to be set.")
+	}
+	err = db.ChangePassword(nAccount.Email, hashPass, true)
+	if err != nil {
+		t.Fatalf("error changing password: %v", err)
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.Token != "" || nAccount.RefreshToken != "" {
+		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
 	}
 }
 
@@ -495,6 +513,13 @@ func TestChangeEmail(t *testing.T) {
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
 	newEmail := "new_email2020@test.com"
+	nAccount.Token = "testToken1"
+	nAccount.RefreshToken = "testToken2"
+	_ = db.UpdateTokens(*nAccount)
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.Token == "" || nAccount.RefreshToken == "" {
+		t.Error("Expected tokens to be set.")
+	}
 	err = db.ChangeEmail(nAccount.Email, newEmail)
 	if err != nil {
 		t.Fatalf("error changing email: %v", err)
@@ -506,6 +531,8 @@ func TestChangeEmail(t *testing.T) {
 	nAccount, _ = db.GetAccount(newEmail)
 	if nAccount == nil {
 		t.Error("account with new email not found")
+	} else if nAccount.Token != "" || nAccount.RefreshToken != "" {
+		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
 	}
 }
 
@@ -517,6 +544,13 @@ func TestInvalidPassword(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
+	nAccount.Token = "testToken1"
+	nAccount.RefreshToken = "testToken2"
+	_ = db.UpdateTokens(*nAccount)
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.Token == "" || nAccount.RefreshToken == "" {
+		t.Error("Expected tokens to be set.")
+	}
 	for i := 1; i <= MaxLoginAttempts+3; i++ {
 		err = db.InvalidPassword(*nAccount)
 		if err != nil {
@@ -525,8 +559,14 @@ func TestInvalidPassword(t *testing.T) {
 		nAccount, _ = db.GetAccount(nAccount.Email)
 		if nAccount.WrongPassAttempts > MaxLoginAttempts && nAccount.Locked == false {
 			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, MaxLoginAttempts+1)
+			if nAccount.Token != "" || nAccount.RefreshToken != "" {
+				t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
+			}
 		} else if nAccount.WrongPassAttempts <= MaxLoginAttempts && nAccount.Locked == true {
 			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, MaxLoginAttempts+1)
+			if nAccount.Token == "" || nAccount.RefreshToken == "" {
+				t.Error("Expected tokens to be set.")
+			}
 		}
 		if nAccount.WrongPassAttempts != i {
 			t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, i)

@@ -172,7 +172,8 @@ func (h Handler) ChangePassword(c echo.Context) error {
 		return c.NoContent(http.StatusOK)
 		// Otherwise if an admin is changing a password for a user let them.
 	} else if account.Type == "admin" {
-		err = database.ChangePassword(request.Email, hashedPassword)
+		// Admin should log the person out when changing their password
+		err = database.ChangePassword(request.Email, hashedPassword, true)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 		}

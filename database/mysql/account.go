@@ -279,17 +279,21 @@ func (m *MySQL) UpdateAccount(account types.Account) error {
 	return nil
 }
 
-// ChangePassword Updates a user's password.
-func (m *MySQL) ChangePassword(email, newPassword string) error {
+// ChangePassword Updates a user's password. It can also force a logout of the user. Only checks first value in the logout array if values are specified.
+func (m *MySQL) ChangePassword(email, newPassword string, logout ...bool) error {
 	db, err := m.GetDB()
 	if err != nil {
 		return err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
+	stmt := "UPDATE account SET account_password=? WHERE account_email=?;"
+	if len(logout) > 0 && logout[0] {
+		stmt = "UPDATE account SET account_password=?, account_token='', account_refresh_token='' WHERE account_email=?;"
+	}
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_password=? WHERE account_email=?;",
+		stmt,
 		newPassword,
 		email,
 	)
@@ -334,7 +338,7 @@ func (m *MySQL) UpdateTokens(account types.Account) error {
 	return nil
 }
 
-// ChangeEmail Updates an account email.
+// ChangeEmail Updates an account email. Also forces a logout of the impacted account.
 func (m *MySQL) ChangeEmail(oldEmail, newEmail string) error {
 	db, err := m.GetDB()
 	if err != nil {
@@ -344,7 +348,7 @@ func (m *MySQL) ChangeEmail(oldEmail, newEmail string) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_email=? WHERE account_email=?;",
+		"UPDATE account SET account_email=?, account_token='', account_refresh_token='' WHERE account_email=?;",
 		newEmail,
 		oldEmail,
 	)
@@ -373,9 +377,13 @@ func (m *MySQL) InvalidPassword(account types.Account) error {
 	if account.WrongPassAttempts >= MaxLoginAttempts {
 		locked = true
 	}
+	stmt := "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;"
+	if locked {
+		stmt = "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1, account_token='', account_refresh_token='' WHERE account_email=?;"
+	}
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;",
+		stmt,
 		locked,
 		account.Email,
 	)

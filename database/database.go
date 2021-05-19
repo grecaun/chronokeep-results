@@ -22,7 +22,7 @@ type Database interface {
 	ResurrectAccount(emnail string) error
 	GetDeletedAccount(email string) (*types.Account, error)
 	UpdateAccount(account types.Account) error
-	ChangePassword(email, newPassword string) error
+	ChangePassword(email, newPassword string, logout ...bool) error
 	ChangeEmail(oldEmail, newEmail string) error
 	InvalidPassword(account types.Account) error
 	UpdateTokens(account types.Account) error
