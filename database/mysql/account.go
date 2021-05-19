@@ -373,8 +373,12 @@ func (m *MySQL) InvalidPassword(account types.Account) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
+	pAcc, err := m.GetAccount(account.Email)
+	if err != nil {
+		return fmt.Errorf("error trying to retrieve account: %v", err)
+	}
 	locked := false
-	if account.WrongPassAttempts >= MaxLoginAttempts {
+	if pAcc.WrongPassAttempts >= MaxLoginAttempts {
 		locked = true
 	}
 	stmt := "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;"
@@ -392,10 +396,68 @@ func (m *MySQL) InvalidPassword(account types.Account) error {
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error checking rows affefcted on invalid password information update: %v", err)
+		return fmt.Errorf("error checking rows affected on invalid password information update: %v", err)
 	}
 	if rows != 1 {
 		return fmt.Errorf("error updating invalid password information, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// ValidPassword Resets the incorrect password on an account.
+func (m *MySQL) ValidPassword(account types.Account) error {
+	db, err := m.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	if account.Locked {
+		return errors.New("account locked")
+	}
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET account_wrong_pass=0 WHERE account_email=?;",
+		account.Email,
+	)
+	if err != nil {
+		return fmt.Errorf("erorr updating valid password information: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected on valid password information update: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error updating valid password information, rows affected: %v", rows)
+	}
+	return nil
+}
+
+// UnlockAccount Unlocks an account that's been locked.
+func (m *MySQL) UnlockAccount(account types.Account) error {
+	db, err := m.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	if !account.Locked {
+		return errors.New("account not locked")
+	}
+	res, err := db.ExecContext(
+		ctx,
+		"UPDATE account SET account_wrong_pass=0, account_locked=FALSE WHERE account_email=?;",
+		account.Email,
+	)
+	if err != nil {
+		return fmt.Errorf("erorr unlocking account: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking rows affected on account unlock: %v", err)
+	}
+	if rows != 1 {
+		return fmt.Errorf("error unlocking account, rows affected: %v", rows)
 	}
 	return nil
 }

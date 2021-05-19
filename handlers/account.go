@@ -11,6 +11,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -27,8 +29,11 @@ func (h Handler) GetAccount(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account.Type != "admin" && account.Email != request.Email {
+	if account == nil || (account.Type != "admin" && account.Email != request.Email) {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
 	account, err = database.GetAccount(request.Email)
 	if err != nil {
@@ -57,8 +62,11 @@ func (h Handler) GetAccounts(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account.Type != "admin" {
+	if account == nil || account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
 	accounts, err := database.GetAccounts()
 	if err != nil {
@@ -78,8 +86,11 @@ func (h Handler) AddAccount(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account.Type != "admin" {
+	if account == nil || account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
 	password, err := auth.HashPassword(request.Password)
 	if err != nil {
@@ -107,6 +118,15 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	// Only admins and the owner of an account can update it.
 	if account.Type != "admin" && account.Email != request.Account.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if account.Type != "admin" && account.Locked {
+		account.RefreshToken = ""
+		account.Token = ""
+		err = database.UpdateTokens(*account)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Database Error", nil)
+		}
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
 	err = database.UpdateAccount(request.Account)
 	if err != nil {
@@ -154,6 +174,12 @@ func (h Handler) ChangePassword(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	if account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Account Not Found", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+	}
 	hashedPassword, err := auth.HashPassword(request.NewPassword)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
@@ -193,7 +219,7 @@ func (h Handler) ChangeEmail(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
 	// Only let admins change emails.
-	if account.Type != "admin" {
+	if account.Locked || account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	err = database.ChangeEmail(request.OldEmail, request.NewEmail)
@@ -204,10 +230,12 @@ func (h Handler) ChangeEmail(c echo.Context) error {
 }
 
 func (h Handler) Login(c echo.Context) error {
+	log.Info("Logging in.")
 	var request types.LoginRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
+	log.Info("Bind success, getting account.")
 	// Get User
 	account, err := database.GetAccount(request.Email)
 	if err != nil {
@@ -216,21 +244,29 @@ func (h Handler) Login(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", errors.New("user not found"))
 	}
+	log.Info("User found.")
 	// Check if account locked. Do this before verifying password.
 	// If done after a bad actor could potentially figure out if they had a correct password by trying
 	// even after it was locked until they received the locked message.
 	if account.Locked {
 		return getAPIError(c, http.StatusUnauthorized, "Account Locked", fmt.Errorf("account locked: %+v", account))
 	}
+	log.Info("Verifying password.")
 	err = auth.VerifyPassword(account.Password, request.Password)
 	if err != nil {
 		database.InvalidPassword(*account)
 		return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
 	}
-	token, refresh, err := createTokens(account.Email)
+	err = database.ValidPassword(*account)
 	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	log.Info("Generating tokens.")
+	token, refresh, err := createTokens(account.Email)
+	if err != nil || token == nil || refresh == nil {
 		return getAPIError(c, http.StatusInternalServerError, "Token Generation Error", err)
 	}
+	log.Info("Updating tokens on account.")
 	account.Token = *token
 	account.RefreshToken = *refresh
 	err = database.UpdateTokens(*account)
@@ -289,6 +325,15 @@ func (h Handler) Refresh(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account not found"))
 	}
+	if account.Locked {
+		account.RefreshToken = ""
+		account.Token = ""
+		err = database.UpdateTokens(*account)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+		}
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
 	// Verify the token matches, throw in an empty check for if the user logged out as well.
 	if account.RefreshToken != request.RefreshToken || account.RefreshToken == "" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("refresh token does not match account token"))
@@ -307,6 +352,33 @@ func (h Handler) Refresh(c echo.Context) error {
 		"access_token":  *token,
 		"refresh_token": *refresh,
 	})
+}
+
+func (h Handler) Unlock(c echo.Context) error {
+	var request types.DeleteAccountRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// Only let admins unlock accounts.
+	if account.Locked || account.Type != "admin" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	toUnlock, err := database.GetAccount(request.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	if toUnlock == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	}
+	err = database.UnlockAccount(*toUnlock)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+	}
+	return c.NoContent(http.StatusOK)
 }
 
 func verifyToken(r *http.Request) (*types.Account, error) {
@@ -345,14 +417,14 @@ func verifyToken(r *http.Request) (*types.Account, error) {
 	return account, nil
 }
 
-func createTokens(email string) (token, refresh *string, err error) {
+func createTokens(email string) (*string, *string, error) {
 	// Create token
 	claims := jwt.MapClaims{}
 	claims["email"] = email
 	claims["authorized"] = true
 	claims["exp"] = time.Now().Add(expirationWindow).Unix()
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	*token, err = t.SignedString([]byte(config.SecretKey))
+	token, err := t.SignedString([]byte(config.SecretKey))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -361,9 +433,9 @@ func createTokens(email string) (token, refresh *string, err error) {
 	claims["email"] = email
 	claims["exp"] = time.Now().Add(refreshWindow).Unix()
 	r := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	*refresh, err = r.SignedString([]byte(config.RefreshKey))
+	refresh, err := r.SignedString([]byte(config.RefreshKey))
 	if err != nil {
 		return nil, nil, err
 	}
-	return token, refresh, nil
+	return &token, &refresh, nil
 }

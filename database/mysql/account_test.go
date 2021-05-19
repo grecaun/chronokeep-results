@@ -548,6 +548,7 @@ func TestInvalidPassword(t *testing.T) {
 	nAccount.RefreshToken = "testToken2"
 	_ = db.UpdateTokens(*nAccount)
 	nAccount, _ = db.GetAccount(nAccount.Email)
+	var dAccount *types.Account
 	if nAccount.Token == "" || nAccount.RefreshToken == "" {
 		t.Error("Expected tokens to be set.")
 	}
@@ -556,20 +557,20 @@ func TestInvalidPassword(t *testing.T) {
 		if err != nil {
 			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
 		}
-		nAccount, _ = db.GetAccount(nAccount.Email)
-		if nAccount.WrongPassAttempts > MaxLoginAttempts && nAccount.Locked == false {
+		dAccount, _ = db.GetAccount(nAccount.Email)
+		if dAccount.WrongPassAttempts > MaxLoginAttempts && dAccount.Locked == false {
 			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, MaxLoginAttempts+1)
-			if nAccount.Token != "" || nAccount.RefreshToken != "" {
-				t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
+			if dAccount.Token != "" || dAccount.RefreshToken != "" {
+				t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", dAccount.Token, dAccount.RefreshToken)
 			}
-		} else if nAccount.WrongPassAttempts <= MaxLoginAttempts && nAccount.Locked == true {
+		} else if dAccount.WrongPassAttempts <= MaxLoginAttempts && dAccount.Locked == true {
 			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, MaxLoginAttempts+1)
-			if nAccount.Token == "" || nAccount.RefreshToken == "" {
+			if dAccount.Token == "" || dAccount.RefreshToken == "" {
 				t.Error("Expected tokens to be set.")
 			}
 		}
-		if nAccount.WrongPassAttempts != i {
-			t.Errorf("wrong password attempts set to %v, should be %v", nAccount.WrongPassAttempts, i)
+		if dAccount.WrongPassAttempts != i {
+			t.Errorf("wrong password attempts set to %v, should be %v", dAccount.WrongPassAttempts, i)
 		}
 	}
 }
@@ -679,5 +680,78 @@ func TestUpdateTokens(t *testing.T) {
 	}
 	if dAccount.RefreshToken != nAccount.RefreshToken {
 		t.Errorf("Expected refresh token %v, found %v.", nAccount.RefreshToken, dAccount.RefreshToken)
+	}
+}
+
+func TestValidPassword(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	nAccount, _ := db.AddAccount(accounts[0])
+	for i := 1; i <= MaxLoginAttempts-2; i++ {
+		err = db.InvalidPassword(*nAccount)
+		if err != nil {
+			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
+		}
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.WrongPassAttempts < 1 {
+		t.Errorf("Expected more than 1 wrong pass attempts; found %v.", nAccount.WrongPassAttempts)
+	}
+	err = db.ValidPassword(*nAccount)
+	if err != nil {
+		t.Fatalf("Valid password threw an error: %v", err)
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.WrongPassAttempts != 0 {
+		t.Errorf("Expected zero wrong pass attempts; found %v.", nAccount.WrongPassAttempts)
+	}
+	// Test to make sure we don't unlock if locked.
+	for i := 1; i <= MaxLoginAttempts+3; i++ {
+		err = db.InvalidPassword(*nAccount)
+		if err != nil {
+			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
+		}
+	}
+	err = db.ValidPassword(*nAccount)
+	if err == nil {
+		t.Fatal("Expected an error on valid password attempt for locked account.")
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.WrongPassAttempts == 0 {
+		t.Errorf("Expected wrong password attempts; found %v.", nAccount.WrongPassAttempts)
+	}
+}
+
+func TestUnlockAccount(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupAccountTests()
+	nAccount, _ := db.AddAccount(accounts[0])
+	// Should throw error if account isn't locked
+	err = db.UnlockAccount(*nAccount)
+	if err == nil {
+		t.Fatal("no error thrown on unlock of unlocked account")
+	}
+	for i := 1; i <= MaxLoginAttempts+3; i++ {
+		err = db.InvalidPassword(*nAccount)
+		if err != nil {
+			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
+		}
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	err = db.UnlockAccount(*nAccount)
+	if err != nil {
+		t.Fatalf("Unexpected error on unlock account: %v", err)
+	}
+	nAccount, _ = db.GetAccount(nAccount.Email)
+	if nAccount.WrongPassAttempts != 0 {
+		t.Errorf("Expected wrong pass attempts to be reset to 0; found %v.", nAccount.WrongPassAttempts)
 	}
 }

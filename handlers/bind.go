@@ -39,6 +39,7 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/account/password", h.ChangePassword)
 	group.POST("/account/email", h.ChangeEmail)
 	group.GET("/account/logout", h.Logout)
+	group.GET("/account/unlock", h.Unlock)
 	// Key handlers
 	group.GET("/key", h.GetKeys)
 	group.PUT("/key/add", h.AddKey)

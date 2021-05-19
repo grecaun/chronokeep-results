@@ -10,7 +10,7 @@ type Account struct {
 	Name              string `json:"name" validate:"required"`
 	Email             string `json:"email" validate:"email,required"`
 	Type              string `json:"type" validate:"required"`
-	Locked            bool   `json:"-"`
+	Locked            bool   `json:"locked"`
 	WrongPassAttempts int    `json:"-"`
 	Token             string `json:"-"`
 	RefreshToken      string `json:"-"`
