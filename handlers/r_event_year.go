@@ -7,53 +7,51 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h Handler) GetEventYear(c echo.Context) error {
+func (h Handler) RGetEventYears(c echo.Context) error {
 	var request types.GetEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	account, err := verifyToken(c.Request())
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
-		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	event, err := database.GetEvent(request.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", nil)
 	}
-	if mult == nil || mult.Event == nil || mult.EventYear == nil {
-		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
+	if event == nil {
+		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	// Only the account owner can access restricted events.
-	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
-		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
+	// Verify they're allowed to pull these identifiers
+	if account.Type != "admin" && account.Identifier != event.AccountIdentifier {
+		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
-	return c.JSON(http.StatusOK, types.EventYearResponse{
-		Event:     *mult.Event,
-		EventYear: *mult.EventYear,
+	eventYears, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", nil)
+	}
+	return c.JSON(http.StatusOK, types.EventYearsResponse{
+		EventYears: eventYears,
 	})
 }
 
-func (h Handler) AddEventYear(c echo.Context) error {
+func (h Handler) RAddEventYear(c echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	account, err := verifyToken(c.Request())
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
-		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-	// Verify key access level.  Readonly cannot write or modify values.
-	if mkey.Key.Type == "read" {
-		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly", nil)
-	}
+
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
@@ -62,7 +60,7 @@ func (h Handler) AddEventYear(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
 	// Verify they're allowed to add this event.
-	if mkey.Account.Identifier != event.AccountIdentifier {
+	if account.Identifier != event.AccountIdentifier && account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	eventYear, err := database.AddEventYear(types.EventYear{
@@ -80,22 +78,17 @@ func (h Handler) AddEventYear(c echo.Context) error {
 	})
 }
 
-func (h Handler) UpdateEventYear(c echo.Context) error {
+func (h Handler) RUpdateEventYear(c echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	account, err := verifyToken(c.Request())
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
-		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
-	}
-	// Verify key access level.  Readonly cannot write or modify values.
-	if mkey.Key.Type == "read" {
-		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly", nil)
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
 	mult, err := database.GetEventAndYear(request.Slug, request.EventYear.Year)
 	if err != nil {
@@ -105,7 +98,7 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
 	// Verify they're allowed to modify this event year.
-	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
+	if account.Identifier != mult.Event.AccountIdentifier && account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	err = database.UpdateEventYear(types.EventYear{
@@ -128,22 +121,17 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteEventYear(c echo.Context) error {
+func (h Handler) RDeleteEventYear(c echo.Context) error {
 	var request types.DeleteEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	account, err := verifyToken(c.Request())
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
-		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
-	}
-	// Verify access level. Delete is the only level that can delete values.
-	if mkey.Key.Type != "delete" {
-		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly/Write", nil)
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
@@ -153,7 +141,7 @@ func (h Handler) DeleteEventYear(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
 	// Verify they're allowed to modify this event year.
-	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
+	if account.Identifier != mult.Event.AccountIdentifier && account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	err = database.DeleteEventYear(*mult.EventYear)

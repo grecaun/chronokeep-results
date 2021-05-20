@@ -26,12 +26,6 @@ type ModifyEventResponse struct {
 	Requests
 */
 
-// GetAccountEventsRequest Struct used for the request to Get Events based on account.
-type GetAccountEventsRequest struct {
-	Key   string `json:"key"`
-	Email string `json:"account_email"`
-}
-
 // GetEventRequest Struct used for the request to get a single Event.
 type GetEventRequest struct {
 	Key  string `json:"key"`

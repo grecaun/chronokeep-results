@@ -21,7 +21,7 @@ func (h Handler) GetEvents(c echo.Context) error {
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Account/Key Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
@@ -31,16 +31,16 @@ func (h Handler) GetEvents(c echo.Context) error {
 	}
 	var events []types.Event
 	if request.Email != nil {
-		// Only admins and owners of the account can pull account events.
-		if mkey.Account.Type != "admin" && mkey.Account.Email != *request.Email {
-			return getAPIError(c, http.StatusUnauthorized, "Not Admin / Ownership Error", nil)
+		// Only account owners can pull their account events with a key.
+		if mkey.Account.Email != *request.Email {
+			return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 		}
 		events, err = database.GetAccountEvents(*request.Email)
 	} else {
 		events, err = database.GetEvents()
 	}
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Events Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Events", err)
 	}
 	return c.JSON(http.StatusOK, types.GetEventsResponse{
 		Events: events,
@@ -58,7 +58,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Account/Key Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
@@ -68,17 +68,18 @@ func (h Handler) GetEvent(c echo.Context) error {
 	}
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Event Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
 	}
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if mkey.Account.Type != "admin" && event.AccessRestricted && mkey.Account.Identifier != event.AccountIdentifier {
+	// Only account owner can access restricted events
+	if event.AccessRestricted && mkey.Account.Identifier != event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
 	eventYears, err := database.GetEventYears(event.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Event Years Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	var recent *types.EventYear
 	now := time.Now()
@@ -94,7 +95,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 	if recent != nil {
 		res, err = database.GetResults(recent.Identifier)
 		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Database Error (Results Fetch)", err)
+			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 		}
 	}
 	return c.JSON(http.StatusOK, types.GetEventResponse{
@@ -116,7 +117,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Account/Key Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
@@ -128,27 +129,8 @@ func (h Handler) AddEvent(c echo.Context) error {
 	if mkey.Key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly", nil)
 	}
-	// This verifies that if they've specified an email address they either own the account
-	// or they're an admin.
-	if mkey.Account.Type != "admin" && (request.Email != nil && *request.Email != mkey.Account.Email) {
-		return getAPIError(c, http.StatusUnauthorized, "Only Admins Can Add Events For Others", nil)
-	}
-	// Add the correct account identifier.
-	var id int64
-	if request.Email != nil {
-		acc, err := database.GetAccount(*request.Email)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Database Error (Account Fetch)", err)
-		}
-		if acc == nil {
-			return getAPIError(c, http.StatusNotFound, "Account Not Found Via Email", nil)
-		}
-		id = acc.Identifier
-	} else {
-		id = mkey.Account.Identifier
-	}
 	event, err := database.AddEvent(types.Event{
-		AccountIdentifier: id,
+		AccountIdentifier: mkey.Account.Identifier,
 		Name:              request.Event.Name,
 		Slug:              request.Event.Slug,
 		Website:           request.Event.Website,
@@ -157,7 +139,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 		AccessRestricted:  request.Event.AccessRestricted,
 	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Add Event Error, Duplicate Slug/Name Likely)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event (Duplicate Slug/Name Likely)", err)
 	}
 	return c.JSON(http.StatusOK, types.ModifyEventResponse{
 		Event: *event,
@@ -175,7 +157,7 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Key/Account Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
@@ -189,13 +171,13 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	}
 	event, err := database.GetEvent(request.Event.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Account Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
 	}
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if mkey.Account.Type != "admin" && event.AccountIdentifier != mkey.Account.Identifier {
-		return getAPIError(c, http.StatusUnauthorized, "Not Admin / Ownership Error", nil)
+	if event.AccountIdentifier != mkey.Account.Identifier {
+		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	err = database.UpdateEvent(types.Event{
 		Identifier:       event.Identifier,
@@ -207,11 +189,11 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 		AccessRestricted: request.Event.AccessRestricted,
 	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Update Event, Nothing to Update / Name Conflict)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Updating Event (Nothing to Update / Name Conflict)", err)
 	}
 	event, err = database.GetEvent(request.Event.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Event Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
 	}
 	return c.JSON(http.StatusOK, types.ModifyEventResponse{
 		Event: *event,
@@ -229,7 +211,7 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Key/Account Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
@@ -243,17 +225,17 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 	}
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Event Fetch)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
 	}
 	if event == nil {
 		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
 	}
-	if mkey.Account.Type != "admin" && event.AccountIdentifier != mkey.Account.Identifier {
-		return getAPIError(c, http.StatusUnauthorized, "Not Admin / Ownership Error", nil)
+	if event.AccountIdentifier != mkey.Account.Identifier {
+		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	err = database.DeleteEvent(*event)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Database Error (Delete Event)", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Event", err)
 	}
 	return c.NoContent(http.StatusOK)
 }
