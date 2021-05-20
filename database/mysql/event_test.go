@@ -369,8 +369,8 @@ func TestUpdateEvent(t *testing.T) {
 	if event.AccountIdentifier != account1.Identifier {
 		t.Errorf("Event account id changed from %v to %v.", account1.Identifier, event.AccountIdentifier)
 	}
-	if event.Name != "Event 1" {
-		t.Errorf("Event name changed from %v to %v.", "Event 1", event.Name)
+	if event.Name == "Event 1" {
+		t.Errorf("Event name not changed: %v to %v.", "Event 1", event.Name)
 	}
 	if event.Slug != "event1" {
 		t.Errorf("Event name changed from %v to %v.", "event1", event.Slug)

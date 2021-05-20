@@ -34,15 +34,22 @@ type GetAccountEventsRequest struct {
 
 // GetEventRequest Struct used for the request to get a single Event.
 type GetEventRequest struct {
-	Key       string `json:"key"`
-	EventSlug string `json:"slug"`
+	Key  string `json:"key"`
+	Slug string `json:"slug"`
+}
+
+// GetEventsRequest Struct used for the request for multiple events.  If an account email is specified it pulls all events
+// associated with that account, otherwise it pulls all non-restricted events.
+type GetEventsRequest struct {
+	Key   string  `json:"key"`
+	Email *string `json:"account_email,omitempty"`
 }
 
 // AddEventRequest Struct used for the request to Add an Event.
 type AddEventRequest struct {
-	Key          string `json:"key"`
-	AccountEmail string `json:"account_email"`
-	Event        Event  `json:"event"`
+	Key   string  `json:"key"`
+	Email *string `json:"account_email,omitempty"`
+	Event Event   `json:"event"`
 }
 
 // UpdateEventRequest Struct used for the request to Update an Event.

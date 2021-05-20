@@ -4,6 +4,7 @@ import (
 	"chronokeep/results/types"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -183,7 +184,8 @@ func (m *MySQL) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET website=?, image=?, contact_email=?, access_restricted=? WHERE event_id=?",
+		"UPDATE event SET event_name=?, website=?, image=?, contact_email=?, access_restricted=? WHERE event_id=?;",
+		event.Name,
 		event.Website,
 		event.Image,
 		event.ContactEmail,
@@ -197,8 +199,8 @@ func (m *MySQL) UpdateEvent(event types.Event) error {
 	if err != nil {
 		return fmt.Errorf("error checking rows affected on update event: %v", err)
 	}
-	if rows != 1 {
-		return fmt.Errorf("error updating event, rows affected: %v", rows)
+	if rows < 1 {
+		return errors.New("no rows affected")
 	}
 	return nil
 }
