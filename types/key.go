@@ -1,6 +1,7 @@
 package types
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -28,5 +29,18 @@ func (k *Key) Equal(other *Key) bool {
 
 // Validate Ensures valid data in the structure.
 func (k *Key) Validate(validate *validator.Validate) error {
+	valid := false
+	switch k.Type {
+	case "read":
+		valid = true
+	case "write":
+		valid = true
+	case "delete":
+		valid = true
+	}
+	if !valid {
+		return errors.New("invalid key type specified")
+	}
+	// TODO: validation on the allowed hosts
 	return validate.Struct(k)
 }

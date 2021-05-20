@@ -1,6 +1,8 @@
 package types
 
 import (
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -46,5 +48,17 @@ func (a *Account) PasswordIsHashed() bool {
 
 // Validate Ensures that the struct is viable for entry into the database.
 func (a *Account) Validate(validate *validator.Validate) error {
+	valid := false
+	switch a.Type {
+	case "admin":
+		valid = true
+	case "free":
+		valid = true
+	case "paid":
+		valid = true
+	}
+	if !valid {
+		return errors.New("invalid account type specified")
+	}
 	return validate.Struct(a)
 }
