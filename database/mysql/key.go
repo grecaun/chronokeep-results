@@ -146,7 +146,7 @@ func (m *MySQL) UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET key_type=?, allowed_hosts=?, valid_until=? WHERE key_value=?;",
+		"UPDATE api_key SET key_type=?, allowed_hosts=?, valid_until=? WHERE key_deleted=FALSE AND key_value=?;",
 		key.Type,
 		key.AllowedHosts,
 		key.ValidUntil,

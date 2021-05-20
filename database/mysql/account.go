@@ -30,7 +30,7 @@ func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Accoun
 	} else if key != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_value=?;",
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=?;",
 			key,
 		)
 	} else if id != nil {
@@ -261,7 +261,7 @@ func (m *MySQL) UpdateAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_name=?, account_type=? WHERE account_email=?",
+		"UPDATE account SET account_name=?, account_type=? WHERE account_deleted=FALSE AND account_email=?",
 		account.Name,
 		account.Type,
 		account.Email,

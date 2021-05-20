@@ -15,8 +15,8 @@ type Key struct {
 	AccountIdentifier int64     `json:"-"`
 	Value             string    `json:"value"`
 	Type              string    `json:"type" validate:"required"`
-	AllowedHosts      string    `json:"allowedHosts"`
-	ValidUntil        time.Time `json:"validUntil" validate:"datetime,required"`
+	AllowedHosts      string    `json:"allowed_hosts"`
+	ValidUntil        time.Time `json:"valid_until"`
 }
 
 func (k *Key) Equal(other *Key) bool {
