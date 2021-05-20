@@ -54,8 +54,8 @@ type LoginRequest struct {
 
 // ChangeEmailRequest Struct used to change the email on an account.
 type ChangeEmailRequest struct {
-	OldEmail string `json:"oldEmail"`
-	NewEmail string `json:"newEmail"`
+	OldEmail string `json:"old_email"`
+	NewEmail string `json:"new_email"`
 }
 
 // RefreshTokenRequest Struct used to request a fresh token.
@@ -66,6 +66,6 @@ type RefreshTokenRequest struct {
 // ChangePasswordRequest Struct used to change the password on an account.
 type ChangePasswordRequest struct {
 	Email       string `json:"email"`
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }

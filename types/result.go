@@ -1,5 +1,9 @@
 package types
 
+import (
+	"github.com/go-playground/validator/v10"
+)
+
 // Result is a structure holding information about a specific time
 // result for a specific event.
 type Result struct {
@@ -19,4 +23,9 @@ type Result struct {
 	AgeRanking    int    `json:"ageRanking"`
 	GenderRanking int    `json:"genderRanking"`
 	Finish        bool   `json:"finish"`
+}
+
+// Validate Ensures valid data in the struct.
+func (r *Result) Validate(validate *validator.Validate) error {
+	return validate.Struct(r)
 }

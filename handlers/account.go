@@ -92,6 +92,12 @@ func (h Handler) AddAccount(c echo.Context) error {
 	if account.Locked {
 		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
+	if err = request.Account.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Account Information", err)
+	}
+	if len(request.Password) < 8 {
+		return getAPIError(c, http.StatusBadRequest, "Minimum Password Length (8) Not Met", nil)
+	}
 	password, err := auth.HashPassword(request.Password)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
@@ -99,7 +105,7 @@ func (h Handler) AddAccount(c echo.Context) error {
 	request.Account.Password = password
 	account, err = database.AddAccount(request.Account)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Add Account", err)
 	}
 	return c.JSON(http.StatusOK, types.ModifyAccountResponse{
 		Account: *account,
@@ -115,6 +121,9 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	if err = request.Account.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Account Information", err)
+	}
 	// Only admins and the owner of an account can update it.
 	if account.Type != "admin" && account.Email != request.Account.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
@@ -128,9 +137,16 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 		}
 		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
-	err = database.UpdateAccount(request.Account)
+	acc, err := database.GetAccount(request.Account.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+	}
+	if acc == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	}
+	err = database.UpdateAccount(request.Account)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Update Account", err)
 	}
 	account, err = database.GetAccount(request.Account.Email)
 	if err != nil {
@@ -157,6 +173,9 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 	account, err = database.GetAccount(request.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
 	err = database.DeleteAccount(account.Identifier)
 	if err != nil {

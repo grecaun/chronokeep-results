@@ -44,6 +44,8 @@ func main() {
 	}
 	// Set up API handlers.
 	handler := handlers.Handler{}
+	// Setup the Handler for validator
+	handler.Setup()
 	handler.Bind(e.Group(""))
 	r := e.Group("")
 	handler.BindRestricted(r)

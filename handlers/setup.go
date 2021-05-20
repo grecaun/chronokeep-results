@@ -5,6 +5,8 @@ import (
 	"chronokeep/results/database/mysql"
 	"chronokeep/results/util"
 	"errors"
+
+	"github.com/go-playground/validator/v10"
 )
 
 var (
@@ -27,4 +29,9 @@ func Setup(inCfg *util.Config) error {
 
 func Finalize() {
 	database.Close()
+}
+
+func (h *Handler) Setup() {
+	// Set up Validator.
+	h.validate = validator.New()
 }

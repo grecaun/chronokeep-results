@@ -1,12 +1,15 @@
 package types
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/bcrypt"
+)
 
 // Account is a structure holding information on accounts that have access
 // to this module
 type Account struct {
 	Identifier        int64  `json:"-"`
-	Password          string `json:"-" validate:"required,min=8"`
+	Password          string `json:"-"`
 	Name              string `json:"name" validate:"required"`
 	Email             string `json:"email" validate:"email,required"`
 	Type              string `json:"type" validate:"required"`
@@ -39,4 +42,9 @@ func (a *Account) PasswordIsHashed() bool {
 		}
 	}
 	return true
+}
+
+// Validate Ensures that the struct is viable for entry into the database.
+func (a *Account) Validate(validate *validator.Validate) error {
+	return validate.Struct(a)
 }

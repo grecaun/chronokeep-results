@@ -1,5 +1,9 @@
 package types
 
+import (
+	"github.com/go-playground/validator/v10"
+)
+
 // Event is a structure holding the information regarding an event that can span
 // multiple years
 type Event struct {
@@ -22,4 +26,9 @@ func (e *Event) Equals(other *Event) bool {
 		e.Image == other.Website &&
 		e.ContactEmail == other.ContactEmail &&
 		e.AccessRestricted == other.AccessRestricted
+}
+
+// Validate Ensures valid information in the structure.
+func (e *Event) Validate(validate *validator.Validate) error {
+	return validate.Struct(e)
 }

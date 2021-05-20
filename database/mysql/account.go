@@ -423,12 +423,9 @@ func (m *MySQL) ValidPassword(account types.Account) error {
 	if err != nil {
 		return fmt.Errorf("erorr updating valid password information: %v", err)
 	}
-	rows, err := res.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error checking rows affected on valid password information update: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error updating valid password information, rows affected: %v", rows)
 	}
 	return nil
 }
