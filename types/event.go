@@ -13,8 +13,8 @@ type Event struct {
 	Slug              string `json:"slug" validate:"required"`
 	Website           string `json:"website" validate:"url"`
 	Image             string `json:"image" validate:"url"`
-	ContactEmail      string `json:"contactEmail" validate:"email,required"`
-	AccessRestricted  bool   `json:"accessRestricted"`
+	ContactEmail      string `json:"contact_email" validate:"email"`
+	AccessRestricted  bool   `json:"access_restricted"`
 }
 
 // Equals Returns true if all fields other than Identifier are equal.

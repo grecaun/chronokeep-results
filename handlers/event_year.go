@@ -67,7 +67,7 @@ func (h Handler) AddEventYear(c echo.Context) error {
 	eventYear, err := database.AddEventYear(types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            request.EventYear.Year,
-		DateTime:        request.EventYear.DateTime,
+		DateTime:        request.EventYear.GetDateTime(),
 		Live:            request.EventYear.Live,
 	})
 	if err != nil {
@@ -111,7 +111,7 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 		EventIdentifier: mult.EventYear.EventIdentifier,
 		Identifier:      mult.EventYear.Identifier,
 		Year:            mult.EventYear.Year,
-		DateTime:        request.EventYear.DateTime,
+		DateTime:        request.EventYear.GetDateTime(),
 		Live:            request.EventYear.Live,
 	})
 	if err != nil {

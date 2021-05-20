@@ -215,20 +215,24 @@ func TestGetKeyAndAccount(t *testing.T) {
 	setupMultiTests()
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
-			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+			ValidUntil:        &times[1],
 		},
 	}
 	db.AddKey(keys[0])

@@ -34,34 +34,39 @@ func TestAddKey(t *testing.T) {
 	setupKeyTests()
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
-			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+			ValidUntil:        &times[2],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSCT-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 3).Truncate(time.Second),
+			ValidUntil:        nil,
 		},
 	}
 	key, err := db.AddKey(keys[0])
@@ -107,34 +112,39 @@ func TestGetAccountKeys(t *testing.T) {
 	setupKeyTests()
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
-			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+			ValidUntil:        &times[2],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSCT-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 3).Truncate(time.Second),
+			ValidUntil:        nil,
 		},
 	}
 	k, err := db.GetAccountKeys(account1.Email)
@@ -187,34 +197,39 @@ func TestGetKey(t *testing.T) {
 	setupKeyTests()
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
-			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+			ValidUntil:        &times[2],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSCT-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 3).Truncate(time.Second),
+			ValidUntil:        nil,
 		},
 	}
 	db.AddKey(keys[0])
@@ -267,34 +282,39 @@ func TestDeleteKey(t *testing.T) {
 	setupKeyTests()
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
-			ValidUntil:        time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+			ValidUntil:        &times[2],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSCT-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 3).Truncate(time.Second),
+			ValidUntil:        nil,
 		},
 	}
 	db.AddKey(keys[0])
@@ -347,27 +367,33 @@ func TestUpdateKey(t *testing.T) {
 	defer finalize(t)
 	setupKeyTests()
 	account1, _ := db.AddAccount(accounts[0])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+		time.Date(2016, 4, 1, 4, 11, 5, 0, time.Local),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 	}
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
 	keys[0].Type = "write"
 	keys[0].AllowedHosts = "test.lan,test.com,test.org"
-	keys[0].ValidUntil = time.Now().Add(time.Minute * 30).Truncate(time.Second)
+	validTime := time.Now().Add(time.Minute * 30).Truncate(time.Second)
+	keys[0].ValidUntil = &validTime
 	err = db.UpdateKey(keys[0])
 	if err != nil {
 		t.Fatalf("Error updating key: %v", err)

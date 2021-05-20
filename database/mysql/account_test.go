@@ -320,20 +320,24 @@ func TestDeleteAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: nAccount.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: nAccount.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 	}
 	db.AddKey(keys[0])
@@ -585,20 +589,24 @@ func TestGetAccountByKey(t *testing.T) {
 	// Test getting known accounts.
 	nAccount1, _ := db.AddAccount(accounts[0])
 	nAccount2, _ := db.AddAccount(accounts[1])
+	times := []time.Time{
+		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+		time.Now().Add(time.Hour * 20).Truncate(time.Second),
+	}
 	keys := []types.Key{
 		{
 			AccountIdentifier: nAccount1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
-			ValidUntil:        time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: nAccount2.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
-			ValidUntil:        time.Now().Add(time.Hour * 20).Truncate(time.Second),
+			ValidUntil:        &times[1],
 		},
 	}
 	db.AddKey(keys[0])

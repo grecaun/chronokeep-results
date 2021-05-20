@@ -7,7 +7,7 @@ package types
 // EventYearResponse Struct used for the response of a Get/Add/Update EventYear request.
 type EventYearResponse struct {
 	Event     Event     `json:"event"`
-	EventYear EventYear `json:"eventYear"`
+	EventYear EventYear `json:"event_year"`
 }
 
 /*
@@ -23,9 +23,9 @@ type GetEventYearRequest struct {
 
 // ModifyEventYearRequest Struct used to add an Event Year.
 type ModifyEventYearRequest struct {
-	Key       string    `json:"key"`
-	Slug      string    `json:"slug"`
-	EventYear EventYear `json:"eventYear"`
+	Key       string      `json:"key"`
+	Slug      string      `json:"slug"`
+	EventYear RequestYear `json:"event_year"`
 }
 
 // DeleteEventYearRequest Struct used to delete an Event Year.

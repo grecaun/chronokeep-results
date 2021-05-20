@@ -8,7 +8,7 @@ package types
 type GetResultsResponse struct {
 	Count     int       `json:"count"`
 	Event     Event     `json:"event"`
-	EventYear EventYear `json:"eventYear"`
+	EventYear EventYear `json:"event_year"`
 	Results   []Result  `json:"results"`
 }
 

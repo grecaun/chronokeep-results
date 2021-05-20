@@ -105,7 +105,7 @@ func setupOld(version int) (*MySQL, error) {
 			"key_value CHAR(100) NOT NULL, " +
 			"key_type VARCHAR(20) NOT NULL, " +
 			"allowed_hosts TEXT, " +
-			"valid_until DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+			"valid_until DATETIME DEFAULT NULL, " +
 			"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 			"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
 			"key_deleted BOOL DEFAULT FALSE, " +

@@ -20,8 +20,8 @@ type Result struct {
 	Location      string `json:"location" validate:"required"`
 	Occurence     int    `json:"occurence" validate:"gte=1"`
 	Ranking       int    `json:"ranking"`
-	AgeRanking    int    `json:"ageRanking"`
-	GenderRanking int    `json:"genderRanking"`
+	AgeRanking    int    `json:"age_ranking"`
+	GenderRanking int    `json:"gender_ranking"`
 	Finish        bool   `json:"finish"`
 }
 

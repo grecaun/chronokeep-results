@@ -75,7 +75,7 @@ func (h Handler) AddKey(c echo.Context) error {
 		Value:             newKey.String(),
 		Type:              request.Key.Type,
 		AllowedHosts:      request.Key.AllowedHosts,
-		ValidUntil:        request.Key.ValidUntil,
+		ValidUntil:        request.Key.GetValidUntil(),
 	})
 	if err != nil || key == nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
@@ -137,7 +137,7 @@ func (h Handler) UpdateKey(c echo.Context) error {
 	if account.Type != "admin" && account.Email != keyAccount.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	err = database.UpdateKey(request.Key)
+	err = database.UpdateKey(request.Key.ToKey())
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Unable To Update Key", err)
 	}

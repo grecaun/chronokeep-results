@@ -4,6 +4,7 @@ import (
 	"chronokeep/results/types"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -24,6 +25,9 @@ func (h Handler) GetEvents(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	events, err := database.GetEvents()
 	if err != nil {
@@ -50,6 +54,9 @@ func (h Handler) GetEvent(c echo.Context) error {
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
 	event, err := database.GetEvent(request.EventSlug)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
@@ -64,9 +71,28 @@ func (h Handler) GetEvent(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
+	var recent *types.EventYear
+	now := time.Now()
+	if len(eventYears) > 0 {
+		recent = &eventYears[0]
+		for _, y := range eventYears[1:] {
+			if recent.DateTime.Before(y.DateTime) && y.DateTime.Before(now) {
+				recent = &y
+			}
+		}
+	}
+	var res []types.Result
+	if recent != nil {
+		res, err = database.GetResults(recent.Identifier)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+		}
+	}
 	return c.JSON(http.StatusOK, types.GetEventResponse{
 		Event:      *event,
 		EventYears: eventYears,
+		Year:       recent,
+		Results:    res,
 	})
 }
 
@@ -85,6 +111,9 @@ func (h Handler) AddEvent(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
 	if mkey.Key.Type == "read" {
@@ -125,6 +154,9 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
 	if mkey.Key.Type == "read" {
@@ -168,6 +200,9 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Verify access level. Delete is the only level that can delete values.
 	if mkey.Key.Type != "delete" {

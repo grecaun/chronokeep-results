@@ -12,8 +12,14 @@ type EventYear struct {
 	Identifier      int64     `json:"-"`
 	EventIdentifier int64     `json:"-"`
 	Year            string    `json:"year"`
-	DateTime        time.Time `json:"dateTime" validate:"datetime"`
+	DateTime        time.Time `json:"date_time" validate:"datetime"`
 	Live            bool      `json:"live"`
+}
+
+type RequestYear struct {
+	Year     string `json:"year"`
+	DateTime string `json:"date_time"`
+	Live     bool   `json:"live"`
 }
 
 func (e *EventYear) Equals(other *EventYear) bool {
@@ -26,4 +32,42 @@ func (e *EventYear) Equals(other *EventYear) bool {
 // Validate Ensures valid data ion the structure.
 func (e *EventYear) Validate(validate *validator.Validate) error {
 	return validate.Struct(e)
+}
+
+// Validate Ensures valid data ion the structure.
+func (e *RequestYear) Validate(validate *validator.Validate) error {
+	return validate.Struct(e)
+}
+
+// ToYear Turns a RequestYear into a year object.
+func (e RequestYear) ToYear() EventYear {
+	out := EventYear{
+		Year: e.Year,
+		Live: e.Live,
+	}
+	d, err := time.Parse(time.RFC3339, e.DateTime)
+	if err == nil {
+		out.DateTime = d
+		return out
+	}
+	d, err = time.ParseInLocation("2006/01/02 15:04:05", e.DateTime, time.Local)
+	if err == nil {
+		out.DateTime = d
+		return out
+	}
+	out.DateTime = time.Now()
+	return out
+}
+
+// GetDateTime Gets a time.Time object from the RequestKey
+func (e RequestYear) GetDateTime() time.Time {
+	d, err := time.Parse(time.RFC3339, e.DateTime)
+	if err == nil {
+		return d
+	}
+	d, err = time.ParseInLocation("2006/01/02 15:04:05", e.DateTime, time.Local)
+	if err == nil {
+		return d
+	}
+	return time.Now()
 }
