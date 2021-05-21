@@ -114,6 +114,10 @@ func (h Handler) AddEvent(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
+	// Validate the Event Year
+	if err := request.Event.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
+	}
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
@@ -153,6 +157,10 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	var request types.UpdateEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Validate the Event Year
+	if err := request.Event.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)

@@ -48,6 +48,13 @@ func (h Handler) AddResults(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
+	var resToAdd []types.Result
+	for _, res := range request.Results {
+		// Validate all results, only add the results that pass validation.
+		if err := res.Validate(h.validate); err == nil {
+			resToAdd = append(resToAdd, res)
+		}
+	}
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
@@ -55,6 +62,9 @@ func (h Handler) AddResults(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	if mkey.Key.Type == "read" {
+		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)
@@ -68,7 +78,7 @@ func (h Handler) AddResults(c echo.Context) error {
 	if mult.Event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
-	results, err := database.AddResults(mult.EventYear.Identifier, request.Results)
+	results, err := database.AddResults(mult.EventYear.Identifier, resToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Results", err)
 	}
@@ -78,7 +88,7 @@ func (h Handler) AddResults(c echo.Context) error {
 }
 
 func (h Handler) DeleteResults(c echo.Context) error {
-	var request types.DeleteResultsRequest
+	var request types.GetResultsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
@@ -89,6 +99,9 @@ func (h Handler) DeleteResults(c echo.Context) error {
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	if mkey.Key.Type != "delete" {
+		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly/Write", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)

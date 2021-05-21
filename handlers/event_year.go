@@ -42,6 +42,10 @@ func (h Handler) AddEventYear(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
+	// Validate the Event Year
+	if err := request.EventYear.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
+	}
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
@@ -72,7 +76,7 @@ func (h Handler) AddEventYear(c echo.Context) error {
 		Live:            request.EventYear.Live,
 	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event Year", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event Year (Duplicate Year Likely)", err)
 	}
 	return c.JSON(http.StatusOK, types.EventYearResponse{
 		Event:     *event,
@@ -84,6 +88,10 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Validate the Event Year
+	if err := request.EventYear.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
 	mkey, err := database.GetKeyAndAccount(request.Key)
