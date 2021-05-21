@@ -1,6 +1,7 @@
 package types
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -17,7 +18,7 @@ type EventYear struct {
 }
 
 type RequestYear struct {
-	Year     string `json:"year"`
+	Year     string `json:"year" validate:"required"`
 	DateTime string `json:"date_time"`
 	Live     bool   `json:"live"`
 }
@@ -31,11 +32,17 @@ func (e *EventYear) Equals(other *EventYear) bool {
 
 // Validate Ensures valid data ion the structure.
 func (e *EventYear) Validate(validate *validator.Validate) error {
+	if !validYear(e.Year) {
+		return errors.New("invalid year (only numbers and - allowed)")
+	}
 	return validate.Struct(e)
 }
 
 // Validate Ensures valid data ion the structure.
 func (e *RequestYear) Validate(validate *validator.Validate) error {
+	if !validYear(e.Year) {
+		return errors.New("invalid year (only numbers and - allowed)")
+	}
 	return validate.Struct(e)
 }
 

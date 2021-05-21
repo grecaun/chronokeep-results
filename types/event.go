@@ -1,6 +1,9 @@
 package types
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -30,5 +33,12 @@ func (e *Event) Equals(other *Event) bool {
 
 // Validate Ensures valid information in the structure.
 func (e *Event) Validate(validate *validator.Validate) error {
+	e.Slug = strings.ToLower(e.Slug)
+	if !validSlug(e.Slug) {
+		return errors.New("invalid slug (only letters and - character allowed)")
+	}
+	if !validEventName(e.Name) {
+		return errors.New("invalid event name (only letters, ', /, and spaces allowed)")
+	}
 	return validate.Struct(e)
 }
