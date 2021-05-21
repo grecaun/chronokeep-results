@@ -1,4 +1,4 @@
-package mysql
+package postgres
 
 import (
 	"chronokeep/results/auth"
@@ -16,8 +16,8 @@ const (
 	dbHost     = "localhost"
 	dbUser     = "results_test"
 	dbPassword = "results_test"
-	dbPort     = 3306
-	dbDriver   = "mysql"
+	dbPort     = 5432
+	dbDriver   = "postgres"
 )
 
 func testHashPassword(pass string) string {
@@ -25,9 +25,9 @@ func testHashPassword(pass string) string {
 	return hash
 }
 
-func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
+func setupTests(t *testing.T) (*Postgres, func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
-	o := MySQL{}
+	o := Postgres{}
 	config := getTestConfig()
 	t.Log("Initializing database.")
 	// Connect to DB with database name.
@@ -67,8 +67,8 @@ func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 	}, nil
 }
 
-func setupOld(version int) (*MySQL, error) {
-	o := MySQL{}
+func setupOld(version int) (*Postgres, error) {
+	o := Postgres{}
 	config := getTestConfig()
 	// Connect to DB with database name.
 	db, err := o.GetDatabase(config)
@@ -88,7 +88,7 @@ func setupOld(version int) (*MySQL, error) {
 		{
 			name: "AccountTable",
 			query: "CREATE TABLE IF NOT EXISTS account(" +
-				"account_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"account_id BIGSERIAL NOT NULL, " +
 				"account_name VARCHAR(100) NOT NULL, " +
 				"account_email VARCHAR(100) NOT NULL, " +
 				"account_password VARCHAR(300) NOT NULL, " +
@@ -97,8 +97,8 @@ func setupOld(version int) (*MySQL, error) {
 				"account_locked BOOL DEFAULT FALSE, " +
 				"account_token VARCHAR(1000) NOT NULL DEFAULT '', " +
 				"account_refresh_token VARCHAR(1000) NOT NULL DEFAULT '', " +
-				"account_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"account_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"account_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+				"account_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"account_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(account_email), " +
 				"PRIMARY KEY (account_id)" +
@@ -112,9 +112,9 @@ func setupOld(version int) (*MySQL, error) {
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
 				"allowed_hosts TEXT, " +
-				"valid_until DATETIME DEFAULT NULL, " +
-				"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+				"valid_until TIMESTAMPTZ DEFAULT NULL, " +
+				"key_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+				"key_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"key_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(key_value), " +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
@@ -124,7 +124,7 @@ func setupOld(version int) (*MySQL, error) {
 		{
 			name: "EventTable",
 			query: "CREATE TABLE IF NOT EXISTS event(" +
-				"event_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"event_id BIGSERIAL NOT NULL, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
 				"slug VARCHAR(20) NOT NULL, " +
@@ -132,8 +132,8 @@ func setupOld(version int) (*MySQL, error) {
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
 				"access_restricted BOOL DEFAULT FALSE, " +
-				"event_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"event_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"event_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+				"event_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"event_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(event_name), " +
 				"UNIQUE(slug)," +
@@ -145,13 +145,13 @@ func setupOld(version int) (*MySQL, error) {
 		{
 			name: "EventYearTable",
 			query: "CREATE TABLE IF NOT EXISTS event_year(" +
-				"event_year_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"event_year_id BIGSERIAL NOT NULL, " +
 				"event_id BIGINT NOT NULL, " +
 				"year VARCHAR(20) NOT NULL, " +
-				"date_time DATETIME NOT NULL, " +
+				"date_time TIMESTAMPTZ NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
-				"year_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"year_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"year_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+				"year_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"year_deleted BOOL DEFAULT FALSE, " +
 				"CONSTRAINT year_slug UNIQUE (event_id, year)," +
 				"FOREIGN KEY (event_id) REFERENCES event(event_id)," +
@@ -179,8 +179,8 @@ func setupOld(version int) (*MySQL, error) {
 				"age_ranking INT DEFAULT -1, " +
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
-				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"result_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+				"result_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
@@ -196,6 +196,82 @@ func setupOld(version int) (*MySQL, error) {
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");",
 		},
+		// UPDATE ACCOUNT FUNC
+		{
+			name: "UpdateAccountFunc",
+			query: "CREATE OR REPLACE FUNCTION account_timestamp_column() " +
+				"RETURNS TRIGGER AS $$ " +
+				"BEGIN " +
+				"NEW.account_updated_at = now();" +
+				"RETURN NEW;" +
+				"END;" +
+				"$$ language 'plpgsql';",
+		},
+		// UPDATE KEY FUNC
+		{
+			name: "UpdateKeyFunc",
+			query: "CREATE OR REPLACE FUNCTION key_timestamp_column() " +
+				"RETURNS TRIGGER AS $$ " +
+				"BEGIN " +
+				"NEW.key_updated_at = now();" +
+				"RETURN NEW;" +
+				"END;" +
+				"$$ language 'plpgsql';",
+		},
+		// UPDATE EVENT FUNC
+		{
+			name: "UpdateEventFunc",
+			query: "CREATE OR REPLACE FUNCTION event_timestamp_column() " +
+				"RETURNS TRIGGER AS $$ " +
+				"BEGIN " +
+				"NEW.event_updated_at = now();" +
+				"RETURN NEW;" +
+				"END;" +
+				"$$ language 'plpgsql';",
+		},
+		// UPDATE EVENT YEAR FUNC
+		{
+			name: "UpdateEventYearFunc",
+			query: "CREATE OR REPLACE FUNCTION event_year_timestamp_column() " +
+				"RETURNS TRIGGER AS $$ " +
+				"BEGIN " +
+				"NEW.year_updated_at = now();" +
+				"RETURN NEW;" +
+				"END;" +
+				"$$ language 'plpgsql';",
+		},
+		// UPDATE RESULT FUNC
+		{
+			name: "UpdateResultFunc",
+			query: "CREATE OR REPLACE FUNCTION result_timestamp_column() " +
+				"RETURNS TRIGGER AS $$ " +
+				"BEGIN " +
+				"NEW.result_updated_at = now();" +
+				"RETURN NEW;" +
+				"END;" +
+				"$$ language 'plpgsql';",
+		},
+		// TRIGGERS FOR UPDATING UPDATED_AT timestamps
+		{
+			name:  "AccountTableTrigger",
+			query: "CREATE TRIGGER update_account_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE account_timestamp_column();",
+		},
+		{
+			name:  "KeyTableTrigger",
+			query: "CREATE TRIGGER update_key_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE key_timestamp_column();",
+		},
+		{
+			name:  "EventTableTrigger",
+			query: "CREATE TRIGGER update_event_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE event_timestamp_column();",
+		},
+		{
+			name:  "EventYearTableTrigger",
+			query: "CREATE TRIGGER update_event_year_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE event_year_timestamp_column();",
+		},
+		{
+			name:  "ResultTableTrigger",
+			query: "CREATE TRIGGER update_result_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE result_timestamp_column();",
+		},
 	}
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
@@ -203,7 +279,7 @@ func setupOld(version int) (*MySQL, error) {
 	defer cancelfunc()
 
 	for _, single := range queries {
-		_, err := db.ExecContext(ctx, single.query)
+		_, err := db.Exec(ctx, single.query)
 		if err != nil {
 			return nil, fmt.Errorf("error executing %s query: %v", single.name, err)
 		}
@@ -216,7 +292,7 @@ func setupOld(version int) (*MySQL, error) {
 
 func TestSetupAndGet(t *testing.T) {
 	t.Log("Setting up testing database variables.")
-	o := &MySQL{}
+	o := &Postgres{}
 	config := getTestConfig()
 	t.Log("Initializing database.")
 	err := o.Setup(config)

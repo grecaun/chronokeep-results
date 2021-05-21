@@ -23,6 +23,9 @@ type Account struct {
 
 // Equals is used to check if the fields of an Account other than the identifier are identical.
 func (a *Account) Equals(other *Account) bool {
+	if other == nil {
+		return false
+	}
 	return a.Name == other.Name &&
 		a.Email == other.Email &&
 		a.Type == other.Type

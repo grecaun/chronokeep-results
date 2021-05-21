@@ -21,7 +21,7 @@ func GetConfig() (*Config, error) {
 
 	dbPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
 	if err != nil || dbPort < 0 {
-		dbPort = 3306
+		return nil, errors.New("DB_PORT not found in environment")
 	}
 
 	dbUser := os.Getenv("DB_USER")

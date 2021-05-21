@@ -3,13 +3,10 @@ package database
 import (
 	"chronokeep/results/types"
 	"chronokeep/results/util"
-	"database/sql"
 )
 
 type Database interface {
 	// Database Base Functions
-	GetDatabase(inCfg *util.Config) (*sql.DB, error)
-	GetDB() (*sql.DB, error)
 	Setup(config *util.Config) error
 	SetSetting(name, value string) error
 	// Account Functions

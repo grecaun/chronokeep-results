@@ -3,6 +3,7 @@ package handlers
 import (
 	db "chronokeep/results/database"
 	"chronokeep/results/database/mysql"
+	"chronokeep/results/database/postgres"
 	"chronokeep/results/util"
 	"errors"
 
@@ -21,9 +22,10 @@ func Setup(inCfg *util.Config) error {
 		database = &mysql.MySQL{}
 		return database.Setup(config)
 	case "postgres":
-		return errors.New("postgres not supported")
+		database = &postgres.Postgres{}
+		return database.Setup(config)
 	default:
-		return errors.New("unknown sql driver specified")
+		return errors.New("unknown database driver specified")
 	}
 }
 
