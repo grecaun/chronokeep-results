@@ -19,6 +19,7 @@ func (h Handler) Bind(group *echo.Group) {
 	// Event handlers
 	group.GET("/event", h.GetEvent)
 	group.GET("/event/all", h.GetEvents)
+	group.GET("/event/my", h.GetMyEvents)
 	group.PUT("/event/add", h.AddEvent)
 	group.PUT("/event/update", h.UpdateEvent)
 	group.DELETE("/event/delete", h.DeleteEvent)

@@ -14,7 +14,7 @@ func (h Handler) GetEvents(c echo.Context) error {
 	log.Info(fmt.Sprintf("Host: %v", c.Request().Host))
 	log.Info(fmt.Sprintf("Referer: %v", c.Request().Referer()))
 	log.Info(fmt.Sprintf("RemoteAddr: %v", c.Request().RemoteAddr))
-	var request types.GetEventsRequest
+	var request types.GeneralRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
@@ -29,16 +29,32 @@ func (h Handler) GetEvents(c echo.Context) error {
 	if mkey.Key.Expired() {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
-	var events []types.Event
-	if request.Email != nil {
-		// Only account owners can pull their account events with a key.
-		if mkey.Account.Email != *request.Email {
-			return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
-		}
-		events, err = database.GetAccountEvents(*request.Email)
-	} else {
-		events, err = database.GetEvents()
+	events, err := database.GetEvents()
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Events", err)
 	}
+	return c.JSON(http.StatusOK, types.GetEventsResponse{
+		Events: events,
+	})
+}
+
+func (h Handler) GetMyEvents(c echo.Context) error {
+	var request types.GeneralRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Get Key :: TODO :: Add verification of HOST value.
+	mkey, err := database.GetKeyAndAccount(request.Key)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	events, err := database.GetAccountEvents(mkey.Account.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Events", err)
 	}
@@ -48,9 +64,6 @@ func (h Handler) GetEvents(c echo.Context) error {
 }
 
 func (h Handler) GetEvent(c echo.Context) error {
-	log.Info(fmt.Sprintf("Host: %v", c.Request().Host))
-	log.Info(fmt.Sprintf("Referer: %v", c.Request().Referer()))
-	log.Info(fmt.Sprintf("RemoteAddr: %v", c.Request().RemoteAddr))
 	var request types.GetEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -107,9 +120,6 @@ func (h Handler) GetEvent(c echo.Context) error {
 }
 
 func (h Handler) AddEvent(c echo.Context) error {
-	log.Info(fmt.Sprintf("Host: %v", c.Request().Host))
-	log.Info(fmt.Sprintf("Referer: %v", c.Request().Referer()))
-	log.Info(fmt.Sprintf("RemoteAddr: %v", c.Request().RemoteAddr))
 	var request types.AddEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -151,9 +161,6 @@ func (h Handler) AddEvent(c echo.Context) error {
 }
 
 func (h Handler) UpdateEvent(c echo.Context) error {
-	log.Info(fmt.Sprintf("Host: %v", c.Request().Host))
-	log.Info(fmt.Sprintf("Referer: %v", c.Request().Referer()))
-	log.Info(fmt.Sprintf("RemoteAddr: %v", c.Request().RemoteAddr))
 	var request types.UpdateEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -209,9 +216,6 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 }
 
 func (h Handler) DeleteEvent(c echo.Context) error {
-	log.Info(fmt.Sprintf("Host: %v", c.Request().Host))
-	log.Info(fmt.Sprintf("Referer: %v", c.Request().Referer()))
-	log.Info(fmt.Sprintf("RemoteAddr: %v", c.Request().RemoteAddr))
 	var request types.DeleteEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

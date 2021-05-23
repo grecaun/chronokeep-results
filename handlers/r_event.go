@@ -9,7 +9,7 @@ import (
 
 // RGetEvents Used with a JWT for the website to get an account events.
 func (h Handler) RGetEvents(c echo.Context) error {
-	var request types.GetEventsRequest
+	var request types.GetREventsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
