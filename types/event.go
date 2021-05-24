@@ -14,8 +14,8 @@ type Event struct {
 	Identifier        int64  `json:"-"`
 	Name              string `json:"name" validate:"required"`
 	Slug              string `json:"slug" validate:"required"`
-	Website           string `json:"website" validate:"url"`
-	Image             string `json:"image" validate:"url"`
+	Website           string `json:"website"`
+	Image             string `json:"image"`
 	ContactEmail      string `json:"contact_email" validate:"email"`
 	AccessRestricted  bool   `json:"access_restricted"`
 }
@@ -39,6 +39,14 @@ func (e *Event) Validate(validate *validator.Validate) error {
 	}
 	if !validEventName(e.Name) {
 		return errors.New("invalid event name (only letters, ', /, and spaces allowed)")
+	}
+	err := validate.Var(e.Website, "url")
+	if e.Website != "" && err != nil {
+		return errors.New("invalid website url")
+	}
+	err = validate.Var(e.Image, "url")
+	if e.Image != "" && err != nil {
+		return errors.New("invalid image url")
 	}
 	return validate.Struct(e)
 }

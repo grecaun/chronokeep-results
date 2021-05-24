@@ -6,10 +6,11 @@ package types
 
 // GetResultsResponse Struct used for the response of a GetResults request.
 type GetResultsResponse struct {
-	Count     int       `json:"count"`
-	Event     Event     `json:"event"`
-	EventYear EventYear `json:"event_year"`
-	Results   []Result  `json:"results"`
+	Count     int         `json:"count"`
+	Event     Event       `json:"event"`
+	EventYear EventYear   `json:"event_year"`
+	Years     []EventYear `json:"years"`
+	Results   []Result    `json:"results"`
 }
 
 // AddResultsResponse Struct used for the response to an Add/Update/Delete Results request.

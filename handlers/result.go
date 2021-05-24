@@ -31,6 +31,10 @@ func (h Handler) GetResults(c echo.Context) error {
 	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
+	years, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
 	results, err := database.GetResults(mult.EventYear.Identifier)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
@@ -38,6 +42,7 @@ func (h Handler) GetResults(c echo.Context) error {
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
+		Years:     years,
 		Results:   results,
 		Count:     len(results),
 	})
