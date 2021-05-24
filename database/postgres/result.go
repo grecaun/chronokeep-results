@@ -22,14 +22,14 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.R
 	if bib != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1 AND bib=$2;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1 AND bib=$2;",
 			eventYearID,
 			bib,
 		)
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1;",
 			eventYearID,
 		)
 	}
@@ -50,6 +50,8 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.R
 			&result.Distance,
 			&result.Seconds,
 			&result.Milliseconds,
+			&result.ChipSeconds,
+			&result.ChipMilliseconds,
 			&result.Segment,
 			&result.Location,
 			&result.Occurence,
@@ -149,6 +151,8 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"distance, "+
 				"seconds, "+
 				"milliseconds, "+
+				"chip_seconds, "+
+				"chip_milliseconds, "+
 				"segment, "+
 				"location, "+
 				"occurence, "+
@@ -166,11 +170,13 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"distance=$8, "+
 				"seconds=$9, "+
 				"milliseconds=$10, "+
-				"segment=$11, "+
-				"ranking=$14, "+
-				"age_ranking=$15, "+
-				"gender_ranking=$16, "+
-				"finish=$17;",
+				"seconds=$11, "+
+				"milliseconds=$12, "+
+				"segment=$13, "+
+				"ranking=$16, "+
+				"age_ranking=$17, "+
+				"gender_ranking=$18, "+
+				"finish=$19;",
 			eventYearID,
 			result.Bib,
 			result.First,
@@ -181,6 +187,8 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.Distance,
 			result.Seconds,
 			result.Milliseconds,
+			result.ChipSeconds,
+			result.ChipMilliseconds,
 			result.Segment,
 			result.Location,
 			result.Occurence,

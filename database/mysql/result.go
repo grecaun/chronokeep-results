@@ -21,14 +21,14 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Resu
 	if bib != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=? AND bib=?;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=? AND bib=?;",
 			eventYearID,
 			bib,
 		)
 	} else {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
 			eventYearID,
 		)
 	}
@@ -49,6 +49,8 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Resu
 			&result.Distance,
 			&result.Seconds,
 			&result.Milliseconds,
+			&result.ChipSeconds,
+			&result.ChipMilliseconds,
 			&result.Segment,
 			&result.Location,
 			&result.Occurence,
@@ -150,6 +152,8 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"distance, "+
 			"seconds, "+
 			"milliseconds, "+
+			"chip_seconds, "+
+			"chip_milliseconds, "+
 			"segment, "+
 			"location, "+
 			"occurence, "+
@@ -157,7 +161,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"age_ranking, "+
 			"gender_ranking, "+
 			"finish) "+
-			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
@@ -167,6 +171,8 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"distance=VALUES(distance), "+
 			"seconds=VALUES(seconds), "+
 			"milliseconds=VALUES(milliseconds), "+
+			"chip_seconds=VALUES(chip_seconds), "+
+			"chip_milliseconds=VALUES(chip_milliseconds), "+
 			"segment=VALUES(segment), "+
 			"ranking=VALUES(ranking), "+
 			"age_ranking=VALUES(age_ranking), "+
@@ -191,6 +197,8 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.Distance,
 			result.Seconds,
 			result.Milliseconds,
+			result.ChipSeconds,
+			result.ChipMilliseconds,
 			result.Segment,
 			result.Location,
 			result.Occurence,

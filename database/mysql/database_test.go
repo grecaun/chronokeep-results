@@ -172,6 +172,8 @@ func setupOld(version int) (*MySQL, error) {
 				"distance VARCHAR(200) NOT NULL, " +
 				"seconds INT DEFAULT 0, " +
 				"milliseconds INT DEFAULT 0, " +
+				"chip_seconds INT DEFAULT 0, " +
+				"chip_milliseconds INT DEFAULT 0, " +
 				"segment VARCHAR(500), " +
 				"location VARCHAR(500), " +
 				"occurence INT DEFAULT -1, " +
