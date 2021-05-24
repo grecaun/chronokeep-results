@@ -22,7 +22,7 @@ func (h Handler) GetEventYear(c echo.Context) error {
 	}
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Year", err)
 	}
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
@@ -34,6 +34,39 @@ func (h Handler) GetEventYear(c echo.Context) error {
 	return c.JSON(http.StatusOK, types.EventYearResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
+	})
+}
+
+func (h Handler) GetEventYears(c echo.Context) error {
+	var request types.GetEventRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Get Key :: TODO :: Add verification of HOST value.
+	mkey, err := database.GetKeyAndAccount(request.Key)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	event, err := database.GetEvent(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
+	}
+	if event == nil {
+		return getAPIError(c, http.StatusNotFound, "Event Not Found", nil)
+	}
+	years, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	// Only the account owner can access restricted events.
+	if event.AccessRestricted && mkey.Account.Identifier != event.AccountIdentifier {
+		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
+	}
+	return c.JSON(http.StatusOK, types.EventYearsResponse{
+		EventYears: years,
 	})
 }
 
