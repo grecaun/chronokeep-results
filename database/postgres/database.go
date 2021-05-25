@@ -46,6 +46,10 @@ func (p *Postgres) GetDatabase(inCfg *util.Config) (*pgxpool.Pool, error) {
 		p.config.DBName,
 	)
 
+	if !inCfg.Development {
+		conString = conString + "?sslmode=require"
+	}
+
 	dbCon, err := pgxpool.Connect(context.Background(), conString)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database connection: %v", err)
