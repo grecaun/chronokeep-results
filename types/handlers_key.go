@@ -25,7 +25,7 @@ type DeleteKeyRequest struct {
 
 // AddKeyRequest Struct used for the Add Key request.
 type AddKeyRequest struct {
-	Email string     `json:"email"`
+	Email *string    `json:"email"`
 	Key   RequestKey `json:"key"`
 }
 

@@ -4,6 +4,8 @@ import (
 	"os"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
@@ -12,7 +14,7 @@ import (
 func GetConfig() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, errors.New("error loading .env file")
+		log.Info(".env file wasn't loaded.")
 	}
 	dbName := os.Getenv("DB_NAME")
 	if dbName == "" {

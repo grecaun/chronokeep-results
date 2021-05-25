@@ -53,16 +53,21 @@ func (h Handler) AddKey(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Field(s)", err)
 	}
 	log.Info("Checking for admin or ownership.")
-	if account.Type != "admin" && account.Email != request.Email {
+	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
-	log.Info("Getting key account holder for id value.")
-	keyAccount, err := database.GetAccount(request.Email)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
-	}
-	if keyAccount == nil {
-		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	// If email is set we add a key to that account, otherwise add it to the calling person's account.
+	accountid := account.Identifier
+	if request.Email != nil {
+		log.Info("Getting key account holder for id value.")
+		keyAccount, err := database.GetAccount(*request.Email)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
+		}
+		if keyAccount == nil {
+			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+		}
+		accountid = keyAccount.Identifier
 	}
 	log.Info("Adding key to database.")
 	// Create new API Key for our key to add.
@@ -71,7 +76,7 @@ func (h Handler) AddKey(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Key Generation Error", err)
 	}
 	key, err := database.AddKey(types.Key{
-		AccountIdentifier: keyAccount.Identifier,
+		AccountIdentifier: accountid,
 		Value:             newKey.String(),
 		Type:              request.Key.Type,
 		AllowedHosts:      request.Key.AllowedHosts,

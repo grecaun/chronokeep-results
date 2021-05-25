@@ -69,8 +69,10 @@ func main() {
 		}))
 	}
 	if !config.AutoTLS {
+		log.Info("Starting non https echo server.")
 		log.Fatal(e.Start(":" + strconv.Itoa(config.Port)))
 	} else {
+		log.Info("Starting auto tls echo server.")
 		// Set up TLS with auto certificate if not a debug environment.
 		// e.AutoTLSManager.HostPolicy = autocert.HostWhiteList("<DOMAIN>")
 		// Cache certificates
