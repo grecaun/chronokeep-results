@@ -81,14 +81,6 @@ func healthEndpointSkipper(c echo.Context) bool {
 }
 
 func init() {
-	config, err := util.GetConfig()
-	if err != nil {
-		log.Fatal("Failed to get configuration. ", err)
-	}
-	if config.Development {
-		log.SetOutput(os.Stdout)
-		log.SetLevel(log.InfoLevel)
-	} else {
-		log.SetLevel(log.ErrorLevel)
-	}
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.InfoLevel)
 }
