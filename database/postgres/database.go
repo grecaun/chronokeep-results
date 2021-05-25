@@ -86,7 +86,6 @@ func (p *Postgres) Setup(config *util.Config) error {
 
 	// Error checking version, most likely means tables are not created.
 	if dbVersion < 1 {
-		log.Info("Creating database tables.")
 		err = p.createTables()
 		if err != nil {
 			return err
@@ -174,6 +173,7 @@ type myQuery struct {
 }
 
 func (p *Postgres) createTables() error {
+	log.Info("Creating database tables.")
 	queries := []myQuery{
 		// SETTINGS TABLE
 		{
@@ -380,6 +380,7 @@ func (p *Postgres) createTables() error {
 	defer cancelfunc()
 
 	for _, single := range queries {
+		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := p.db.Exec(ctx, single.query)
 		if err != nil {
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
@@ -392,6 +393,7 @@ func (p *Postgres) createTables() error {
 }
 
 func (p *Postgres) checkVersion() int {
+	log.Info("Checking database version.")
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var name string

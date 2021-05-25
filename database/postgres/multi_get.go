@@ -24,8 +24,10 @@ func (p *Postgres) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 		slug,
 	)
 	if err != nil {
+		res.Close()
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiGet{
 			Account: &types.Account{},
@@ -73,8 +75,10 @@ func (p *Postgres) GetAccountEventAndYear(slug, year string) (*types.MultiGet, e
 		year,
 	)
 	if err != nil {
+		res.Close()
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiGet{
 			Account:   &types.Account{},
@@ -127,8 +131,10 @@ func (p *Postgres) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 		year,
 	)
 	if err != nil {
+		res.Close()
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiGet{
 			Event:     &types.Event{},
@@ -174,8 +180,10 @@ func (p *Postgres) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 		key,
 	)
 	if err != nil {
+		res.Close()
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiKey{
 			Key:     &types.Key{},

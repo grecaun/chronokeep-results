@@ -86,7 +86,6 @@ func (m *MySQL) Setup(config *util.Config) error {
 
 	// Error checking version, most likely means tables are not created.
 	if dbVersion < 1 {
-		log.Info("Creating database tables.")
 		err = m.createTables()
 		if err != nil {
 			return err
@@ -174,6 +173,7 @@ type myQuery struct {
 }
 
 func (m *MySQL) createTables() error {
+	log.Info("Creating database tables.")
 	queries := []myQuery{
 		// SETTINGS TABLE
 		{
@@ -304,6 +304,7 @@ func (m *MySQL) createTables() error {
 	defer cancelfunc()
 
 	for _, single := range queries {
+		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := m.db.ExecContext(ctx, single.query)
 		if err != nil {
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
@@ -316,6 +317,7 @@ func (m *MySQL) createTables() error {
 }
 
 func (m *MySQL) checkVersion() int {
+	log.Info("Checking database version.")
 	res, err := m.db.Query("SELECT * FROM settings WHERE name='version';")
 	if err != nil {
 		return -1
