@@ -4,11 +4,16 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
 
 // GetConfig returns a config struct filled with values stored in local environment variables
 func GetConfig() (*Config, error) {
+	err := godotenv.Load()
+	if err != nil {
+		return nil, errors.New("error loading .env file")
+	}
 	dbName := os.Getenv("DB_NAME")
 	if dbName == "" {
 		return nil, errors.New("DB_NAME not found in environment")

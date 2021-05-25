@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+	log.Info("Starting results.")
 	config, err := util.GetConfig()
 	if err != nil {
 		log.Fatal("Failed to get configuration. ", err)
@@ -24,6 +25,7 @@ func main() {
 	e := echo.New()
 	e.Debug = config.Development
 
+	log.Info("Setting up base middleware.")
 	// Set up Recover and Logger middleware.
 	e.Use(middleware.Recover())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -36,12 +38,14 @@ func main() {
 		},
 	}))
 
+	log.Info("Calling handler setup.")
 	// Handlers has a setup function which sets up the database for use.
 	err = handlers.Setup(config)
 	defer handlers.Finalize()
 	if err != nil {
 		log.Fatalf("Error setting up database. %v", err)
 	}
+	log.Info("Binding ")
 	// Set up API handlers.
 	handler := handlers.Handler{}
 	// Setup the Handler for validator
