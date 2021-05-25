@@ -11,24 +11,26 @@ import (
 
 func (h Handler) GetKeys(c echo.Context) error {
 	var request types.GetKeysRequest
-	if err := c.Bind(&request); err != nil {
-		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
-	}
+	_ = c.Bind(&request)
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account.Type != "admin" && account.Email != request.Email {
+	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
-	keyAccount, err := database.GetAccount(request.Email)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
+	email := account.Email
+	if request.Email != nil {
+		keyAccount, err := database.GetAccount(*request.Email)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
+		}
+		if keyAccount == nil {
+			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+		}
+		email = keyAccount.Email
 	}
-	if keyAccount == nil {
-		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
-	}
-	keys, err := database.GetAccountKeys(keyAccount.Email)
+	keys, err := database.GetAccountKeys(email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Keys", err)
 	}

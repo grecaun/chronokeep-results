@@ -36,5 +36,5 @@ type UpdateKeyRequest struct {
 
 // GetKeysRequest Struct used for the Get Keys request.
 type GetKeysRequest struct {
-	Email string `json:"email"`
+	Email *string `json:"email"`
 }
