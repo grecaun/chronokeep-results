@@ -24,14 +24,12 @@ type AddResultsResponse struct {
 
 // GetResultsRequest Struct used for the request of Results for an EventYear. Also used for Delete.
 type GetResultsRequest struct {
-	Key  string `json:"key"`
 	Slug string `json:"slug"`
 	Year string `json:"year"`
 }
 
 // AddResultsRequest Struct used to add/update Results.
 type AddResultsRequest struct {
-	Key     string   `json:"key"`
 	Slug    string   `json:"slug"`
 	Year    string   `json:"year"`
 	Results []Result `json:"results"`

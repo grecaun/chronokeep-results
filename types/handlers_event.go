@@ -28,7 +28,6 @@ type ModifyEventResponse struct {
 
 // GetEventRequest Struct used for the request to get a single Event.
 type GetEventRequest struct {
-	Key  string `json:"key"`
 	Slug string `json:"slug"`
 }
 
@@ -40,19 +39,16 @@ type GetREventsRequest struct {
 
 // AddEventRequest Struct used for the request to Add an Event.
 type AddEventRequest struct {
-	Key   string  `json:"key"`
 	Email *string `json:"account_email,omitempty"`
 	Event Event   `json:"event"`
 }
 
 // UpdateEventRequest Struct used for the request to Update an Event.
 type UpdateEventRequest struct {
-	Key   string `json:"key"`
-	Event Event  `json:"event"`
+	Event Event `json:"event"`
 }
 
 // DeleteEventRequest Struct used for the request to Delete an Event.
 type DeleteEventRequest struct {
-	Key  string `json:"key"`
 	Slug string `json:"slug"`
 }

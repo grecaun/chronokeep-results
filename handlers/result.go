@@ -8,12 +8,20 @@ import (
 )
 
 func (h Handler) GetResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
 	var request types.GetResultsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
@@ -49,6 +57,14 @@ func (h Handler) GetResults(c echo.Context) error {
 }
 
 func (h Handler) AddResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
 	var request types.AddResultsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -61,7 +77,7 @@ func (h Handler) AddResults(c echo.Context) error {
 		}
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
@@ -93,12 +109,20 @@ func (h Handler) AddResults(c echo.Context) error {
 }
 
 func (h Handler) DeleteResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
 	var request types.GetResultsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
 	// Get Key :: TODO :: Add verification of HOST value.
-	mkey, err := database.GetKeyAndAccount(request.Key)
+	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
