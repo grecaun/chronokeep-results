@@ -17,6 +17,4 @@ jobs:
           go-version: latest
       
       - name: Build
-          env:
-            GOPROXY: "https://proxy.golang.org"
         run: go build .
