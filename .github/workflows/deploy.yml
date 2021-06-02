@@ -2,6 +2,7 @@ name: Deploy Results API
 on:
   push:
     branches: [deploy]
+  workflow_dispatch:
   
 jobs:
   build:
