@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) {
+func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, all bool) ([]types.Result, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -21,14 +21,20 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Resu
 	if bib != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=? AND bib=?;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=? AND bib=? ORDER BY seconds DESC;",
 			eventYearID,
 			bib,
+		)
+	} else if all {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=? ORDER BY seconds DESC;",
+			eventYearID,
 		)
 	} else {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=?;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result r JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence FROM result GROUP BY bib, event_year_id) b ON b.mx_bib=r.bib AND b.mx_event_year_id=r.event_year_id AND b.mx_occurence=r.occurence WHERE event_year_id=? ORDER BY seconds DESC;",
 			eventYearID,
 		)
 	}
@@ -58,6 +64,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Resu
 			&result.AgeRanking,
 			&result.GenderRanking,
 			&result.Finish,
+			&result.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting result: %v", err)
@@ -69,12 +76,17 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string) ([]types.Resu
 
 // GetResults Gets results for an event year.
 func (m *MySQL) GetResults(eventYearID int64) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, nil)
+	return m.getResultsInternal(eventYearID, nil, true)
+}
+
+// GetLastResults Gets the last result for a bib in an event year.
+func (m *MySQL) GetLastResults(eventYearID int64) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil, false)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
 func (m *MySQL) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, &bib)
+	return m.getResultsInternal(eventYearID, &bib, false)
 }
 
 // DeleteResults Deletes results from the database.
@@ -160,8 +172,9 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"ranking, "+
 			"age_ranking, "+
 			"gender_ranking, "+
-			"finish) "+
-			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			"finish, "+
+			"result_type) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
@@ -177,7 +190,8 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"ranking=VALUES(ranking), "+
 			"age_ranking=VALUES(age_ranking), "+
 			"gender_ranking=VALUES(gender_ranking), "+
-			"finish=VALUES(finish);",
+			"finish=VALUES(finish), "+
+			"result_type=VALUES(result_type);",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)
@@ -206,6 +220,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.AgeRanking,
 			result.GenderRanking,
 			result.Finish,
+			result.Type,
 		)
 		if err != nil {
 			return outResults, fmt.Errorf("error adding result to database: %v", err)

@@ -34,3 +34,10 @@ type AddResultsRequest struct {
 	Year    string   `json:"year"`
 	Results []Result `json:"results"`
 }
+
+// GetBibResultsRequest Struct used for the request of results for a person with a bib for an event year.
+type GetBibResultsRequest struct {
+	Bib  string `json:"bib"`
+	Slug string `json:"slug"`
+	Year string `json:"year"`
+}

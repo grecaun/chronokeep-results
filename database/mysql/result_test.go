@@ -196,6 +196,64 @@ func TestAddResults(t *testing.T) {
 	}
 }
 
+func TestGetLastResults(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupResultTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	res, err := db.GetLastResults(eventYear.Identifier)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 0 {
+		t.Errorf("Results not added but we've found %v results.", len(res))
+	}
+	db.AddResults(eventYear.Identifier, results[0:1])
+	res, err = db.GetLastResults(eventYear.Identifier)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 1 {
+		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
+	}
+	if res[0] != results[0] {
+		t.Errorf("Expected results %+v, found %+v.", results[0], res[0])
+	}
+	db.AddResults(eventYear.Identifier, results)
+	res, err = db.GetLastResults(eventYear.Identifier)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != (len(results) - 1) {
+		t.Errorf("Expected %v results to be added, %v added.", len(results)-1, len(res))
+	}
+	// Verify that we've got correct information for our results.
+	found := false
+	for _, result := range res {
+		if result == results[0] {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Unable to find our first result in the database. %+v", res)
+	}
+}
+
 func TestGetResults(t *testing.T) {
 	db, finalize, err := setupTests(t)
 	if err != nil {

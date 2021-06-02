@@ -20,7 +20,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 1
+	CurrentVersion        = 2
 )
 
 type Postgres struct {
@@ -280,6 +280,7 @@ func (p *Postgres) createTables() error {
 				"age_ranking INT DEFAULT -1, " +
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
+				"result_type INT DEFAULT 0, " +
 				"result_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
@@ -413,6 +414,26 @@ func (p *Postgres) checkVersion() int {
 }
 
 func (p *Postgres) updateTables(oldVersion, newVersion int) error {
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	if oldVersion <= 1 {
+		log.Debug("Updating from version 1.")
+		_, err := p.db.Exec(
+			ctx,
+			"ALTER TABLE result ADD COLUMN result_type INT DEFAULT 0;",
+		)
+		if err != nil {
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	_, err := p.db.Exec(
+		ctx,
+		"UPDATE settings SET value=$1 WHERE name='version';",
+		strconv.Itoa(newVersion),
+	)
+	if err != nil {
+		return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+	}
 	return nil
 }
 

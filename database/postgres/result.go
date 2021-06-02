@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.Result, error) {
+func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool) ([]types.Result, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -22,14 +22,20 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.R
 	if bib != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1 AND bib=$2;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds DESC;",
 			eventYearID,
 			bib,
+		)
+	} else if all {
+		res, err = db.Query(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=$1 ORDER BY seconds DESC;",
+			eventYearID,
 		)
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish FROM result WHERE event_year_id=$1;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result r JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence FROM result GROUP BY bib, event_year_id) b ON b.mx_bib=r.bib AND b.mx_event_year_id=r.event_year_id AND b.mx_occurence=r.occurence WHERE event_year_id=$1 ORDER BY seconds DESC;",
 			eventYearID,
 		)
 	}
@@ -59,6 +65,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.R
 			&result.AgeRanking,
 			&result.GenderRanking,
 			&result.Finish,
+			&result.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting result: %v", err)
@@ -70,12 +77,17 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string) ([]types.R
 
 // GetResults Gets results for an event year.
 func (p *Postgres) GetResults(eventYearID int64) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil)
+	return p.getResultsInternal(eventYearID, nil, true)
+}
+
+// GetLastResults Gets the last result for a bib in an event year.
+func (p *Postgres) GetLastResults(eventYearID int64) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, false)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
 func (p *Postgres) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, &bib)
+	return p.getResultsInternal(eventYearID, &bib, false)
 }
 
 // DeleteResults Deletes results from the database.
@@ -159,8 +171,9 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"ranking, "+
 				"age_ranking, "+
 				"gender_ranking, "+
-				"finish) "+
-				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) "+
+				"finish, "+
+				"result_type) "+
+				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) "+
 				"ON CONFLICT (event_year_id, bib, location, occurence) DO UPDATE SET "+
 				"first=$3, "+
 				"last=$4, "+
@@ -170,13 +183,14 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"distance=$8, "+
 				"seconds=$9, "+
 				"milliseconds=$10, "+
-				"seconds=$11, "+
-				"milliseconds=$12, "+
+				"chip_seconds=$11, "+
+				"chip_milliseconds=$12, "+
 				"segment=$13, "+
 				"ranking=$16, "+
 				"age_ranking=$17, "+
 				"gender_ranking=$18, "+
-				"finish=$19;",
+				"finish=$19, "+
+				"result_type=$20;",
 			eventYearID,
 			result.Bib,
 			result.First,
@@ -196,6 +210,7 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.AgeRanking,
 			result.GenderRanking,
 			result.Finish,
+			result.Type,
 		)
 		if err != nil {
 			return nil, err

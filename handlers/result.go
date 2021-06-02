@@ -34,7 +34,56 @@ func (h Handler) GetResults(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
 	}
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
-		return getAPIError(c, http.StatusNotFound, "Event/Year Not FOund", nil)
+		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
+	}
+	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
+		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
+	}
+	years, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	results, err := database.GetLastResults(mult.EventYear.Identifier)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
+	}
+	return c.JSON(http.StatusOK, types.GetResultsResponse{
+		Event:     *mult.Event,
+		EventYear: *mult.EventYear,
+		Years:     years,
+		Results:   results,
+		Count:     len(results),
+	})
+}
+
+func (h Handler) GetAllResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
+	var request types.GetResultsRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Get Key :: TODO :: Add verification of HOST value.
+	mkey, err := database.GetKeyAndAccount(*k)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// And Event for verification of whether or not we can allow access to this key
+	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
 	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
@@ -44,6 +93,55 @@ func (h Handler) GetResults(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	results, err := database.GetResults(mult.EventYear.Identifier)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
+	}
+	return c.JSON(http.StatusOK, types.GetResultsResponse{
+		Event:     *mult.Event,
+		EventYear: *mult.EventYear,
+		Years:     years,
+		Results:   results,
+		Count:     len(results),
+	})
+}
+
+func (h Handler) GetBibResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
+	var request types.GetBibResultsRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	// Get Key :: TODO :: Add verification of HOST value.
+	mkey, err := database.GetKeyAndAccount(*k)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// And Event for verification of whether or not we can allow access to this key
+	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
+	}
+	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
+		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
+	}
+	years, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	results, err := database.GetBibResults(mult.EventYear.Identifier, request.Bib)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}

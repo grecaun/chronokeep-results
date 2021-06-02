@@ -13,7 +13,7 @@ import (
 
 const (
 	dbName     = "results_test"
-	dbHost     = "localhost"
+	dbHost     = "database.lan"
 	dbUser     = "results_test"
 	dbPassword = "results_test"
 	dbPort     = 3306
@@ -281,7 +281,11 @@ func TestUpgrade(t *testing.T) {
 	if version != 1 {
 		t.Fatalf("Version set to '%v' expected '1'.", version)
 	}
-	// In the future this will verify updates work properly.
+	// Verify update works.
+	err = db.updateTables(version, 2)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 2, err)
+	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()
 	if err != nil {

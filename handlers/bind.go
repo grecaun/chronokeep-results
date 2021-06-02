@@ -26,6 +26,8 @@ func (h Handler) Bind(group *echo.Group) {
 	group.DELETE("/event/delete", h.DeleteEvent)
 	// Result handlers
 	group.GET("/results", h.GetResults)
+	group.GET("/results/all", h.GetAllResults)
+	group.GET("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)
 	group.DELETE("/results/delete", h.DeleteResults)
 	// Account Login

@@ -22,7 +22,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 1
+	CurrentVersion        = 2
 )
 
 type MySQL struct {
@@ -280,6 +280,7 @@ func (m *MySQL) createTables() error {
 				"age_ranking INT DEFAULT -1, " +
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
+				"result_type INT DEFAULT 0, " +
 				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
@@ -335,6 +336,26 @@ func (m *MySQL) checkVersion() int {
 }
 
 func (m *MySQL) updateTables(oldVersion, newVersion int) error {
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	if oldVersion <= 1 {
+		log.Debug("Updating from version 1.")
+		_, err := m.db.ExecContext(
+			ctx,
+			"ALTER TABLE result ADD COLUMN result_type INT DEFAULT 0;",
+		)
+		if err != nil {
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	_, err := m.db.ExecContext(
+		ctx,
+		"UPDATE settings SET value=? WHERE name='version';",
+		newVersion,
+	)
+	if err != nil {
+		return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+	}
 	return nil
 }
 
