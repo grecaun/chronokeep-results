@@ -1,0 +1,22 @@
+name: Deploy Results API
+on:
+  push:
+    branches: [deploy]
+  
+jobs:
+  build:
+    name: Build Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@master
+
+      - name: Set up Go
+        uses: actions/setup-go@master
+        with:
+          go-version: latest
+      
+      - name: Build
+          env:
+            GOPROXY: "https://proxy.golang.org"
+        run: go build .
