@@ -28,6 +28,7 @@ type Result struct {
 	AgeRanking       int    `json:"age_ranking"`
 	GenderRanking    int    `json:"gender_ranking"`
 	Finish           bool   `json:"finish"`
+	Type             int    `json:"type"`
 }
 
 // Validate Ensures valid data in the struct.
