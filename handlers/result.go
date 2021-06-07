@@ -47,11 +47,18 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
+	outRes := make(map[string][]types.Result)
+	for _, result := range results {
+		if _, ok := outRes[result.Distance]; !ok {
+			outRes[result.Distance] = make([]types.Result, 0, 1)
+		}
+		outRes[result.Distance] = append(outRes[result.Distance], result)
+	}
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
 		Years:     years,
-		Results:   results,
+		Results:   outRes,
 		Count:     len(results),
 	})
 }
@@ -96,11 +103,18 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
+	outRes := make(map[string][]types.Result)
+	for _, result := range results {
+		if _, ok := outRes[result.Distance]; !ok {
+			outRes[result.Distance] = make([]types.Result, 0, 1)
+		}
+		outRes[result.Distance] = append(outRes[result.Distance], result)
+	}
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
 		Years:     years,
-		Results:   results,
+		Results:   outRes,
 		Count:     len(results),
 	})
 }
@@ -145,11 +159,18 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
+	outRes := make(map[string][]types.Result)
+	for _, result := range results {
+		if _, ok := outRes[result.Distance]; !ok {
+			outRes[result.Distance] = make([]types.Result, 0, 1)
+		}
+		outRes[result.Distance] = append(outRes[result.Distance], result)
+	}
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
 		Years:     years,
-		Results:   results,
+		Results:   outRes,
 		Count:     len(results),
 	})
 }

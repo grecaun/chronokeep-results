@@ -127,11 +127,18 @@ func (h Handler) GetEvent(c echo.Context) error {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 		}
 	}
+	outRes := make(map[string][]types.Result)
+	for _, result := range res {
+		if _, ok := outRes[result.Distance]; !ok {
+			outRes[result.Distance] = make([]types.Result, 0, 1)
+		}
+		outRes[result.Distance] = append(outRes[result.Distance], result)
+	}
 	return c.JSON(http.StatusOK, types.GetEventResponse{
 		Event:      *event,
 		EventYears: eventYears,
 		Year:       recent,
-		Results:    res,
+		Results:    outRes,
 	})
 }
 
