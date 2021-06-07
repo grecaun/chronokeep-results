@@ -248,7 +248,8 @@ func (h Handler) DeleteResults(c echo.Context) error {
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
 	}
-	if mkey.Key.Type != "delete" {
+	// For results, let a write key delete.
+	if mkey.Key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly/Write", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
