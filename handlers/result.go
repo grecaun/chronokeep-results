@@ -155,12 +155,12 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
-	var person *types.Person
-	for _, result := range results {
-		if result.Finish {
-			person = &types.Person{}
-			person.FromResult(result)
-		}
+	person, err := database.GetPerson(request.Slug, request.Year, request.Bib)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Person", err)
+	}
+	if person == nil {
+		return getAPIError(c, http.StatusNotFound, "Person Not Found", nil)
 	}
 	return c.JSON(http.StatusOK, types.GetBibResultsResponse{
 		Event:     *mult.Event,

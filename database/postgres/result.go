@@ -3,6 +3,7 @@ package postgres
 import (
 	"chronokeep/results/types"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -22,20 +23,29 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool) 
 	if bib != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds DESC;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds DESC;",
 			eventYearID,
 			bib,
 		)
 	} else if all {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result WHERE event_year_id=$1 ORDER BY seconds DESC;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 ORDER BY seconds DESC;",
 			eventYearID,
 		)
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type FROM result r JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence FROM result GROUP BY bib, event_year_id) b ON b.mx_bib=r.bib AND b.mx_event_year_id=r.event_year_id AND b.mx_occurence=r.occurence WHERE event_year_id=$1 ORDER BY seconds DESC;",
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+				"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
+				"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
+				"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
+				"WHERE event_year_id=$1 ORDER BY seconds DESC;",
 			eventYearID,
 		)
 	}
@@ -105,7 +115,7 @@ func (p *Postgres) DeleteResults(eventYearID int64, results []types.Result) erro
 	for _, result := range results {
 		_, err = tx.Exec(
 			ctx,
-			"DELETE FROM result WHERE event_year_id=$1 AND bib=$2 AND location=$3 AND occurence=$4;",
+			"DELETE FROM result r WHERE location=$3 AND occurence=$4 AND EXISTS (SELECT * FROM person p WHERE event_year_id=$1 AND bib=$2 AND r.person_id=p.person_id);",
 			eventYearID,
 			result.Bib,
 			result.Location,
@@ -128,11 +138,19 @@ func (p *Postgres) DeleteEventResults(eventYearID int64) (int64, error) {
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"DELETE FROM result WHERE event_year_id=$1;",
+		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p WHERE event_year_id=$1 AND p.person_id=r.person_id);",
 		eventYearID,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("unable to delete results for event year: %v", err)
+	}
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM person WHERE event_year_id=$1;",
+		eventYearID,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("unable to delete persons for event year: %v", err)
 	}
 	return res.RowsAffected(), nil
 }
@@ -150,9 +168,10 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 		return nil, fmt.Errorf("unable to begin transaction to add results: %v", err)
 	}
 	for _, result := range results {
-		_, err = tx.Exec(
+		var id int64
+		err = tx.QueryRow(
 			ctx,
-			"INSERT INTO result("+
+			"INSERT INTO person("+
 				"event_year_id, "+
 				"bib, "+
 				"first, "+
@@ -160,7 +179,34 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"age, "+
 				"gender, "+
 				"age_group, "+
-				"distance, "+
+				"distance"+
+				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8) "+
+				"ON CONFLICT (event_year_id, bib) DO UPDATE SET "+
+				"first=$3, "+
+				"last=$4, "+
+				"age=$5, "+
+				"gender=$6, "+
+				"age_group=$7, "+
+				"distance=$8 RETURNING (person_id);",
+			eventYearID,
+			result.Bib,
+			result.First,
+			result.Last,
+			result.Age,
+			result.Gender,
+			result.AgeGroup,
+			result.Distance,
+		).Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		if id == 0 {
+			return nil, errors.New("id value set to 0")
+		}
+		_, err = tx.Exec(
+			ctx,
+			"INSERT INTO result("+
+				"person_id, "+
 				"seconds, "+
 				"milliseconds, "+
 				"chip_seconds, "+
@@ -172,33 +218,21 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"age_ranking, "+
 				"gender_ranking, "+
 				"finish, "+
-				"result_type) "+
-				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) "+
-				"ON CONFLICT (event_year_id, bib, location, occurence) DO UPDATE SET "+
-				"first=$3, "+
-				"last=$4, "+
-				"age=$5, "+
-				"gender=$6, "+
-				"age_group=$7, "+
-				"distance=$8, "+
-				"seconds=$9, "+
-				"milliseconds=$10, "+
-				"chip_seconds=$11, "+
-				"chip_milliseconds=$12, "+
-				"segment=$13, "+
-				"ranking=$16, "+
-				"age_ranking=$17, "+
-				"gender_ranking=$18, "+
-				"finish=$19, "+
-				"result_type=$20;",
-			eventYearID,
-			result.Bib,
-			result.First,
-			result.Last,
-			result.Age,
-			result.Gender,
-			result.AgeGroup,
-			result.Distance,
+				"result_type"+
+				") "+
+				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "+
+				"ON CONFLICT (person_id, location, occurence) DO UPDATE SET "+
+				"seconds=$2, "+
+				"milliseconds=$3, "+
+				"chip_seconds=$4, "+
+				"chip_milliseconds=$5, "+
+				"segment=$6, "+
+				"ranking=$9, "+
+				"age_ranking=$10, "+
+				"gender_ranking=$11, "+
+				"finish=$12, "+
+				"result_type=$13;",
+			id,
 			result.Seconds,
 			result.Milliseconds,
 			result.ChipSeconds,

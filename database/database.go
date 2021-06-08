@@ -3,6 +3,14 @@ package database
 import (
 	"chronokeep/results/types"
 	"chronokeep/results/util"
+	"time"
+)
+
+const (
+	MaxOpenConnections    = 20
+	MaxIdleConnections    = 20
+	MaxConnectionLifetime = time.Minute * 5
+	CurrentVersion        = 3
 )
 
 type Database interface {
@@ -61,6 +69,8 @@ type Database interface {
 	GetAccountEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetEventAndYear(slug, year string) (*types.MultiGet, error)
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
+	// Person Functions
+	GetPerson(slug, year, bib string) (*types.Person, error)
 	// Close the database.
 	Close()
 }

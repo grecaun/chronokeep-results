@@ -331,8 +331,15 @@ func TestDeleteResults(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
+	eventYear2 := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2022",
+		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+	}
 	eventYear, _ = db.AddEventYear(*eventYear)
+	eventYear2, _ = db.AddEventYear(*eventYear2)
 	db.AddResults(eventYear.Identifier, results)
+	db.AddResults(eventYear2.Identifier, results)
 	err = db.DeleteResults(eventYear.Identifier, results[1:2])
 	if err != nil {
 		t.Fatalf("Error deleting specific results: %v", err)
@@ -365,14 +372,27 @@ func TestDeleteEventResults(t *testing.T) {
 		Name:              "Event 1",
 		Slug:              "event1",
 	}
+	event2 := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 2",
+		Slug:              "event2",
+	}
 	event, _ = db.AddEvent(*event)
+	event2, _ = db.AddEvent(*event2)
 	eventYear := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
+	eventYear2 := &types.EventYear{
+		EventIdentifier: event2.Identifier,
+		Year:            "2022",
+		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+	}
 	eventYear, _ = db.AddEventYear(*eventYear)
+	eventYear2, _ = db.AddEventYear(*eventYear2)
 	db.AddResults(eventYear.Identifier, results)
+	db.AddResults(eventYear2.Identifier, results)
 	count, err := db.DeleteEventResults(eventYear.Identifier)
 	if err != nil {
 		t.Fatalf("Error deleting specific results: %v", err)
@@ -383,6 +403,10 @@ func TestDeleteEventResults(t *testing.T) {
 	res, _ := db.GetResults(eventYear.Identifier)
 	if len(res) != 0 {
 		t.Errorf("Expected %v results after delete but found %v.", 0, len(res))
+	}
+	res, _ = db.GetResults(eventYear2.Identifier)
+	if len(res) == 0 {
+		t.Error("Expected to find results after delete but found none.")
 	}
 }
 

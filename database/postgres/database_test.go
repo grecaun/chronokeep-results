@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"chronokeep/results/auth"
+	"chronokeep/results/database"
 	"chronokeep/results/util"
 	"context"
 	"errors"
@@ -49,8 +50,8 @@ func setupTests(t *testing.T) (*Postgres, func(t *testing.T), error) {
 			return nil, nil, err
 		}
 		// Otherwise check if our database is out of date and update if necessary.
-	} else if dbVersion < CurrentVersion {
-		err = o.updateTables(dbVersion, CurrentVersion)
+	} else if dbVersion < database.CurrentVersion {
+		err = o.updateTables(dbVersion, database.CurrentVersion)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -335,8 +336,8 @@ func TestCheckVersion(t *testing.T) {
 	}
 	defer finalize(t)
 	version := db.checkVersion()
-	if version != CurrentVersion {
-		t.Fatalf("version found '%v' expected '%v'", version, CurrentVersion)
+	if version != database.CurrentVersion {
+		t.Fatalf("version found '%v' expected '%v'", version, database.CurrentVersion)
 	}
 }
 
@@ -361,6 +362,15 @@ func TestUpgrade(t *testing.T) {
 	err = db.updateTables(version, 2)
 	if err != nil {
 		t.Fatalf("error updating database from %d to %d: %v", version, 2, err)
+	}
+	// Verify version 1
+	version = db.checkVersion()
+	if version != 2 {
+		t.Fatalf("Version set to '%v' expected '1'.", version)
+	}
+	err = db.updateTables(version, 3)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 3, err)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()

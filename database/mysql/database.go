@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"chronokeep/results/auth"
+	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"chronokeep/results/util"
 
@@ -16,13 +17,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	MaxOpenConnections    = 20
-	MaxIdleConnections    = 20
-	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 2
 )
 
 type MySQL struct {
@@ -51,9 +45,9 @@ func (m *MySQL) GetDatabase(inCfg *util.Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database connection: %v", err)
 	}
-	dbCon.SetMaxIdleConns(MaxIdleConnections)
-	dbCon.SetMaxOpenConns(MaxOpenConnections)
-	dbCon.SetConnMaxLifetime(MaxConnectionLifetime)
+	dbCon.SetMaxIdleConns(database.MaxIdleConnections)
+	dbCon.SetMaxOpenConns(database.MaxOpenConnections)
+	dbCon.SetConnMaxLifetime(database.MaxConnectionLifetime)
 
 	m.db = dbCon
 	return m.db, nil
@@ -91,9 +85,9 @@ func (m *MySQL) Setup(config *util.Config) error {
 			return err
 		}
 		// Otherwise check if our database is out of date and update if necessary.
-	} else if dbVersion < CurrentVersion {
-		log.Info(fmt.Sprintf("Updating database from version %v to %v", dbVersion, CurrentVersion))
-		err = m.updateTables(dbVersion, CurrentVersion)
+	} else if dbVersion < database.CurrentVersion {
+		log.Info(fmt.Sprintf("Updating database from version %v to %v", dbVersion, database.CurrentVersion))
+		err = m.updateTables(dbVersion, database.CurrentVersion)
 		if err != nil {
 			return err
 		}
@@ -140,7 +134,7 @@ func (m *MySQL) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE call_record, result, event_year, event, api_key, account, settings;",
+		"DROP TABLE call_record, result, person, event_year, event, api_key, account, settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -257,10 +251,11 @@ func (m *MySQL) createTables() error {
 				"PRIMARY KEY (event_year_id)" +
 				");",
 		},
-		// RESULT TABLE
+		// PERSON TABLE
 		{
-			name: "ResultTable",
-			query: "CREATE TABLE IF NOT EXISTS result(" +
+			name: "PersonTable",
+			query: "CREATE TABLE IF NOT EXISTS person(" +
+				"person_id BIGINT NOT NULL AUTO_INCREMENT, " +
 				"event_year_id BIGINT NOT NULL, " +
 				"bib VARCHAR(100) NOT NULL, " +
 				"first VARCHAR(100) NOT NULL, " +
@@ -269,6 +264,16 @@ func (m *MySQL) createTables() error {
 				"gender CHAR(1) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
+				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+				"PRIMARY KEY (person_id)" +
+				");",
+		},
+		// RESULT TABLE
+		{
+			name: "ResultTable",
+			query: "CREATE TABLE IF NOT EXISTS result(" +
+				"person_id BIGINT NOT NULL, " +
 				"seconds INT DEFAULT 0, " +
 				"milliseconds INT DEFAULT 0, " +
 				"chip_seconds INT DEFAULT 0, " +
@@ -283,8 +288,8 @@ func (m *MySQL) createTables() error {
 				"result_type INT DEFAULT 0, " +
 				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
-				"CONSTRAINT one_occurrence UNIQUE (event_year_id, bib, location, occurence)," +
-				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+				"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +
+				"FOREIGN KEY (person_id) REFERENCES person(person_id)" +
 				");",
 		},
 		// RECORD TABLE
@@ -312,7 +317,7 @@ func (m *MySQL) createTables() error {
 		}
 	}
 
-	m.SetSetting("version", strconv.Itoa(CurrentVersion))
+	m.SetSetting("version", strconv.Itoa(database.CurrentVersion))
 
 	return nil
 }
@@ -338,7 +343,7 @@ func (m *MySQL) checkVersion() int {
 func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	if oldVersion <= 1 {
+	if oldVersion < 2 && newVersion >= 2 {
 		log.Debug("Updating from version 1.")
 		_, err := m.db.ExecContext(
 			ctx,
@@ -346,6 +351,84 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		)
 		if err != nil {
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 3 && newVersion >= 3 {
+		log.Debug("Updating from version 2.")
+		queries := []myQuery{
+			{
+				name:  "RenameResult",
+				query: "ALTER TABLE result RENAME TO result_old;",
+			},
+			{
+				name: "CreatePerson",
+				query: "CREATE TABLE IF NOT EXISTS person(" +
+					"person_id BIGINT NOT NULL AUTO_INCREMENT, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"age INT NOT NULL, " +
+					"gender CHAR(1) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (person_id)" +
+					");",
+			},
+			{
+				name: "CreateNewResult",
+				query: "CREATE TABLE IF NOT EXISTS result(" +
+					"person_id BIGINT NOT NULL, " +
+					"seconds INT DEFAULT 0, " +
+					"milliseconds INT DEFAULT 0, " +
+					"chip_seconds INT DEFAULT 0, " +
+					"chip_milliseconds INT DEFAULT 0, " +
+					"segment VARCHAR(500), " +
+					"location VARCHAR(500), " +
+					"occurence INT DEFAULT -1, " +
+					"ranking INT DEFAULT -1, " +
+					"age_ranking INT DEFAULT -1, " +
+					"gender_ranking INT DEFAULT -1, " +
+					"finish BOOL DEFAULT TRUE, " +
+					"result_type INT DEFAULT 0, " +
+					"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+					"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+					"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +
+					"FOREIGN KEY (person_id) REFERENCES person(person_id)" +
+					");",
+			},
+			{
+				name: "InsertPerson",
+				query: "INSERT INTO person (event_year_id, bib, first, last, age, gender, age_group, distance) " +
+					" SELECT event_year_id, bib, first, last, age, gender, age_group, distance FROM result_old " +
+					"ON DUPLICATE KEY UPDATE first=VALUES(first), last=VALUES(last), age=VALUES(age), gender=VALUES(gender), " +
+					"age_group=VALUES(age_group), distance=VALUES(distance);",
+			},
+			{
+				name: "InsertResult",
+				query: "INSERT INTO result (person_id, seconds, milliseconds, chip_seconds, chip_milliseconds, " +
+					"segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type, " +
+					"result_created_at, result_updated_at" +
+					") SELECT person_id, seconds, milliseconds, chip_seconds, chip_milliseconds, " +
+					"segment, location, occurence, ranking, age_ranking, gender_ranking, finish, result_type, " +
+					"result_created_at, result_updated_at FROM result_old r JOIN person p ON (r.bib = p.bib " +
+					"AND r.event_year_id=p.event_year_id);",
+			},
+			{
+				name:  "DeleteResult",
+				query: "DROP TABLE result_old;",
+			},
+		}
+		for _, q := range queries {
+			_, err := m.db.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
 		}
 	}
 	_, err := m.db.ExecContext(
