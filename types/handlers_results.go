@@ -18,6 +18,32 @@ type AddResultsResponse struct {
 	Count int `json:"count"`
 }
 
+// GetBibResultsResponse Struct used for the response of a GetBibResults request.
+type GetBibResultsResponse struct {
+	Event     Event     `json:"event"`
+	EventYear EventYear `json:"year"`
+	Results   []Result  `json:"results"`
+	Person    *Person   `json:"person"`
+}
+
+type Person struct {
+	First    string `json:"first"`
+	Last     string `json:"last"`
+	Bib      string `json:"bib"`
+	Age      int    `json:"age"`
+	Gender   string `json:"gender"`
+	AgeGroup string `json:"age_group"`
+}
+
+func (p *Person) FromResult(res Result) {
+	p.First = res.First
+	p.Last = res.Last
+	p.Bib = res.Bib
+	p.Age = res.Age
+	p.Gender = res.Gender
+	p.AgeGroup = res.AgeGroup
+}
+
 /*
 	Requests
 */

@@ -151,27 +151,22 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
-	years, err := database.GetEventYears(request.Slug)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
-	}
 	results, err := database.GetBibResults(mult.EventYear.Identifier, request.Bib)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
-	outRes := make(map[string][]types.Result)
+	var person *types.Person
 	for _, result := range results {
-		if _, ok := outRes[result.Distance]; !ok {
-			outRes[result.Distance] = make([]types.Result, 0, 1)
+		if result.Finish {
+			person = &types.Person{}
+			person.FromResult(result)
 		}
-		outRes[result.Distance] = append(outRes[result.Distance], result)
 	}
-	return c.JSON(http.StatusOK, types.GetResultsResponse{
+	return c.JSON(http.StatusOK, types.GetBibResultsResponse{
 		Event:     *mult.Event,
 		EventYear: *mult.EventYear,
-		Years:     years,
-		Results:   outRes,
-		Count:     len(results),
+		Results:   results,
+		Person:    person,
 	})
 }
 
