@@ -29,7 +29,11 @@ func (h Handler) GetResults(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	mult, err := database.GetEventAndYear(request.Slug, year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
 	}
@@ -85,7 +89,11 @@ func (h Handler) GetAllResults(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	mult, err := database.GetEventAndYear(request.Slug, year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
 	}
@@ -248,7 +256,11 @@ func (h Handler) DeleteResults(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly/Write", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	mult, err := database.GetEventAndYear(request.Slug, year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
 	}

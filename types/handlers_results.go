@@ -32,8 +32,8 @@ type GetBibResultsResponse struct {
 
 // GetResultsRequest Struct used for the request of Results for an EventYear. Also used for Delete.
 type GetResultsRequest struct {
-	Slug string `json:"slug"`
-	Year string `json:"year"`
+	Slug string  `json:"slug"`
+	Year *string `json:"year"`
 }
 
 // AddResultsRequest Struct used to add/update Results.

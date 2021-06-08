@@ -67,7 +67,7 @@ type Database interface {
 	// Multi-Get Functions
 	GetAccountAndEvent(slug string) (*types.MultiGet, error)
 	GetAccountEventAndYear(slug, year string) (*types.MultiGet, error)
-	GetEventAndYear(slug, year string) (*types.MultiGet, error)
+	GetEventAndYear(slug string, year string) (*types.MultiGet, error)
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
 	// Person Functions
 	GetPerson(slug, year, bib string) (*types.Person, error)

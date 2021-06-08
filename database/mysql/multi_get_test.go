@@ -133,6 +133,16 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
 		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
+	mult, err = db.GetAccountEventAndYear(event1.Slug, "")
+	if err != nil {
+		t.Fatalf("Error getting account, event, and year: %v", err)
+	}
+	if mult == nil || mult.Account == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Account, Event, or EventYear was nil.")
+	}
+	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
+		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
+	}
 	mult, err = db.GetAccountEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
 		t.Fatalf("Error getting account, event, and year: %v", err)
@@ -184,7 +194,7 @@ func TestGetEventAndYear(t *testing.T) {
 	}
 	db.AddEventYear(eventYear1)
 	db.AddEventYear(eventYear2)
-	mult, err := db.GetAccountEventAndYear(event1.Slug, eventYear1.Year)
+	mult, err := db.GetEventAndYear(event1.Slug, eventYear1.Year)
 	if err != nil {
 		t.Fatalf("Error getting event and year: %v", err)
 	}
@@ -194,7 +204,17 @@ func TestGetEventAndYear(t *testing.T) {
 	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
 		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
-	mult, err = db.GetAccountEventAndYear(event2.Slug, eventYear2.Year)
+	mult, err = db.GetEventAndYear(event1.Slug, "")
+	if err != nil {
+		t.Fatalf("Error getting event and year: %v", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		t.Fatal("Event or EventYear was nil.")
+	}
+	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
+		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
+	}
+	mult, err = db.GetEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
 		t.Fatalf("Error getting event and year: %v", err)
 	}
