@@ -20,7 +20,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE and slug=$1;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE and slug=$1;",
 		slug,
 	)
 	if err != nil {
@@ -38,6 +38,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 			&outEvent.AccountIdentifier,
 			&outEvent.ContactEmail,
 			&outEvent.AccessRestricted,
+			&outEvent.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -58,12 +59,12 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 	if email == nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 		)
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=$1;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=$1;",
 			email,
 		)
 	}
@@ -83,6 +84,7 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 			&event.AccountIdentifier,
 			&event.ContactEmail,
 			&event.AccessRestricted,
+			&event.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -113,7 +115,7 @@ func (p *Postgres) AddEvent(event types.Event) (*types.Event, error) {
 	var id int64
 	err = db.QueryRow(
 		ctx,
-		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING (event_id);",
+		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING (event_id);",
 		event.Name,
 		event.Slug,
 		event.Website,
@@ -121,6 +123,7 @@ func (p *Postgres) AddEvent(event types.Event) (*types.Event, error) {
 		event.ContactEmail,
 		event.AccountIdentifier,
 		event.AccessRestricted,
+		event.Type,
 	).Scan(&id)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event: %v", err)
@@ -137,6 +140,7 @@ func (p *Postgres) AddEvent(event types.Event) (*types.Event, error) {
 		Image:             event.Image,
 		ContactEmail:      event.ContactEmail,
 		AccessRestricted:  event.AccessRestricted,
+		Type:              event.Type,
 	}, nil
 }
 
@@ -181,13 +185,14 @@ func (p *Postgres) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"UPDATE event SET event_name=$1, website=$2, image=$3, contact_email=$4, access_restricted=$5 WHERE event_id=$6;",
+		"UPDATE event SET event_name=$1, website=$2, image=$3, contact_email=$4, access_restricted=$5, event_type=$7 WHERE event_id=$6;",
 		event.Name,
 		event.Website,
 		event.Image,
 		event.ContactEmail,
 		event.AccessRestricted,
 		event.Identifier,
+		event.Type,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)

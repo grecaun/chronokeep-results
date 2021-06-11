@@ -18,6 +18,7 @@ type Event struct {
 	Image             string `json:"image"`
 	ContactEmail      string `json:"contact_email" validate:"email"`
 	AccessRestricted  bool   `json:"access_restricted"`
+	Type              string `json:"type"`
 }
 
 // Equals Returns true if all fields other than Identifier are equal.
@@ -39,6 +40,16 @@ func (e *Event) Validate(validate *validator.Validate) error {
 	}
 	if !validEventName(e.Name) {
 		return errors.New("invalid event name (only letters, ', /, and spaces allowed)")
+	}
+	valid := false
+	switch e.Type {
+	case "distance":
+		valid = true
+	case "time":
+		valid = true
+	}
+	if !valid {
+		return errors.New("invalid event type specified")
 	}
 	err := validate.Var(e.Website, "url")
 	if e.Website != "" && err != nil {

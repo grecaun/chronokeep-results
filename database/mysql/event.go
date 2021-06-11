@@ -19,7 +19,7 @@ func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE and slug=?;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE and slug=?;",
 		slug,
 	)
 	if err != nil {
@@ -37,6 +37,7 @@ func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
 			&outEvent.AccountIdentifier,
 			&outEvent.ContactEmail,
 			&outEvent.AccessRestricted,
+			&outEvent.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -57,12 +58,12 @@ func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
 	if email == nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 		)
 	} else {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=?;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=?;",
 			email,
 		)
 	}
@@ -82,6 +83,7 @@ func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
 			&event.AccountIdentifier,
 			&event.ContactEmail,
 			&event.AccessRestricted,
+			&event.Type,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -111,7 +113,7 @@ func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted) VALUES (?, ?, ?, ?, ?, ?, ?);",
+		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 		event.Name,
 		event.Slug,
 		event.Website,
@@ -119,6 +121,7 @@ func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
 		event.ContactEmail,
 		event.AccountIdentifier,
 		event.AccessRestricted,
+		event.Type,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event: %v", err)
@@ -136,6 +139,7 @@ func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
 		Image:             event.Image,
 		ContactEmail:      event.ContactEmail,
 		AccessRestricted:  event.AccessRestricted,
+		Type:              event.Type,
 	}, nil
 }
 
@@ -184,12 +188,13 @@ func (m *MySQL) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET event_name=?, website=?, image=?, contact_email=?, access_restricted=? WHERE event_id=?;",
+		"UPDATE event SET event_name=?, website=?, image=?, contact_email=?, access_restricted=?, event_type=? WHERE event_id=?;",
 		event.Name,
 		event.Website,
 		event.Image,
 		event.ContactEmail,
 		event.AccessRestricted,
+		event.Type,
 		event.Identifier,
 	)
 	if err != nil {

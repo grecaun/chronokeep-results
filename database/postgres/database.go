@@ -228,6 +228,7 @@ func (p *Postgres) createTables() error {
 				"event_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"event_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"event_deleted BOOL DEFAULT FALSE, " +
+				"event_type VARCHAR(20) DEFAULT 'distance', " +
 				"UNIQUE(event_name), " +
 				"UNIQUE(slug)," +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)," +
@@ -422,7 +423,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	if oldVersion < 2 && newVersion >= 2 {
-		log.Debug("Updating from version 1.")
+		log.Debug("Updating to database version 2.")
 		_, err := p.db.Exec(
 			ctx,
 			"ALTER TABLE result ADD COLUMN result_type INT DEFAULT 0;",
@@ -432,7 +433,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 3 && newVersion >= 3 {
-		log.Debug("Updating from version 2.")
+		log.Debug("Updating to database version 3.")
 		queries := []myQuery{
 			{
 				name:  "RenameResult",
@@ -506,6 +507,15 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			if err != nil {
 				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
 			}
+		}
+	}
+	if oldVersion < 4 && newVersion >= 3 {
+		_, err := p.db.Exec(
+			ctx,
+			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
+		)
+		if err != nil {
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	_, err := p.db.Exec(

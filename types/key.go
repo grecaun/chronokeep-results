@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -77,6 +78,20 @@ func (k Key) Expired() bool {
 		return false
 	}
 	return k.ValidUntil.Before(time.Now())
+}
+
+// IsAllowed Reports whether a key is allowed to be used based on host name.
+func (k Key) IsAllowed(host string) bool {
+	if len(k.AllowedHosts) < 1 {
+		return true
+	}
+	allowed := strings.Split(k.AllowedHosts, ",")
+	for _, a := range allowed {
+		if host == a {
+			return true
+		}
+	}
+	return false
 }
 
 // ToKey Returns a Key struct with proper information.

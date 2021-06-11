@@ -3,6 +3,7 @@ package handlers
 import (
 	"chronokeep/results/types"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,13 +21,25 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
+	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	host := strings.Split(c.Request().Host, ":")
+	if host == nil || len(host) < 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
+	}
+	if !mkey.Key.IsAllowed(host[0]) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
 	year := ""
@@ -80,13 +93,25 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
+	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	host := strings.Split(c.Request().Host, ":")
+	if host == nil || len(host) < 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
+	}
+	if !mkey.Key.IsAllowed(host[0]) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
 	year := ""
@@ -140,13 +165,25 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
+	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	host := strings.Split(c.Request().Host, ":")
+	if host == nil || len(host) < 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
+	}
+	if !mkey.Key.IsAllowed(host[0]) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// And Event for verification of whether or not we can allow access to this key
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)
@@ -198,13 +235,25 @@ func (h Handler) AddResults(c echo.Context) error {
 			resToAdd = append(resToAdd, res)
 		}
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
+	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	host := strings.Split(c.Request().Host, ":")
+	if host == nil || len(host) < 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
+	}
+	if !mkey.Key.IsAllowed(host[0]) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	if mkey.Key.Type == "read" {
 		return getAPIError(c, http.StatusUnauthorized, "Key is ReadOnly", nil)
@@ -243,13 +292,25 @@ func (h Handler) DeleteResults(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Get Key :: TODO :: Add verification of HOST value.
+	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
 	}
 	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	host := strings.Split(c.Request().Host, ":")
+	if host == nil || len(host) < 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
+	}
+	if !mkey.Key.IsAllowed(host[0]) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// For results, let a write key delete.
 	if mkey.Key.Type == "read" {
