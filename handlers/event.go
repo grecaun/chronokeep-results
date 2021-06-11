@@ -3,7 +3,6 @@ package handlers
 import (
 	"chronokeep/results/types"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -31,11 +30,7 @@ func (h Handler) GetEvents(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	events, err := database.GetEvents()
@@ -69,11 +64,7 @@ func (h Handler) GetMyEvents(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	events, err := database.GetAccountEvents(mkey.Account.Email)
@@ -111,11 +102,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	event, err := database.GetEvent(request.Slug)
@@ -195,11 +182,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
@@ -253,11 +236,7 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// Verify key access level.  Readonly cannot write or modify values.
@@ -321,11 +300,7 @@ func (h Handler) DeleteEvent(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
 	// Check for host being allowed.
-	host := strings.Split(c.Request().Host, ":")
-	if host == nil || len(host) < 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Unable To Get Host", nil)
-	}
-	if !mkey.Key.IsAllowed(host[0]) {
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
 	// Verify access level. Delete is the only level that can delete values.

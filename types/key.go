@@ -2,10 +2,15 @@ package types
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
+)
+
+var (
+	hostRegex = regexp.MustCompile(`^https?:\/\/([^\/:]+)`)
 )
 
 // Key outline for data stored about an PI key
@@ -85,10 +90,13 @@ func (k Key) IsAllowed(host string) bool {
 	if len(k.AllowedHosts) < 1 {
 		return true
 	}
-	allowed := strings.Split(k.AllowedHosts, ",")
-	for _, a := range allowed {
-		if host == a {
-			return true
+	match := hostRegex.FindStringSubmatch(host)
+	if len(match) >= 2 {
+		allowed := strings.Split(k.AllowedHosts, ",")
+		for _, a := range allowed {
+			if match[1] == a {
+				return true
+			}
 		}
 	}
 	return false
