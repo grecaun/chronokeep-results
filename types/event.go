@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -10,15 +11,16 @@ import (
 // Event is a structure holding the information regarding an event that can span
 // multiple years
 type Event struct {
-	AccountIdentifier int64  `json:"-"`
-	Identifier        int64  `json:"-"`
-	Name              string `json:"name" validate:"required"`
-	Slug              string `json:"slug" validate:"required"`
-	Website           string `json:"website"`
-	Image             string `json:"image"`
-	ContactEmail      string `json:"contact_email" validate:"email"`
-	AccessRestricted  bool   `json:"access_restricted"`
-	Type              string `json:"type"`
+	AccountIdentifier int64      `json:"-"`
+	Identifier        int64      `json:"-"`
+	Name              string     `json:"name" validate:"required"`
+	Slug              string     `json:"slug" validate:"required"`
+	Website           string     `json:"website"`
+	Image             string     `json:"image"`
+	ContactEmail      string     `json:"contact_email" validate:"email"`
+	AccessRestricted  bool       `json:"access_restricted"`
+	Type              string     `json:"type"`
+	RecentTime        *time.Time `json:"recent_time"`
 }
 
 // Equals Returns true if all fields other than Identifier are equal.

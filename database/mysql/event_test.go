@@ -99,8 +99,15 @@ func TestGetEvent(t *testing.T) {
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
 	}
-	db.AddEvent(event1)
+	nEvent1, _ := db.AddEvent(event1)
 	db.AddEvent(event2)
+	eventYear1 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	db.AddEventYear(*eventYear1)
 	testEvent, err := db.GetEvent(event1.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event: %v", err)
@@ -108,12 +115,20 @@ func TestGetEvent(t *testing.T) {
 	if !testEvent.Equals(&event1) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *testEvent)
 	}
+	if testEvent.RecentTime == nil {
+		t.Errorf("Expected time for an event but didn't find anything.")
+	} else if !testEvent.RecentTime.Equal(eventYear1.DateTime) {
+		t.Errorf("Expected time to be %v, found %v", eventYear1.DateTime, testEvent.RecentTime)
+	}
 	testEvent, err = db.GetEvent(event2.Slug)
 	if err != nil {
 		t.Fatalf("Error getting event: %v", err)
 	}
 	if !testEvent.Equals(&event2) {
 		t.Errorf("Event expected: %+v; Event found: %+v;", event2, *testEvent)
+	}
+	if testEvent.RecentTime != nil {
+		t.Errorf("Expected nil time for an event that has no event years. (2)")
 	}
 	testEvent, err = db.GetEvent("test")
 	if err != nil {
@@ -168,8 +183,15 @@ func TestGetEvents(t *testing.T) {
 	if len(events) != 0 {
 		t.Errorf("Expected %v events but found %v.", 0, len(events))
 	}
-	db.AddEvent(event1)
+	nEvent1, _ := db.AddEvent(event1)
 	db.AddEvent(event2)
+	eventYear1 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		Live:            false,
+	}
+	db.AddEventYear(*eventYear1)
 	events, err = db.GetEvents()
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
@@ -187,6 +209,20 @@ func TestGetEvents(t *testing.T) {
 	// db.GetEvents does not get restricted events.  The second event added is restricted.
 	if len(events) != 3 {
 		t.Errorf("Expected %v events but found %v.", 3, len(events))
+	}
+	found := 0
+	for _, ev := range events {
+		if ev.RecentTime != nil {
+			found++
+			if ev.RecentTime == nil {
+				t.Errorf("Expected to find a recent time on this event. Found nothing.")
+			} else if !ev.RecentTime.Equal(eventYear1.DateTime) {
+				t.Errorf("Expected time %v, found %v", eventYear1.DateTime, ev.RecentTime)
+			}
+		}
+	}
+	if found != 1 {
+		t.Errorf("Expected to find %v events with times, found %v.", 1, found)
 	}
 }
 

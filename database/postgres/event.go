@@ -20,7 +20,9 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE and slug=$1;",
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
 		slug,
 	)
 	if err != nil {
@@ -39,6 +41,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 			&outEvent.ContactEmail,
 			&outEvent.AccessRestricted,
 			&outEvent.Type,
+			&outEvent.RecentTime,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -59,12 +62,16 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 	if email == nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 		)
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type FROM event NATURAL JOIN account WHERE event_deleted=FALSE AND account_email=$1;",
+			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"recent_time FROM event NATURAL JOIN account NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND account_email=$1;",
 			email,
 		)
 	}
@@ -85,6 +92,7 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 			&event.ContactEmail,
 			&event.AccessRestricted,
 			&event.Type,
+			&event.RecentTime,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event: %v", err)
@@ -171,6 +179,49 @@ func (p *Postgres) DeleteEvent(event types.Event) error {
 	)
 	if err != nil {
 		return fmt.Errorf("error deleting event years attached to event: %v", err)
+	}
+	return nil
+}
+
+// RealDeleteEvent Really deletes an event from the database.
+func (p *Postgres) RealDeleteEvent(event types.Event) error {
+	db, err := p.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p NATURAL JOIN event_year y WHERE r.person_id=p.person_id AND y.event_id=$1);",
+		event.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting event results: %v", err)
+	}
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM person p WHERE EXISTS (SELECT * FROM event_year y WHERE p.event_year_id=y.event_year_id AND y.event_id=$1);",
+		event.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting event people: %v", err)
+	}
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM event_year WHERE event_id=$1;",
+		event.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting event years: %v", err)
+	}
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM event WHERE event_id=$1;",
+		event.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error deleting event: %v", err)
 	}
 	return nil
 }
