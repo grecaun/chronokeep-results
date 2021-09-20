@@ -17,7 +17,7 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -29,6 +29,7 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 		var key types.Key
 		err := res.Scan(
 			&key.AccountIdentifier,
+			&key.Name,
 			&key.Value,
 			&key.Type,
 			&key.AllowedHosts,
@@ -52,7 +53,7 @@ func (m *MySQL) GetKey(key string) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=?;",
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=?;",
 		key,
 	)
 	if err != nil {
@@ -63,6 +64,7 @@ func (m *MySQL) GetKey(key string) (*types.Key, error) {
 	if res.Next() {
 		err := res.Scan(
 			&outKey.AccountIdentifier,
+			&outKey.Name,
 			&outKey.Value,
 			&outKey.Type,
 			&outKey.AllowedHosts,
@@ -87,8 +89,9 @@ func (m *MySQL) AddKey(key types.Key) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO api_key(account_id, key_value, key_type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?);",
+		"INSERT INTO api_key(account_id, key_name, key_value, key_type, allowed_hosts, valid_until) VALUES (?, ?, ?, ?, ?, ?);",
 		key.AccountIdentifier,
+		key.Name,
 		key.Value,
 		key.Type,
 		key.AllowedHosts,
@@ -103,6 +106,7 @@ func (m *MySQL) AddKey(key types.Key) (*types.Key, error) {
 	}
 	return &types.Key{
 		AccountIdentifier: key.AccountIdentifier,
+		Name:              key.Name,
 		Value:             key.Value,
 		Type:              key.Type,
 		AllowedHosts:      key.AllowedHosts,
@@ -146,7 +150,8 @@ func (m *MySQL) UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET key_type=?, allowed_hosts=?, valid_until=? WHERE key_deleted=FALSE AND key_value=?;",
+		"UPDATE api_key SET key_name=?, key_type=?, allowed_hosts=?, valid_until=? WHERE key_deleted=FALSE AND key_value=?;",
+		key.Name,
 		key.Type,
 		key.AllowedHosts,
 		key.ValidUntil,

@@ -18,7 +18,7 @@ func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=$1;",
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=$1;",
 		email,
 	)
 	if err != nil {
@@ -30,6 +30,7 @@ func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
 		var key types.Key
 		err := res.Scan(
 			&key.AccountIdentifier,
+			&key.Name,
 			&key.Value,
 			&key.Type,
 			&key.AllowedHosts,
@@ -53,7 +54,7 @@ func (p *Postgres) GetKey(key string) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, key_value, key_type, allowed_hosts, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=$1;",
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=$1;",
 		key,
 	)
 	if err != nil {
@@ -64,6 +65,7 @@ func (p *Postgres) GetKey(key string) (*types.Key, error) {
 	if res.Next() {
 		err := res.Scan(
 			&outKey.AccountIdentifier,
+			&outKey.Name,
 			&outKey.Value,
 			&outKey.Type,
 			&outKey.AllowedHosts,
@@ -88,8 +90,9 @@ func (p *Postgres) AddKey(key types.Key) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"INSERT INTO api_key(account_id, key_value, key_type, allowed_hosts, valid_until) VALUES ($1, $2, $3, $4, $5);",
+		"INSERT INTO api_key(account_id, key_name, key_value, key_type, allowed_hosts, valid_until) VALUES ($1, $2, $3, $4, $5, $6);",
 		key.AccountIdentifier,
+		key.Name,
 		key.Value,
 		key.Type,
 		key.AllowedHosts,
@@ -103,6 +106,7 @@ func (p *Postgres) AddKey(key types.Key) (*types.Key, error) {
 	}
 	return &types.Key{
 		AccountIdentifier: key.AccountIdentifier,
+		Name:              key.Name,
 		Value:             key.Value,
 		Type:              key.Type,
 		AllowedHosts:      key.AllowedHosts,
@@ -142,11 +146,12 @@ func (p *Postgres) UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"UPDATE api_key SET key_type=$1, allowed_hosts=$2, valid_until=$3 WHERE key_deleted=FALSE AND key_value=$4;",
+		"UPDATE api_key SET key_name=$5, key_type=$1, allowed_hosts=$2, valid_until=$3 WHERE key_deleted=FALSE AND key_value=$4;",
 		key.Type,
 		key.AllowedHosts,
 		key.ValidUntil,
 		key.Value,
+		key.Name,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating key: %v", err)

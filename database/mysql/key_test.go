@@ -42,6 +42,7 @@ func TestAddKey(t *testing.T) {
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
@@ -56,6 +57,7 @@ func TestAddKey(t *testing.T) {
 		},
 		{
 			AccountIdentifier: account2.Identifier,
+			Name:              "test2",
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
@@ -76,6 +78,9 @@ func TestAddKey(t *testing.T) {
 	if !key.Equal(&keys[0]) {
 		t.Errorf("Expected key %+v, found %+v", keys[0], *key)
 	}
+	if key.Name != "test1" {
+		t.Errorf("Expected key to be named %s, found %s.", "test1", key.Name)
+	}
 	key, err = db.AddKey(keys[1])
 	if err != nil {
 		t.Fatalf("Error adding key: %v", err)
@@ -89,6 +94,9 @@ func TestAddKey(t *testing.T) {
 	}
 	if !key.Equal(&keys[2]) {
 		t.Errorf("Expected key %+v, found %+v", keys[2], *key)
+	}
+	if key.Name != "test2" {
+		t.Errorf("Expected key to be named %s, found %s.", "test2", key.Name)
 	}
 	key, err = db.AddKey(keys[3])
 	if err != nil {
@@ -120,6 +128,7 @@ func TestGetAccountKeys(t *testing.T) {
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
@@ -134,6 +143,7 @@ func TestGetAccountKeys(t *testing.T) {
 		},
 		{
 			AccountIdentifier: account2.Identifier,
+			Name:              "test2",
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
@@ -205,6 +215,7 @@ func TestGetKey(t *testing.T) {
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
@@ -219,6 +230,7 @@ func TestGetKey(t *testing.T) {
 		},
 		{
 			AccountIdentifier: account2.Identifier,
+			Name:              "test2",
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
@@ -243,6 +255,9 @@ func TestGetKey(t *testing.T) {
 	if !key.Equal(&keys[0]) {
 		t.Errorf("Expected key %+v, found %+v.", keys[0], *key)
 	}
+	if key.Name != "test1" {
+		t.Errorf("Expected key to be named %s, found %s.", "test1", key.Name)
+	}
 	key, err = db.GetKey(keys[1].Value)
 	if err != nil {
 		t.Fatalf("Error getting key: %v", err)
@@ -256,6 +271,9 @@ func TestGetKey(t *testing.T) {
 	}
 	if !key.Equal(&keys[2]) {
 		t.Errorf("Expected key %+v, found %+v.", keys[2], *key)
+	}
+	if key.Name != "test2" {
+		t.Errorf("Expected key to be named %s, found %s.", "test2", key.Name)
 	}
 	key, err = db.GetKey(keys[3].Value)
 	if err != nil {
@@ -290,6 +308,7 @@ func TestDeleteKey(t *testing.T) {
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
@@ -304,6 +323,7 @@ func TestDeleteKey(t *testing.T) {
 		},
 		{
 			AccountIdentifier: account2.Identifier,
+			Name:              "test2",
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
 			AllowedHosts:      "https://test.com/",
@@ -375,6 +395,7 @@ func TestUpdateKey(t *testing.T) {
 	keys := []types.Key{
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
 			AllowedHosts:      "",
@@ -382,6 +403,7 @@ func TestUpdateKey(t *testing.T) {
 		},
 		{
 			AccountIdentifier: account1.Identifier,
+			Name:              "test2",
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
@@ -391,6 +413,7 @@ func TestUpdateKey(t *testing.T) {
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
 	keys[0].Type = "write"
+	keys[1].Name = "newtest1"
 	keys[0].AllowedHosts = "test.lan,test.com,test.org"
 	validTime := time.Now().Add(time.Minute * 30).Truncate(time.Second)
 	keys[0].ValidUntil = &validTime
@@ -401,6 +424,9 @@ func TestUpdateKey(t *testing.T) {
 	key, _ := db.GetKey(keys[0].Value)
 	if !key.Equal(&keys[0]) {
 		t.Errorf("Expected key %+v, found %+v.", keys[0], *key)
+	}
+	if key.Name != keys[0].Name {
+		t.Errorf("Expected key name to be %s, found %s.", keys[0].Name, key.Name)
 	}
 	keys[1].AccountIdentifier = account1.Identifier + 200
 	keys[1].Value = "update-value-test"

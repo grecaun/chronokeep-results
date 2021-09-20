@@ -202,6 +202,7 @@ func (p *Postgres) createTables() error {
 			name: "KeyTable",
 			query: "CREATE TABLE IF NOT EXISTS api_key(" +
 				"account_id BIGINT NOT NULL, " +
+				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
 				"allowed_hosts TEXT, " +
@@ -509,10 +510,19 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
-	if oldVersion < 4 && newVersion >= 3 {
+	if oldVersion < 4 && newVersion >= 4 {
 		_, err := p.db.Exec(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
+		)
+		if err != nil {
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 5 && newVersion >= 5 {
+		_, err := p.db.Exec(
+			ctx,
+			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
 		)
 		if err != nil {
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)

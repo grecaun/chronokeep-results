@@ -19,6 +19,7 @@ var (
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
 	AccountIdentifier int64      `json:"-"`
+	Name              string     `json:"name"`
 	Value             string     `json:"value"`
 	Type              string     `json:"type" validate:"required"`
 	AllowedHosts      string     `json:"allowed_hosts"`
@@ -26,6 +27,7 @@ type Key struct {
 }
 
 type RequestKey struct {
+	Name         string `json:"name"`
 	Value        string `json:"value"`
 	Type         string `json:"type" validate:"required"`
 	AllowedHosts string `json:"allowed_hosts"`
@@ -34,6 +36,7 @@ type RequestKey struct {
 
 func (k *Key) Equal(other *Key) bool {
 	return k.AccountIdentifier == other.AccountIdentifier &&
+		k.Name == other.Name &&
 		k.Value == other.Value &&
 		k.Type == other.Type &&
 		k.AllowedHosts == other.AllowedHosts &&

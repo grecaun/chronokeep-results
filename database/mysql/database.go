@@ -202,6 +202,7 @@ func (m *MySQL) createTables() error {
 			name: "KeyTable",
 			query: "CREATE TABLE IF NOT EXISTS api_key(" +
 				"account_id BIGINT NOT NULL, " +
+				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
 				"allowed_hosts TEXT, " +
@@ -440,6 +441,15 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		)
 		if err != nil {
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 5 && newVersion >= 5 {
+		_, err := m.db.ExecContext(
+			ctx,
+			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
+		)
+		if err != nil {
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	_, err := m.db.ExecContext(
