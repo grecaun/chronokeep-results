@@ -27,7 +27,7 @@ type ModifyAccountResponse struct {
 
 // GetAccountRequest Struct used to request information about a specific account.
 type GetAccountRequest struct {
-	Email string `json:"email"`
+	Email *string `json:"email"`
 }
 
 // ModifyAccountRequest Struct used to request to update an account.

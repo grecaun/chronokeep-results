@@ -28,24 +28,38 @@ func (h Handler) GetAccount(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account == nil || (account.Type != "admin" && account.Email != request.Email) {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
+	// check if the user is trying to use a locked account
 	if account.Locked {
 		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
 	}
-	account, err = database.GetAccount(request.Email)
+	// only allow admins to modify accounts not their own
+	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	email := account.Email
+	if request.Email != nil {
+		theAccount, err := database.GetAccount(*request.Email)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
+		}
+		if theAccount == nil {
+			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+		}
+		email = theAccount.Email
+	}
+	// pull up the account we're giving information about
+	account, err = database.GetAccount(email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-	keys, err := database.GetAccountKeys(account.Email)
+	keys, err := database.GetAccountKeys(email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	events, err := database.GetAccountEvents(request.Email)
+	events, err := database.GetAccountEvents(email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
