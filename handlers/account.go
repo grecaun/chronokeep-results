@@ -21,9 +21,7 @@ const (
 
 func (h Handler) GetAccount(c echo.Context) error {
 	var request types.GetAccountRequest
-	if err := c.Bind(&request); err != nil {
-		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
-	}
+	_ = c.Bind(&request)
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
