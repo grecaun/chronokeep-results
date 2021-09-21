@@ -108,6 +108,7 @@ func (k Key) IsAllowed(host string) bool {
 // ToKey Returns a Key struct with proper information.
 func (k RequestKey) ToKey() Key {
 	out := Key{
+		Name:         k.Name,
 		Value:        k.Value,
 		Type:         k.Type,
 		AllowedHosts: k.AllowedHosts,
