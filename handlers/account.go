@@ -155,6 +155,9 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	if acc == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
+	if account.Type != "admin" && account.Type != request.Account.Type {
+		request.Account.Type = account.Type
+	}
 	err = database.UpdateAccount(request.Account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Unable To Update Account", err)
