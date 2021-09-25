@@ -3,6 +3,7 @@ package handlers
 import (
 	"chronokeep/results/types"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -82,7 +83,7 @@ func (h Handler) AddKey(c echo.Context) error {
 		Name:              request.Key.Name,
 		Value:             newKey.String(),
 		Type:              request.Key.Type,
-		AllowedHosts:      request.Key.AllowedHosts,
+		AllowedHosts:      strings.TrimSpace(request.Key.AllowedHosts),
 		ValidUntil:        request.Key.GetValidUntil(),
 	})
 	if err != nil || key == nil {
