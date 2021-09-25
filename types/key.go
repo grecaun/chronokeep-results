@@ -2,12 +2,9 @@ package types
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -100,7 +97,6 @@ func (k Key) IsAllowed(host string) bool {
 	if len(match) >= 2 {
 		allowed := strings.Split(k.AllowedHosts, ",")
 		for _, a := range allowed {
-			log.Info(fmt.Sprintf("Given host: %s - checking against %s", match[1], a))
 			if match[1] == a {
 				return true
 			}
