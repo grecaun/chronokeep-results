@@ -111,7 +111,7 @@ func (k RequestKey) ToKey() Key {
 		Name:         k.Name,
 		Value:        k.Value,
 		Type:         k.Type,
-		AllowedHosts: k.AllowedHosts,
+		AllowedHosts: strings.TrimSpace(k.AllowedHosts),
 	}
 	valid, err := time.Parse(time.RFC3339, k.ValidUntil)
 	if err == nil {
