@@ -46,6 +46,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
+		Type:              "time",
 	}
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
@@ -53,6 +54,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
+		Type:              "distance",
 	}
 	db.AddEvent(event1)
 	db.AddEvent(event2)
@@ -99,6 +101,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
+		Type:              "time",
 	}
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
@@ -106,6 +109,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
+		Type:              "distance",
 	}
 	event1, _ = db.AddEvent(*event1)
 	event2, _ = db.AddEvent(*event2)
@@ -170,6 +174,7 @@ func TestGetEventAndYear(t *testing.T) {
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
+		Type:              "time",
 	}
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
@@ -177,6 +182,7 @@ func TestGetEventAndYear(t *testing.T) {
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
+		Type:              "distance",
 	}
 	event1, _ = db.AddEvent(*event1)
 	event2, _ = db.AddEvent(*event2)
