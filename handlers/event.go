@@ -197,6 +197,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 		Image:             request.Event.Image,
 		ContactEmail:      request.Event.ContactEmail,
 		AccessRestricted:  request.Event.AccessRestricted,
+		Type:              request.Event.Type,
 	})
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event (Duplicate Slug/Name Likely)", err)
@@ -261,6 +262,7 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 		Website:          request.Event.Website,
 		Image:            request.Event.Image,
 		AccessRestricted: request.Event.AccessRestricted,
+		Type:             request.Event.Type,
 	})
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Updating Event (Nothing to Update / Name Conflict)", err)
