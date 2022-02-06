@@ -89,7 +89,7 @@ func GetConfig() (*Config, error) {
 		AdminEmail:     admin_email,
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
-		Domaim:         domain,
+		Domain:         domain,
 	}, nil
 }
 
