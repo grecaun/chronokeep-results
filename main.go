@@ -75,9 +75,10 @@ func main() {
 		log.Info("Starting auto tls echo server.")
 		// Set up TLS with auto certificate if not a debug environment.
 		if !config.Development {
-			e.AutoTLSManager.HostPolicy = autocert.HostWhiteList(config.Domain)
+			e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(config.Domain)
 		}
 		// Cache certificates
+		e.AutoTLSManager.Prompt = autocert.AcceptTOS
 		e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
 		e.Pre(middleware.HTTPSRedirect())
 		log.Fatal(e.StartAutoTLS(":" + strconv.Itoa(config.Port)))
