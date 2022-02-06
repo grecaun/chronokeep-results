@@ -110,4 +110,5 @@ type Config struct {
 	AdminEmail     string
 	AdminName      string
 	AdminPass      string
+	Domain         string
 }
