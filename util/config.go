@@ -71,6 +71,8 @@ func GetConfig() (*Config, error) {
 	admin_name := os.Getenv("ADMIN_NAME")
 	admin_pass := os.Getenv("ADMIN_PASS")
 
+	domain := os.Getenv("DOMAIN")
+
 	return &Config{
 		DBName:         dbName,
 		DBHost:         dbHost,
@@ -87,6 +89,7 @@ func GetConfig() (*Config, error) {
 		AdminEmail:     admin_email,
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
+		Domaim:         domain,
 	}, nil
 }
 
