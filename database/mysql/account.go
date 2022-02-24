@@ -13,7 +13,7 @@ const (
 	MaxLoginAttempts = 4
 )
 
-func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
+func (m *MySQL) getAccountInternal(unique, key *string, id *int64) (*types.Account, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -21,22 +21,22 @@ func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Accoun
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var res *sql.Rows
-	if email != nil {
+	if unique != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE AND account_email=?;",
-			email,
+			"SELECT account_id, account_unique, account_type FROM account WHERE account_deleted=FALSE AND account_unique=?;",
+			unique,
 		)
 	} else if key != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=?;",
+			"SELECT account_id, account_unique, account_type FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=?;",
 			key,
 		)
 	} else if id != nil {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE AND account_id=?;",
+			"SELECT account_id, account_unique, account_type FROM account WHERE account_deleted=FALSE AND account_id=?;",
 			id,
 		)
 	} else {
@@ -50,14 +50,8 @@ func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Accoun
 	if res.Next() {
 		err := res.Scan(
 			&outAccount.Identifier,
-			&outAccount.Name,
-			&outAccount.Email,
+			&outAccount.Unique,
 			&outAccount.Type,
-			&outAccount.Password,
-			&outAccount.Locked,
-			&outAccount.WrongPassAttempts,
-			&outAccount.Token,
-			&outAccount.RefreshToken,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
@@ -68,9 +62,9 @@ func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Accoun
 	return &outAccount, nil
 }
 
-// GetAccount Gets an account based on the email address provided.
-func (m *MySQL) GetAccount(email string) (*types.Account, error) {
-	return m.getAccountInternal(&email, nil, nil)
+// GetAccount Gets an account based on the unique id provided.
+func (m *MySQL) GetAccount(unique string) (*types.Account, error) {
+	return m.getAccountInternal(&unique, nil, nil)
 }
 
 // GetAccountByKey Gets an account based upon an API key provided.
@@ -93,7 +87,7 @@ func (m *MySQL) GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE;",
+		"SELECT account_id, account_unique, account_type FROM account WHERE account_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -104,14 +98,8 @@ func (m *MySQL) GetAccounts() ([]types.Account, error) {
 		var account types.Account
 		err := res.Scan(
 			&account.Identifier,
-			&account.Name,
-			&account.Email,
+			&account.Unique,
 			&account.Type,
-			&account.Password,
-			&account.Locked,
-			&account.WrongPassAttempts,
-			&account.Token,
-			&account.RefreshToken,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting account information: %v", err)
@@ -123,10 +111,6 @@ func (m *MySQL) GetAccounts() ([]types.Account, error) {
 
 // AddAccount Adds an account to the database.
 func (m *MySQL) AddAccount(account types.Account) (*types.Account, error) {
-	// Check if password has been hashed.
-	if !account.PasswordIsHashed() {
-		return nil, errors.New("password not hashed")
-	}
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -135,11 +119,9 @@ func (m *MySQL) AddAccount(account types.Account) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO account(account_name, account_email, account_type, account_password) VALUES (?, ?, ?, ?)",
-		account.Name,
-		account.Email,
+		"INSERT INTO account(account_unique, account_type) VALUES (?, ?)",
+		account.Unique,
 		account.Type,
-		account.Password,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add account: %v", err)
@@ -150,8 +132,7 @@ func (m *MySQL) AddAccount(account types.Account) (*types.Account, error) {
 	}
 	return &types.Account{
 		Identifier: id,
-		Name:       account.Name,
-		Email:      account.Email,
+		Unique:     account.Unique,
 		Type:       account.Type,
 	}, nil
 }
@@ -192,7 +173,7 @@ func (m *MySQL) DeleteAccount(id int64) error {
 }
 
 // ResurrectAccount Brings an account out of the deleted state.
-func (m *MySQL) ResurrectAccount(email string) error {
+func (m *MySQL) ResurrectAccount(unique string) error {
 	db, err := m.GetDB()
 	if err != nil {
 		return err
@@ -201,8 +182,8 @@ func (m *MySQL) ResurrectAccount(email string) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_deleted=FALSE WHERE account_email=?",
-		email,
+		"UPDATE account SET account_deleted=FALSE WHERE account_unique=?",
+		unique,
 	)
 	if err != nil {
 		return fmt.Errorf("error resurrecting account: %v", err)
@@ -218,7 +199,7 @@ func (m *MySQL) ResurrectAccount(email string) error {
 }
 
 // GetDeletedAccount Returns a deleted account.
-func (m *MySQL) GetDeletedAccount(email string) (*types.Account, error) {
+func (m *MySQL) GetDeletedAccount(unique string) (*types.Account, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -227,8 +208,8 @@ func (m *MySQL) GetDeletedAccount(email string) (*types.Account, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, account_name, account_email, account_type FROM account WHERE account_deleted=TRUE AND account_email=?;",
-		email,
+		"SELECT account_id, account_unique, account_type FROM account WHERE account_deleted=TRUE AND account_unique=?;",
+		unique,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving account: %v", err)
@@ -238,8 +219,7 @@ func (m *MySQL) GetDeletedAccount(email string) (*types.Account, error) {
 	if res.Next() {
 		err := res.Scan(
 			&outAccount.Identifier,
-			&outAccount.Name,
-			&outAccount.Email,
+			&outAccount.Unique,
 			&outAccount.Type,
 		)
 		if err != nil {
@@ -261,10 +241,9 @@ func (m *MySQL) UpdateAccount(account types.Account) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE account SET account_name=?, account_type=? WHERE account_deleted=FALSE AND account_email=?",
-		account.Name,
+		"UPDATE account SET account_type=? WHERE account_deleted=FALSE AND account_unique=?",
 		account.Type,
-		account.Email,
+		account.Unique,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating account: %v", err)
@@ -275,190 +254,6 @@ func (m *MySQL) UpdateAccount(account types.Account) error {
 	}
 	if rows != 1 {
 		return fmt.Errorf("error updating account, rows affected: %v", rows)
-	}
-	return nil
-}
-
-// ChangePassword Updates a user's password. It can also force a logout of the user. Only checks first value in the logout array if values are specified.
-func (m *MySQL) ChangePassword(email, newPassword string, logout ...bool) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	stmt := "UPDATE account SET account_password=? WHERE account_email=?;"
-	if len(logout) > 0 && logout[0] {
-		stmt = "UPDATE account SET account_password=?, account_token='', account_refresh_token='' WHERE account_email=?;"
-	}
-	res, err := db.ExecContext(
-		ctx,
-		stmt,
-		newPassword,
-		email,
-	)
-	if err != nil {
-		return fmt.Errorf("error changing password: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on password change: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error changing password, rows affected: %v", rows)
-	}
-	return nil
-}
-
-// UpdateTokens Updates a user's tokens.
-func (m *MySQL) UpdateTokens(account types.Account) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	res, err := db.ExecContext(
-		ctx,
-		"UPDATE account SET account_token=?, account_refresh_token=? WHERE account_email=?;",
-		account.Token,
-		account.RefreshToken,
-		account.Email,
-	)
-	if err != nil {
-		return fmt.Errorf("error updating tokens: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on token update: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error updating tokens, rows affected: %v", rows)
-	}
-	return nil
-}
-
-// ChangeEmail Updates an account email. Also forces a logout of the impacted account.
-func (m *MySQL) ChangeEmail(oldEmail, newEmail string) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	res, err := db.ExecContext(
-		ctx,
-		"UPDATE account SET account_email=?, account_token='', account_refresh_token='' WHERE account_email=?;",
-		newEmail,
-		oldEmail,
-	)
-	if err != nil {
-		return fmt.Errorf("erorr updating account email: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on email change: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error changing email, rows affected: %v", rows)
-	}
-	return nil
-}
-
-// InvalidPassword Increments/locks an account due to an invalid password.
-func (m *MySQL) InvalidPassword(account types.Account) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	pAcc, err := m.GetAccount(account.Email)
-	if err != nil {
-		return fmt.Errorf("error trying to retrieve account: %v", err)
-	}
-	locked := false
-	if pAcc.WrongPassAttempts >= MaxLoginAttempts {
-		locked = true
-	}
-	stmt := "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;"
-	if locked {
-		stmt = "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1, account_token='', account_refresh_token='' WHERE account_email=?;"
-	}
-	res, err := db.ExecContext(
-		ctx,
-		stmt,
-		locked,
-		account.Email,
-	)
-	if err != nil {
-		return fmt.Errorf("erorr updating invalid password information: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on invalid password information update: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error updating invalid password information, rows affected: %v", rows)
-	}
-	return nil
-}
-
-// ValidPassword Resets the incorrect password on an account.
-func (m *MySQL) ValidPassword(account types.Account) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	acc, err := m.GetAccount(account.Email)
-	if err != nil {
-		return fmt.Errorf("error retrieving account to check locked status: %v", err)
-	}
-	if acc.Locked {
-		return errors.New("account locked")
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	res, err := db.ExecContext(
-		ctx,
-		"UPDATE account SET account_wrong_pass=0 WHERE account_email=?;",
-		account.Email,
-	)
-	if err != nil {
-		return fmt.Errorf("erorr updating valid password information: %v", err)
-	}
-	_, err = res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on valid password information update: %v", err)
-	}
-	return nil
-}
-
-// UnlockAccount Unlocks an account that's been locked.
-func (m *MySQL) UnlockAccount(account types.Account) error {
-	db, err := m.GetDB()
-	if err != nil {
-		return err
-	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
-	if !account.Locked {
-		return errors.New("account not locked")
-	}
-	res, err := db.ExecContext(
-		ctx,
-		"UPDATE account SET account_wrong_pass=0, account_locked=FALSE WHERE account_email=?;",
-		account.Email,
-	)
-	if err != nil {
-		return fmt.Errorf("erorr unlocking account: %v", err)
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on account unlock: %v", err)
-	}
-	if rows != 1 {
-		return fmt.Errorf("error unlocking account, rows affected: %v", rows)
 	}
 	return nil
 }

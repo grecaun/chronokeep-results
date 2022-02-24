@@ -8,7 +8,7 @@ import (
 )
 
 // GetAccountCallRecords Gets all api call records for a specific account.
-func (m *MySQL) GetAccountCallRecords(email string) ([]types.CallRecord, error) {
+func (m *MySQL) GetAccountCallRecords(unique string) ([]types.CallRecord, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -17,8 +17,8 @@ func (m *MySQL) GetAccountCallRecords(email string) ([]types.CallRecord, error) 
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=?;",
-		email,
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_unique=?;",
+		unique,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query for account call records: %v", err)
@@ -41,7 +41,7 @@ func (m *MySQL) GetAccountCallRecords(email string) ([]types.CallRecord, error) 
 }
 
 // GetCallRecord Checks the database for a specific call record.
-func (m *MySQL) GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
+func (m *MySQL) GetCallRecord(unique string, inTime int64) (*types.CallRecord, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (m *MySQL) GetCallRecord(email string, inTime int64) (*types.CallRecord, er
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=? AND time=?;",
-		email,
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_unique=? AND time=?;",
+		unique,
 		inTime,
 	)
 	if err != nil {

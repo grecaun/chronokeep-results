@@ -10,22 +10,16 @@ func setupCallRecordTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword("password"),
+				Unique: "rose2004@test.com",
+				Type:   "paid",
 			},
 			{
-				Name:     "Tia Johnson",
-				Email:    "tiatheway@test.com",
-				Type:     "free",
-				Password: testHashPassword("password"),
+				Unique: "tiatheway@test.com",
+				Type:   "free",
 			},
 		}
 	}
@@ -101,7 +95,7 @@ func TestAddCallRecord(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding call record: %v", err)
 	}
-	rec, err := db.GetCallRecord(accounts[0].Email, records[1].DateTime)
+	rec, err := db.GetCallRecord(accounts[0].Unique, records[1].DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -155,7 +149,7 @@ func TestAddCallRecords(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ := db.GetAccountCallRecords(accounts[0].Email)
+	recs, _ := db.GetAccountCallRecords(accounts[0].Unique)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
@@ -163,11 +157,11 @@ func TestAddCallRecords(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding multiple call records: %v", err)
 	}
-	recs, _ = db.GetAccountCallRecords(accounts[0].Email)
+	recs, _ = db.GetAccountCallRecords(accounts[0].Unique)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
-	recs, _ = db.GetAccountCallRecords(accounts[0].Email)
+	recs, _ = db.GetAccountCallRecords(accounts[0].Unique)
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v.", 3, len(recs))
 	}
@@ -217,7 +211,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 1")
 	oldRec := records[0]
 	db.AddCallRecord(oldRec)
-	newRec, err := db.GetCallRecord(accounts[0].Email, oldRec.DateTime)
+	newRec, err := db.GetCallRecord(accounts[0].Unique, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -227,7 +221,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 2")
 	oldRec = records[2]
 	db.AddCallRecord(oldRec)
-	newRec, err = db.GetCallRecord(accounts[0].Email, oldRec.DateTime)
+	newRec, err = db.GetCallRecord(accounts[0].Unique, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -237,7 +231,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 3")
 	oldRec = records[4]
 	db.AddCallRecord(oldRec)
-	newRec, err = db.GetCallRecord(accounts[1].Email, oldRec.DateTime)
+	newRec, err = db.GetCallRecord(accounts[1].Unique, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -247,7 +241,7 @@ func TestGetCallRecord(t *testing.T) {
 	t.Log("Record 4")
 	oldRec = records[5]
 	db.AddCallRecord(oldRec)
-	newRec, err = db.GetCallRecord(accounts[1].Email, oldRec.DateTime)
+	newRec, err = db.GetCallRecord(accounts[1].Unique, oldRec.DateTime)
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -255,7 +249,7 @@ func TestGetCallRecord(t *testing.T) {
 		t.Errorf("Expected record %+v, found %+v.", oldRec, *newRec)
 	}
 	t.Log("Record 5 (empty)")
-	newRec, err = db.GetCallRecord(accounts[1].Email, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
+	newRec, err = db.GetCallRecord(accounts[1].Unique, time.Date(2020, 10, 5, 10, 35, 0, 0, time.Local).Unix())
 	if err != nil {
 		t.Fatalf("Error getting call record: %v", err)
 	}
@@ -307,21 +301,21 @@ func TestGetAccountCallRecords(t *testing.T) {
 		},
 	}
 	db.AddCallRecords(records)
-	recs, err := db.GetAccountCallRecords(accounts[0].Email)
+	recs, err := db.GetAccountCallRecords(accounts[0].Unique)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = db.GetAccountCallRecords(accounts[1].Email)
+	recs, err = db.GetAccountCallRecords(accounts[1].Unique)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}
 	if len(recs) != 3 {
 		t.Errorf("Expected %v call records, found %v", 3, len(recs))
 	}
-	recs, err = db.GetAccountCallRecords(accounts[2].Email)
+	recs, err = db.GetAccountCallRecords(accounts[2].Unique)
 	if err != nil {
 		t.Fatalf("Error retrieving account1 call records: %v", err)
 	}

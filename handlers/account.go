@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"chronokeep/results/auth"
+	"bytes"
 	"chronokeep/results/types"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -22,42 +24,61 @@ const (
 func (h Handler) GetAccount(c echo.Context) error {
 	var request types.GetAccountRequest
 	_ = c.Bind(&request)
-	account, err := verifyToken(c.Request())
+	token, err := retrieveKey(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	// check if the user is trying to use a locked account
-	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+	requestBody, err := json.Marshal(types.AccountsGetAccountRequest{
+		Ident: request.Ident,
+		Token: *token,
+	})
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Create JSON Request for Account Service", err)
 	}
-	// only allow admins to modify accounts not their own
-	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
+	resp, err := http.Post(config.AccountsURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Error", err)
+	}
+	defer resp.Body.Close()
+	code := resp.StatusCode
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Reading Account Service Response", err)
+	}
+	var accountResponse types.AccountsSingleResponse
+	json.Unmarshal(body, &accountResponse)
+	if accountResponse.Message != nil {
+		return getAPIError(c, code, *accountResponse.Message, nil)
+	}
+	if accountResponse.Account == nil && accountResponse.UserAccount == nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Failed To Return Account", nil)
+	}
+	if code != 200 {
+		return getAPIError(c, code, "Unusual Code Returned Without Error Message", nil)
+	}
+	account := accountResponse.Account
+	userAccount := accountResponse.UserAccount
+	// only allowe admins to view accounts not their own
+	if userAccount != nil && account != nil && userAccount.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	email := account.Email
-	if request.Email != nil {
-		theAccount, err := database.GetAccount(*request.Email)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
-		}
-		if theAccount == nil {
-			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
-		}
-		email = theAccount.Email
+	unique := userAccount.Unique
+	if account != nil {
+		unique = account.Unique
 	}
 	// pull up the account we're giving information about
-	account, err = database.GetAccount(email)
+	outAccount, err := database.GetAccount(unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	if account == nil {
+	if outAccount == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-	keys, err := database.GetAccountKeys(email)
+	keys, err := database.GetAccountKeys(unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	events, err := database.GetAccountEvents(email)
+	events, err := database.GetAccountEvents(unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
@@ -69,9 +90,40 @@ func (h Handler) GetAccount(c echo.Context) error {
 }
 
 func (h Handler) GetAccounts(c echo.Context) error {
-	account, err := verifyToken(c.Request())
+	var request types.GetAccountRequest
+	_ = c.Bind(&request)
+	token, err := retrieveKey(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	requestBody, err := json.Marshal(types.AccountsGetAccountRequest{
+		Email: request.Email,
+		Token: *token,
+	})
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Create JSON Request for Account Service", err)
+	}
+	resp, err := http.Post(config.AccountsURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Error", err)
+	}
+	defer resp.Body.Close()
+	code := resp.StatusCode
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Reading Account Service Response", err)
+	}
+	var accountResponse types.AccountsSingleResponse
+	json.Unmarshal(body, &accountResponse)
+	if accountResponse.Message != nil {
+		return getAPIError(c, code, *accountResponse.Message, nil)
+	}
+	if accountResponse.Account == nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Failed To Return Account", nil)
+	}
+	account := accountResponse.Account
+	if !account.ResultsAPI {
+		return getAPIError(c, http.StatusUnauthorized, "Account Not Authorized for Results API", nil)
 	}
 	if account == nil || account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
@@ -93,28 +145,40 @@ func (h Handler) AddAccount(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	account, err := verifyToken(c.Request())
+	token, err := retrieveKey(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account == nil || account.Type != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
-	}
-	if err = request.Account.Validate(h.validate); err != nil {
-		return getAPIError(c, http.StatusBadRequest, "Invalid Account Information", err)
-	}
-	if len(request.Password) < 8 {
-		return getAPIError(c, http.StatusBadRequest, "Minimum Password Length (8) Not Met", nil)
-	}
-	password, err := auth.HashPassword(request.Password)
+	requestBody, err := json.Marshal(types.AccountsAddAccountRequest{
+		Token:    *token,
+		Account:  request.Account,
+		Password: request.Password,
+	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Create JSON Request for Account Service", err)
 	}
-	request.Account.Password = password
-	account, err = database.AddAccount(request.Account)
+	resp, err := http.Post(config.AccountsURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Error", err)
+	}
+	defer resp.Body.Close()
+	code := resp.StatusCode
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Reading Account Service Response", err)
+	}
+	var accountResponse types.AccountsSingleResponse
+	json.Unmarshal(body, &accountResponse)
+	if accountResponse.Message != nil {
+		return getAPIError(c, code, *accountResponse.Message, nil)
+	}
+	if accountResponse.Account == nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Failed To Return Account", nil)
+	}
+	if code != 200 {
+		return getAPIError(c, code, "Incorrect Code Return Without Error Message", nil)
+	}
+	account, err := database.AddAccount(request.Account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Unable To Add Account", err)
 	}
@@ -128,41 +192,39 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	account, err := verifyToken(c.Request())
+	token, err := retrieveKey(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if err = request.Account.Validate(h.validate); err != nil {
-		return getAPIError(c, http.StatusBadRequest, "Invalid Account Information", err)
-	}
-	// Only admins and the owner of an account can update it.
-	if account.Type != "admin" && account.Email != request.Account.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
-	}
-	if account.Type != "admin" && account.Locked {
-		account.RefreshToken = ""
-		account.Token = ""
-		err = database.UpdateTokens(*account)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Database Error", nil)
-		}
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
-	}
-	acc, err := database.GetAccount(request.Account.Email)
+	requestBody, err := json.Marshal(types.AccountsGetAccountRequest{
+		Token: *token,
+	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Create JSON Request for Account Service", err)
 	}
-	if acc == nil {
-		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	resp, err := http.Post(config.AccountsURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Error", err)
 	}
-	if account.Type != "admin" && account.Type != request.Account.Type {
-		request.Account.Type = account.Type
+	defer resp.Body.Close()
+	code := resp.StatusCode
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Reading Account Service Response", err)
+	}
+	var accountResponse types.AccountsSingleResponse
+	json.Unmarshal(body, &accountResponse)
+	if accountResponse.Message != nil {
+		return getAPIError(c, code, *accountResponse.Message, nil)
+	}
+	if accountResponse.Account == nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Failed To Return Account", nil)
 	}
 	err = database.UpdateAccount(request.Account)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Unable To Update Account", err)
 	}
-	account, err = database.GetAccount(request.Account.Email)
+	account, err := database.GetAccount(request.Account.Email)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
@@ -176,12 +238,37 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	account, err := verifyToken(c.Request())
+	token, err := retrieveKey(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	requestBody, err := json.Marshal(types.AccountsGetAccountRequest{
+		Token: *token,
+	})
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Unable To Create JSON Request for Account Service", err)
+	}
+	resp, err := http.Post(config.AccountsURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Error", err)
+	}
+	defer resp.Body.Close()
+	code := resp.StatusCode
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Reading Account Service Response", err)
+	}
+	var accountResponse types.AccountsSingleResponse
+	json.Unmarshal(body, &accountResponse)
+	if accountResponse.Message != nil {
+		return getAPIError(c, code, *accountResponse.Message, nil)
+	}
+	if accountResponse.Account == nil {
+		return getAPIError(c, http.StatusInternalServerError, "Account Service Failed To Return Account", nil)
+	}
+	account := accountResponse.Account
 	// Only admins and the owner of an account can delete it.
-	if account.Type != "admin" && account.Email != request.Email {
+	if account.Type != "admin" && account.Identifier != request.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	account, err = database.GetAccount(request.Email)
@@ -196,50 +283,6 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
 	}
 	return c.NoContent(http.StatusOK)
-}
-
-func (h Handler) ChangePassword(c echo.Context) error {
-	var request types.ChangePasswordRequest
-	if err := c.Bind(&request); err != nil {
-		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
-	}
-	account, err := verifyToken(c.Request())
-	if err != nil {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
-	}
-	if account == nil {
-		return getAPIError(c, http.StatusUnauthorized, "Account Not Found", nil)
-	}
-	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
-	}
-	hashedPassword, err := auth.HashPassword(request.NewPassword)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
-	}
-	// If the user is changing their own password they need to know their old password.
-	if account.Email == request.Email {
-		// Verify they knew their old password.
-		err = auth.VerifyPassword(account.Password, request.OldPassword)
-		if err != nil {
-			return getAPIError(c, http.StatusUnauthorized, "Invalid Credentials", err)
-		}
-		err = database.ChangePassword(request.Email, hashedPassword)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
-		}
-		return c.NoContent(http.StatusOK)
-		// Otherwise if an admin is changing a password for a user let them.
-	} else if account.Type == "admin" {
-		// Admin should log the person out when changing their password
-		err = database.ChangePassword(request.Email, hashedPassword, true)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
-		}
-		return c.NoContent(http.StatusOK)
-	}
-	// Not their own account and not an admin, unauthorized.
-	return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 }
 
 func (h Handler) ChangeEmail(c echo.Context) error {

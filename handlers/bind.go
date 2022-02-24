@@ -30,21 +30,14 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)
 	group.DELETE("/results/delete", h.DeleteResults)
-	// Account Login
-	group.POST("/account/login", h.Login)
-	group.POST("/account/refresh", h.Refresh)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {
 	// Account handlers
 	group.POST("/account", h.GetAccount)
 	group.GET("/account/all", h.GetAccounts)
-	group.POST("/account/logout", h.Logout)
 	group.POST("/account/add", h.AddAccount)
 	group.PUT("/account/update", h.UpdateAccount)
-	group.PUT("/account/password", h.ChangePassword)
-	group.PUT("/account/email", h.ChangeEmail)
-	group.POST("/account/unlock", h.Unlock)
 	group.DELETE("/account/delete", h.DeleteAccount)
 	// Key handlers
 	group.POST("/key", h.GetKeys)

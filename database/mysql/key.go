@@ -8,7 +8,7 @@ import (
 )
 
 // GetAccountKeys Gets all keys associated with an account.
-func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
+func (m *MySQL) GetAccountKeys(unique string) ([]types.Key, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -17,8 +17,8 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
-		email,
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_unique=?;",
+		unique,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("erorr retrieving key: %v", err)

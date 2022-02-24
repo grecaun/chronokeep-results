@@ -50,7 +50,7 @@ func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
-func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
+func (m *MySQL) getEventsInternal(unique *string) ([]types.Event, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var res *sql.Rows
-	if email == nil {
+	if unique == nil {
 		res, err = db.QueryContext(
 			ctx,
 			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
@@ -70,8 +70,8 @@ func (m *MySQL) getEventsInternal(email *string) ([]types.Event, error) {
 			ctx,
 			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND account_email=?;",
-			email,
+				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND account_unique=?;",
+			unique,
 		)
 	}
 	if err != nil {
@@ -107,8 +107,8 @@ func (m *MySQL) GetEvents() ([]types.Event, error) {
 }
 
 // GetAccountsEvents Gets all events associated with an account.
-func (m *MySQL) GetAccountEvents(email string) ([]types.Event, error) {
-	return m.getEventsInternal(&email)
+func (m *MySQL) GetAccountEvents(unique string) ([]types.Event, error) {
+	return m.getEventsInternal(&unique)
 }
 
 // AddEvent Adds an event to the database.

@@ -1,9 +1,7 @@
 package postgres
 
 import (
-	"chronokeep/results/auth"
 	"chronokeep/results/database"
-	"chronokeep/results/types"
 	"chronokeep/results/util"
 
 	"context"
@@ -93,34 +91,13 @@ func (p *Postgres) Setup(config *util.Config) error {
 		}
 	}
 
-	// Check if there's an account created.
+	// Check if there's an account created. TODO -- get account info from account API
 	accounts, err := p.GetAccounts()
 	if err != nil {
 		return fmt.Errorf("error checking for account: %v", err)
 	}
 	if len(accounts) < 1 {
-		log.Info("Creating admin user.")
-		if config.AdminName == "" || config.AdminEmail == "" || config.AdminPass == "" {
-			return errors.New("admin account doesn't exist and proper credentions have not been supplied")
-		}
-		acc := types.Account{
-			Name:     config.AdminName,
-			Email:    config.AdminEmail,
-			Password: config.AdminPass,
-			Type:     "admin",
-		}
-		err = p.validate.Struct(acc)
-		if err != nil {
-			return fmt.Errorf("error validating base admin account on setup: %v", err)
-		}
-		acc.Password, err = auth.HashPassword(config.AdminPass)
-		if err != nil {
-			return fmt.Errorf("error hashing admin account password on setup: %v", err)
-		}
-		_, err = p.AddAccount(acc)
-		if err != nil {
-			return fmt.Errorf("error adding admin account on setup: %v", err)
-		}
+		return nil
 	}
 	return nil
 }
@@ -182,18 +159,12 @@ func (p *Postgres) createTables() error {
 			name: "AccountTable",
 			query: "CREATE TABLE IF NOT EXISTS account(" +
 				"account_id BIGSERIAL NOT NULL, " +
-				"account_name VARCHAR(100) NOT NULL, " +
-				"account_email VARCHAR(100) NOT NULL, " +
-				"account_password VARCHAR(300) NOT NULL, " +
+				"account_unique VARCHAR(100) NOT NULL, " +
 				"account_type VARCHAR(20) NOT NULL, " +
-				"account_wrong_pass INT NOT NULL DEFAULT 0, " +
-				"account_locked BOOL DEFAULT FALSE, " +
-				"account_token VARCHAR(1000) NOT NULL DEFAULT '', " +
-				"account_refresh_token VARCHAR(1000) NOT NULL DEFAULT '', " +
 				"account_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"account_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"account_deleted BOOL DEFAULT FALSE, " +
-				"UNIQUE(account_email), " +
+				"UNIQUE(account_unique), " +
 				"PRIMARY KEY (account_id)" +
 				");",
 		},
@@ -511,6 +482,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 4 && newVersion >= 4 {
+		log.Debug("Updating to database version 4.")
 		_, err := p.db.Exec(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
@@ -520,12 +492,53 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 5 && newVersion >= 5 {
+		log.Debug("Updating to database version 5.")
 		_, err := p.db.Exec(
 			ctx,
 			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
 		)
 		if err != nil {
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 6 && newVersion >= 6 {
+		log.Debug("Updating to database version 6.")
+		queries := []myQuery{
+			{
+				name:  "RenameAccount",
+				query: "ALTER TABLE account RENAME TO account_old;",
+			},
+			{
+				name: "CreateAccount",
+				query: "CREATE TABLE IF NOT EXISTS account(" +
+					"account_id BIGSERIAL NOT NULL, " +
+					"account_unique VARCHAR(100) NOT NULL, " +
+					"account_type VARCHAR(20) NOT NULL, " +
+					"account_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+					"account_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
+					"account_deleted BOOL DEFAULT FALSE, " +
+					"UNIQUE(account_unique), " +
+					"PRIMARY KEY (account_id)" +
+					");",
+			},
+			{
+				name: "InsertAccount",
+				query: "INSERT INTO account (account_id, account_unique, account_type, account_deleted) " +
+					" SELECT account_id, account_email, account_type, account_deleted FROM account_old;",
+			},
+			{
+				name:  "DeleteAccount",
+				query: "DROP TABLE account_old;",
+			},
+		}
+		for _, q := range queries {
+			_, err := p.db.Exec(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
 		}
 	}
 	_, err := p.db.Exec(

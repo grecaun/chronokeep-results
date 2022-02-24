@@ -1,62 +1,45 @@
 package mysql
 
 import (
-	"chronokeep/results/auth"
 	"chronokeep/results/types"
 	"testing"
 	"time"
 )
 
 var (
-	accounts      []types.Account
-	testPassword1 string = "password"
-	testPassword2 string = "newpassword"
+	accounts []types.Account
 )
 
 func setupAccountTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword(testPassword1),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Jerry Garcia",
-				Email:    "jgarcia@test.com",
-				Type:     "free",
-				Password: testHashPassword(testPassword1),
+				Unique: "jgarcia@test.com",
+				Type:   "free",
 			},
 			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword(testPassword1),
+				Unique: "rose2004@test.com",
+				Type:   "paid",
 			},
 			{
-				Name:     "Tia Johnson",
-				Email:    "tiatheway@test.com",
-				Type:     "free",
-				Password: testHashPassword(testPassword1),
+				Unique: "tiatheway@test.com",
+				Type:   "free",
 			},
 			{
-				Name:     "Thomas Donaldson",
-				Email:    "tdon@test.com",
-				Type:     "admin",
-				Password: testHashPassword(testPassword1),
+				Unique: "tdon@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Ester White",
-				Email:    "white@test.com",
-				Type:     "test",
-				Password: testHashPassword(testPassword1),
+				Unique: "white@test.com",
+				Type:   "test",
 			},
 			{
-				Name:     "Ricky Reagan",
-				Email:    "rreagan@test.com",
-				Type:     "free",
-				Password: testHashPassword(testPassword1),
+				Unique: "rreagan@test.com",
+				Type:   "free",
 			},
 		}
 	}
@@ -110,7 +93,7 @@ func TestAddAccount(t *testing.T) {
 	// Test for collisions.
 	_, err = db.AddAccount(accounts[2])
 	if err == nil {
-		t.Error("Expected error adding account with duplicate email.")
+		t.Error("Expected error adding account with duplicate unique id.")
 	}
 }
 
@@ -128,7 +111,7 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
-	dAccount, err := db.GetAccount(oAccount.Email)
+	dAccount, err := db.GetAccount(oAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account: %v", err)
 	}
@@ -144,7 +127,7 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
-	dAccount, err = db.GetAccount(oAccount.Email)
+	dAccount, err = db.GetAccount(oAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account: %v", err)
 	}
@@ -160,7 +143,7 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
-	dAccount, err = db.GetAccount(oAccount.Email)
+	dAccount, err = db.GetAccount(oAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account: %v", err)
 	}
@@ -176,7 +159,7 @@ func TestGetAccount(t *testing.T) {
 		t.Fatalf("Error adding account: %v", err)
 	}
 	t.Logf("New account ID: %v", nAccount.Identifier)
-	dAccount, err = db.GetAccount(oAccount.Email)
+	dAccount, err = db.GetAccount(oAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account: %v", err)
 	}
@@ -241,23 +224,7 @@ func TestUpdateAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	// Ensure adding accounts works properly.
-	nAccount, err := db.AddAccount(accounts[0])
-	if err != nil {
-		t.Fatalf("Error adding account: %v", err)
-	}
-	nAccount.Name = "New Name 1"
-	err = db.UpdateAccount(*nAccount)
-	if err != nil {
-		t.Fatalf("Error updating account: %v", err)
-	}
-	dAccount, _ := db.GetAccount(nAccount.Email)
-	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
-	}
-	if dAccount.Name != "New Name 1" {
-		t.Errorf("Account name expected to be %v but found %v instead.", "New Name 1", dAccount.Name)
-	}
-	nAccount, err = db.AddAccount(accounts[1])
+	nAccount, err := db.AddAccount(accounts[1])
 	if err != nil {
 		t.Fatalf("Error adding account: %v", err)
 	}
@@ -266,7 +233,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ := db.GetAccount(nAccount.Unique)
 	if nAccount.Identifier != dAccount.Identifier {
 		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
@@ -277,28 +244,12 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding account: %v", err)
 	}
-	nAccount.Name = "New Name 2"
-	err = db.UpdateAccount(*nAccount)
-	dAccount, _ = db.GetAccount(nAccount.Email)
-	if err != nil {
-		t.Fatalf("Error updating account: %v", err)
-	}
-	if nAccount.Identifier != dAccount.Identifier {
-		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
-	}
-	if dAccount.Name != "New Name 2" {
-		t.Errorf("Account name expected to be %v but found %v instead.", "New Name 2", dAccount.Name)
-	}
-	nAccount, err = db.AddAccount(accounts[3])
-	if err != nil {
-		t.Fatalf("Error adding account: %v", err)
-	}
 	nAccount.Type = "New Type 2"
 	err = db.UpdateAccount(*nAccount)
 	if err != nil {
 		t.Fatalf("Error updating account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ = db.GetAccount(nAccount.Unique)
 	if nAccount.Identifier != dAccount.Identifier {
 		t.Errorf("Account ID expected to be %v but found %v instead.", nAccount.Identifier, dAccount.Identifier)
 	}
@@ -308,7 +259,7 @@ func TestUpdateAccount(t *testing.T) {
 	// Test for collisions.
 	_, err = db.AddAccount(accounts[2])
 	if err == nil {
-		t.Error("Expected error adding account with duplicate email.")
+		t.Error("Expected error adding account with duplicate unique id.")
 	}
 }
 
@@ -346,11 +297,11 @@ func TestDeleteAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
-	dAccount, _ := db.GetAccount(nAccount.Email)
+	dAccount, _ := db.GetAccount(nAccount.Unique)
 	if dAccount != nil {
 		t.Error("Unexpectedly found a deleted account.")
 	}
-	keys, _ = db.GetAccountKeys(nAccount.Email)
+	keys, _ = db.GetAccountKeys(nAccount.Unique)
 	if len(keys) != 0 {
 		t.Errorf("expected to find %v keys after deleting account, found %v", 0, len(keys))
 	}
@@ -363,7 +314,7 @@ func TestDeleteAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ = db.GetAccount(nAccount.Unique)
 	if dAccount != nil {
 		t.Error("Unexpectedly found a deleted account.")
 	}
@@ -376,7 +327,7 @@ func TestDeleteAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error deleting account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ = db.GetAccount(nAccount.Unique)
 	if dAccount != nil {
 		t.Error("Unexpectedly found a deleted account.")
 	}
@@ -395,31 +346,31 @@ func TestResurrectAccount(t *testing.T) {
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
 	db.DeleteAccount(nAccount.Identifier)
-	err = db.ResurrectAccount(nAccount.Email)
+	err = db.ResurrectAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
 	}
-	dAccount, _ := db.GetAccount(nAccount.Email)
+	dAccount, _ := db.GetAccount(nAccount.Unique)
 	if dAccount == nil {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = db.AddAccount(accounts[1])
 	db.DeleteAccount(nAccount.Identifier)
-	err = db.ResurrectAccount(nAccount.Email)
+	err = db.ResurrectAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ = db.GetAccount(nAccount.Unique)
 	if dAccount == nil {
 		t.Error("Account was not resurrected.")
 	}
 	nAccount, _ = db.AddAccount(accounts[4])
 	db.DeleteAccount(nAccount.Identifier)
-	err = db.ResurrectAccount(nAccount.Email)
+	err = db.ResurrectAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error resurrecting account: %v", err)
 	}
-	dAccount, _ = db.GetAccount(nAccount.Email)
+	dAccount, _ = db.GetAccount(nAccount.Unique)
 	if dAccount == nil {
 		t.Error("Account was not resurrected.")
 	}
@@ -434,7 +385,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
 	db.DeleteAccount(nAccount.Identifier)
-	dAccount, err := db.GetDeletedAccount(nAccount.Email)
+	dAccount, err := db.GetDeletedAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
 	}
@@ -443,7 +394,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	}
 	nAccount, _ = db.AddAccount(accounts[3])
 	db.DeleteAccount(nAccount.Identifier)
-	dAccount, err = db.GetDeletedAccount(nAccount.Email)
+	dAccount, err = db.GetDeletedAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
 	}
@@ -452,7 +403,7 @@ func TestGetDeletedAccount(t *testing.T) {
 	}
 	nAccount, _ = db.AddAccount(accounts[5])
 	db.DeleteAccount(nAccount.Identifier)
-	dAccount, err = db.GetDeletedAccount(nAccount.Email)
+	dAccount, err = db.GetDeletedAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
 	}
@@ -461,121 +412,12 @@ func TestGetDeletedAccount(t *testing.T) {
 	}
 	nAccount, _ = db.AddAccount(accounts[6])
 	db.DeleteAccount(nAccount.Identifier)
-	dAccount, err = db.GetDeletedAccount(nAccount.Email)
+	dAccount, err = db.GetDeletedAccount(nAccount.Unique)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
 	}
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
-	}
-}
-
-func TestChangePassword(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	nAccount, _ := db.AddAccount(accounts[0])
-	hashPass, _ := auth.HashPassword(testPassword2)
-	err = db.ChangePassword(nAccount.Email, hashPass)
-	if err != nil {
-		t.Fatalf("error changing password: %v", err)
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount == nil {
-		t.Fatal("get account failure")
-	}
-	err = auth.VerifyPassword(nAccount.Password, testPassword2)
-	if err != nil {
-		t.Errorf("password doesn't match: %v", err)
-	}
-	nAccount.Token = "testToken1"
-	nAccount.RefreshToken = "testToken2"
-	_ = db.UpdateTokens(*nAccount)
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.Token == "" || nAccount.RefreshToken == "" {
-		t.Error("Expected tokens to be set.")
-	}
-	err = db.ChangePassword(nAccount.Email, hashPass, true)
-	if err != nil {
-		t.Fatalf("error changing password: %v", err)
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.Token != "" || nAccount.RefreshToken != "" {
-		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
-	}
-}
-
-func TestChangeEmail(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	nAccount, _ := db.AddAccount(accounts[0])
-	newEmail := "new_email2020@test.com"
-	nAccount.Token = "testToken1"
-	nAccount.RefreshToken = "testToken2"
-	_ = db.UpdateTokens(*nAccount)
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.Token == "" || nAccount.RefreshToken == "" {
-		t.Error("Expected tokens to be set.")
-	}
-	err = db.ChangeEmail(nAccount.Email, newEmail)
-	if err != nil {
-		t.Fatalf("error changing email: %v", err)
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount != nil {
-		t.Errorf("account retrieved when the email should have changed: %v", nAccount)
-	}
-	nAccount, _ = db.GetAccount(newEmail)
-	if nAccount == nil {
-		t.Error("account with new email not found")
-	} else if nAccount.Token != "" || nAccount.RefreshToken != "" {
-		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
-	}
-}
-
-func TestInvalidPassword(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	nAccount, _ := db.AddAccount(accounts[0])
-	nAccount.Token = "testToken1"
-	nAccount.RefreshToken = "testToken2"
-	_ = db.UpdateTokens(*nAccount)
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	var dAccount *types.Account
-	if nAccount.Token == "" || nAccount.RefreshToken == "" {
-		t.Error("Expected tokens to be set.")
-	}
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
-		err = db.InvalidPassword(*nAccount)
-		if err != nil {
-			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
-		}
-		dAccount, _ = db.GetAccount(nAccount.Email)
-		if dAccount.WrongPassAttempts > MaxLoginAttempts && dAccount.Locked == false {
-			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, MaxLoginAttempts+1)
-			if dAccount.Token != "" || dAccount.RefreshToken != "" {
-				t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", dAccount.Token, dAccount.RefreshToken)
-			}
-		} else if dAccount.WrongPassAttempts <= MaxLoginAttempts && dAccount.Locked == true {
-			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, MaxLoginAttempts+1)
-			if dAccount.Token == "" || dAccount.RefreshToken == "" {
-				t.Error("Expected tokens to be set.")
-			}
-		}
-		if dAccount.WrongPassAttempts != i {
-			t.Errorf("wrong password attempts set to %v, should be %v", dAccount.WrongPassAttempts, i)
-		}
 	}
 }
 
@@ -664,102 +506,5 @@ func TestGetAccountByID(t *testing.T) {
 	}
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
-	}
-}
-
-func TestUpdateTokens(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	oAccount := accounts[0]
-	nAccount, _ := db.AddAccount(oAccount)
-	nAccount.Token = "testtoken1"
-	nAccount.RefreshToken = "refreshtoken1"
-	err = db.UpdateTokens(*nAccount)
-	if err != nil {
-		t.Fatalf("Error updating tokens: %v", err)
-	}
-	dAccount, _ := db.GetAccount(nAccount.Email)
-	if dAccount.Token != nAccount.Token {
-		t.Errorf("Expected token %v, found %v.", nAccount.Token, dAccount.Token)
-	}
-	if dAccount.RefreshToken != nAccount.RefreshToken {
-		t.Errorf("Expected refresh token %v, found %v.", nAccount.RefreshToken, dAccount.RefreshToken)
-	}
-}
-
-func TestValidPassword(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	nAccount, _ := db.AddAccount(accounts[0])
-	for i := 1; i <= MaxLoginAttempts-2; i++ {
-		err = db.InvalidPassword(*nAccount)
-		if err != nil {
-			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
-		}
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.WrongPassAttempts < 1 {
-		t.Errorf("Expected more than 1 wrong pass attempts; found %v.", nAccount.WrongPassAttempts)
-	}
-	err = db.ValidPassword(*nAccount)
-	if err != nil {
-		t.Fatalf("Valid password threw an error: %v", err)
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.WrongPassAttempts != 0 {
-		t.Errorf("Expected zero wrong pass attempts; found %v.", nAccount.WrongPassAttempts)
-	}
-	// Test to make sure we don't unlock if locked.
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
-		err = db.InvalidPassword(*nAccount)
-		if err != nil {
-			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
-		}
-	}
-	err = db.ValidPassword(*nAccount)
-	if err == nil {
-		t.Fatal("Expected an error on valid password attempt for locked account.")
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.WrongPassAttempts == 0 {
-		t.Errorf("Expected wrong password attempts; found %v.", nAccount.WrongPassAttempts)
-	}
-}
-
-func TestUnlockAccount(t *testing.T) {
-	db, finalize, err := setupTests(t)
-	if err != nil {
-		t.Fatalf("setup error: %v", err)
-	}
-	defer finalize(t)
-	setupAccountTests()
-	nAccount, _ := db.AddAccount(accounts[0])
-	// Should throw error if account isn't locked
-	err = db.UnlockAccount(*nAccount)
-	if err == nil {
-		t.Fatal("no error thrown on unlock of unlocked account")
-	}
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
-		err = db.InvalidPassword(*nAccount)
-		if err != nil {
-			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
-		}
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	err = db.UnlockAccount(*nAccount)
-	if err != nil {
-		t.Fatalf("Unexpected error on unlock account: %v", err)
-	}
-	nAccount, _ = db.GetAccount(nAccount.Email)
-	if nAccount.WrongPassAttempts != 0 {
-		t.Errorf("Expected wrong pass attempts to be reset to 0; found %v.", nAccount.WrongPassAttempts)
 	}
 }

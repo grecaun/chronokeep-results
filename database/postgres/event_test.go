@@ -10,22 +10,16 @@ func setupEventTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword("password"),
+				Unique: "rose2004@test.com",
+				Type:   "paid",
 			},
 			{
-				Name:     "Tia Johnson",
-				Email:    "tiatheway@test.com",
-				Type:     "free",
-				Password: testHashPassword("password"),
+				Unique: "tiatheway@test.com",
+				Type:   "free",
 			},
 		}
 	}
@@ -267,16 +261,16 @@ func TestGetAccountEvents(t *testing.T) {
 	t.Log("Adding one event for each account.")
 	db.AddEvent(event1)
 	db.AddEvent(event2)
-	t.Logf("Account email: %v", account1.Email)
-	events, err := db.GetAccountEvents(account1.Email)
+	t.Logf("Account unique id: %v", account1.Unique)
+	events, err := db.GetAccountEvents(account1.Unique)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 1 {
 		t.Errorf("Expected %v events but found %v.", 1, len(events))
 	}
-	t.Logf("Account email: %v", account2.Email)
-	events, err = db.GetAccountEvents(account2.Email)
+	t.Logf("Account unique id: %v", account2.Unique)
+	events, err = db.GetAccountEvents(account2.Unique)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -286,14 +280,14 @@ func TestGetAccountEvents(t *testing.T) {
 	t.Log("Adding the final two events.")
 	db.AddEvent(event3)
 	db.AddEvent(event4)
-	events, err = db.GetAccountEvents(account1.Email)
+	events, err = db.GetAccountEvents(account1.Unique)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
 	if len(events) != 2 {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
-	events, err = db.GetAccountEvents(account2.Email)
+	events, err = db.GetAccountEvents(account2.Unique)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}
@@ -301,7 +295,7 @@ func TestGetAccountEvents(t *testing.T) {
 		t.Errorf("Expected %v events but found %v.", 2, len(events))
 	}
 	t.Log("Testing an account with no events.")
-	events, err = db.GetAccountEvents(account3.Email)
+	events, err = db.GetAccountEvents(account3.Unique)
 	if err != nil {
 		t.Fatalf("Error attempting to get events: %v", err)
 	}

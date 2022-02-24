@@ -34,12 +34,12 @@ type GetEventRequest struct {
 // GetEventsRequest Struct used for the request for multiple events.  If an account email is specified it pulls all events
 // associated with that account, otherwise it pulls all non-restricted events. Used only for JWT restricted endpoints.
 type GetREventsRequest struct {
-	Email *string `json:"account_email,omitempty"`
+	Ident *string `json:"identifier,omitempty"`
 }
 
 // AddEventRequest Struct used for the request to Add an Event.
 type AddEventRequest struct {
-	Email *string `json:"account_email,omitempty"`
+	Ident *string `json:"identifier,omitempty"`
 	Event Event   `json:"event"`
 }
 

@@ -67,7 +67,7 @@ func (h Handler) GetMyEvents(c echo.Context) error {
 	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
-	events, err := database.GetAccountEvents(mkey.Account.Email)
+	events, err := database.GetAccountEvents(mkey.Account.Unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Events", err)
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 // GetAccountCallRecords Gets all api call records for a specific account.
-func (p *Postgres) GetAccountCallRecords(email string) ([]types.CallRecord, error) {
+func (p *Postgres) GetAccountCallRecords(unique string) ([]types.CallRecord, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -17,8 +17,8 @@ func (p *Postgres) GetAccountCallRecords(email string) ([]types.CallRecord, erro
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=$1;",
-		email,
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_unique=$1;",
+		unique,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to query for account call records: %v", err)
@@ -41,7 +41,7 @@ func (p *Postgres) GetAccountCallRecords(email string) ([]types.CallRecord, erro
 }
 
 // GetCallRecord Checks the database for a specific call record.
-func (p *Postgres) GetCallRecord(email string, inTime int64) (*types.CallRecord, error) {
+func (p *Postgres) GetCallRecord(unique string, inTime int64) (*types.CallRecord, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (p *Postgres) GetCallRecord(email string, inTime int64) (*types.CallRecord,
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_email=$1 AND time=$2;",
-		email,
+		"SELECT account_id, time, count FROM call_record NATURAL JOIN account WHERE account_unique=$1 AND time=$2;",
+		unique,
 		inTime,
 	)
 	if err != nil {

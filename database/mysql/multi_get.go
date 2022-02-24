@@ -19,7 +19,7 @@ func (m *MySQL) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT "+
-			"account_id, account_name, account_email, account_type, account_locked, "+
+			"account_id, account_unique, account_type, "+
 			"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type "+
 			"FROM account NATURAL JOIN event WHERE account_deleted=FALSE AND event_deleted=FALSE and slug=?",
 		slug,
@@ -34,10 +34,8 @@ func (m *MySQL) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 		}
 		err := res.Scan(
 			&outVal.Account.Identifier,
-			&outVal.Account.Name,
-			&outVal.Account.Email,
+			&outVal.Account.Unique,
 			&outVal.Account.Type,
-			&outVal.Account.Locked,
 			&outVal.Event.Identifier,
 			&outVal.Event.Name,
 			&outVal.Event.Slug,
@@ -69,7 +67,7 @@ func (m *MySQL) GetAccountEventAndYear(slug, year string) (*types.MultiGet, erro
 		res, err = db.QueryContext(
 			ctx,
 			"SELECT "+
-				"account_id, account_name, account_email, account_type, account_locked, "+
+				"account_id, account_unique, account_type, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
 				"event_year_id, year, date_time, live "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year y INNER JOIN "+
@@ -81,7 +79,7 @@ func (m *MySQL) GetAccountEventAndYear(slug, year string) (*types.MultiGet, erro
 		res, err = db.QueryContext(
 			ctx,
 			"SELECT "+
-				"account_id, account_name, account_email, account_type, account_locked, "+
+				"account_id, account_unique, account_type, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
 				"event_year_id, year, date_time, live "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
@@ -100,10 +98,8 @@ func (m *MySQL) GetAccountEventAndYear(slug, year string) (*types.MultiGet, erro
 		}
 		err := res.Scan(
 			&outVal.Account.Identifier,
-			&outVal.Account.Name,
-			&outVal.Account.Email,
+			&outVal.Account.Unique,
 			&outVal.Account.Type,
-			&outVal.Account.Locked,
 			&outVal.Event.Identifier,
 			&outVal.Event.Name,
 			&outVal.Event.Slug,
@@ -201,7 +197,7 @@ func (m *MySQL) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 	res, err := db.QueryContext(
 		ctx,
 		"SELECT "+
-			"account_id, account_name, account_email, account_type, account_locked, "+
+			"account_id, account_unique, account_type, "+
 			"key_value, key_type, allowed_hosts, valid_until "+
 			"FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=?",
 		key,
@@ -216,10 +212,8 @@ func (m *MySQL) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 		}
 		err := res.Scan(
 			&outVal.Account.Identifier,
-			&outVal.Account.Name,
-			&outVal.Account.Email,
+			&outVal.Account.Unique,
 			&outVal.Account.Type,
-			&outVal.Account.Locked,
 			&outVal.Key.Value,
 			&outVal.Key.Type,
 			&outVal.Key.AllowedHosts,

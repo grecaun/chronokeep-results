@@ -10,16 +10,12 @@ func setupKeyTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword("password"),
+				Unique: "rose2004@test.com",
+				Type:   "paid",
 			},
 		}
 	}
@@ -157,7 +153,7 @@ func TestGetAccountKeys(t *testing.T) {
 			ValidUntil:        nil,
 		},
 	}
-	k, err := db.GetAccountKeys(account1.Email)
+	k, err := db.GetAccountKeys(account1.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -166,14 +162,14 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	db.AddKey(keys[0])
 	db.AddKey(keys[2])
-	k, err = db.GetAccountKeys(account1.Email)
+	k, err = db.GetAccountKeys(account1.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 1 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
 	}
-	k, err = db.GetAccountKeys(account2.Email)
+	k, err = db.GetAccountKeys(account2.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -182,14 +178,14 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	db.AddKey(keys[1])
 	db.AddKey(keys[3])
-	k, err = db.GetAccountKeys(account1.Email)
+	k, err = db.GetAccountKeys(account1.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 2 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
 	}
-	k, err = db.GetAccountKeys(account2.Email)
+	k, err = db.GetAccountKeys(account2.Unique)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}

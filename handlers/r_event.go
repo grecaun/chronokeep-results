@@ -21,15 +21,15 @@ func (h Handler) RGetEvents(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
 	// If the user is not an admin and they're requesting events for another account deny them.
-	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
+	if account.Type != "admin" && request.Ident != nil && account.Unique != *request.Ident {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
-	// We're either pulling account events for the calling account, or the requesting email
-	email := account.Email
-	if request.Email != nil {
-		email = *request.Email
+	// We're either pulling account events for the calling account, or the requesting unique id
+	unique := account.Unique
+	if request.Ident != nil {
+		unique = *request.Ident
 	}
-	events, err := database.GetAccountEvents(email)
+	events, err := database.GetAccountEvents(unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Events", nil)
 	}
@@ -51,13 +51,13 @@ func (h Handler) RAddEvent(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-	// Verify that the user has access to add an event if the email is set.
-	if request.Email != nil && *request.Email != account.Email && account.Type != "admin" {
+	// Verify that the user has access to add an event if the unique ident is set.
+	if request.Ident != nil && *request.Ident != account.Unique && account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
 	id := account.Identifier
-	if request.Email != nil {
-		a, err := database.GetAccount(*request.Email)
+	if request.Ident != nil {
+		a, err := database.GetAccount(*request.Ident)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Account", err)
 		}

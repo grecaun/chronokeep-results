@@ -9,7 +9,7 @@ import (
 )
 
 // GetAccountKeys Gets all keys associated with an account.
-func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
+func (p *Postgres) GetAccountKeys(unique string) ([]types.Key, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -18,8 +18,8 @@ func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=$1;",
-		email,
+		"SELECT account_id, key_name, key_value, key_type, allowed_hosts, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_unique=$1;",
+		unique,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("erorr retrieving key: %v", err)

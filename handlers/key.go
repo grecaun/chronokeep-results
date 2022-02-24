@@ -17,21 +17,21 @@ func (h Handler) GetKeys(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
+	if account.Type != "admin" && request.Ident != nil && account.Unique != *request.Ident {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
-	email := account.Email
-	if request.Email != nil {
-		keyAccount, err := database.GetAccount(*request.Email)
+	unique := account.Unique
+	if request.Ident != nil {
+		keyAccount, err := database.GetAccount(*request.Ident)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
 		}
 		if keyAccount == nil {
 			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 		}
-		email = keyAccount.Email
+		unique = keyAccount.Unique
 	}
-	keys, err := database.GetAccountKeys(email)
+	keys, err := database.GetAccountKeys(unique)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Keys", err)
 	}
@@ -56,14 +56,14 @@ func (h Handler) AddKey(c echo.Context) error {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Field(s)", err)
 	}
 	log.Info("Checking for admin or ownership.")
-	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
+	if account.Type != "admin" && request.Ident != nil && account.Unique != *request.Ident {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
-	// If email is set we add a key to that account, otherwise add it to the calling person's account.
+	// If unique ident is set we add a key to that account, otherwise add it to the calling person's account.
 	accountid := account.Identifier
-	if request.Email != nil {
+	if request.Ident != nil {
 		log.Info("Getting key account holder for id value.")
-		keyAccount, err := database.GetAccount(*request.Email)
+		keyAccount, err := database.GetAccount(*request.Ident)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
 		}
@@ -112,7 +112,7 @@ func (h Handler) DeleteKey(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Key Not Found", nil)
 	}
 	// Deny access to non admins who do not own the key
-	if account.Type != "admin" && account.Email != multiKey.Account.Email {
+	if account.Type != "admin" && account.Unique != multiKey.Account.Unique {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
 	err = database.DeleteKey(*multiKey.Key)
@@ -143,7 +143,7 @@ func (h Handler) UpdateKey(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Key Not Found", nil)
 	}
 	// Deny access to non admins who do not own the key
-	if account.Type != "admin" && account.Email != keyAccount.Email {
+	if account.Type != "admin" && account.Unique != keyAccount.Unique {
 		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
 	}
 	err = database.UpdateKey(request.Key.ToKey())

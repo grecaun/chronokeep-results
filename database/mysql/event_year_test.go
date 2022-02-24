@@ -10,16 +10,12 @@ func setupEventYearTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword("password"),
+				Unique: "rose2004@test.com",
+				Type:   "paid",
 			},
 		}
 	}

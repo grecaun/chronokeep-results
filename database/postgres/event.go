@@ -51,7 +51,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
-func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
+func (p *Postgres) getEventsInternal(unique *string) ([]types.Event, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var res pgx.Rows
-	if email == nil {
+	if unique == nil {
 		res, err = db.Query(
 			ctx,
 			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
@@ -71,8 +71,8 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 			ctx,
 			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND account_email=$1;",
-			email,
+				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND account_unique=$1;",
+			unique,
 		)
 	}
 	if err != nil {

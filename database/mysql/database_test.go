@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"chronokeep/results/auth"
 	"chronokeep/results/database"
 	"chronokeep/results/util"
 	"context"
@@ -20,11 +19,6 @@ const (
 	dbPort     = 3306
 	dbDriver   = "mysql"
 )
-
-func testHashPassword(pass string) string {
-	hash, _ := auth.HashPassword(pass)
-	return hash
-}
 
 func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
@@ -317,8 +311,5 @@ func getTestConfig() *util.Config {
 		DBUser:     dbUser,
 		DBPassword: dbPassword,
 		DBDriver:   dbDriver,
-		AdminEmail: "admin@test.com",
-		AdminName:  "tester number 1",
-		AdminPass:  "password",
 	}
 }

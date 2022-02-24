@@ -14,10 +14,8 @@ func setupResultTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
+				Unique: "j@test.com",
+				Type:   "admin",
 			},
 		}
 	}
