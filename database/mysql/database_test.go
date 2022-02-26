@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -68,7 +67,7 @@ func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 	}, nil
 }
 
-func setupOld(version int) (*MySQL, error) {
+func setupOld() (*MySQL, error) {
 	o := MySQL{}
 	config := getTestConfig()
 	// Connect to DB with database name.
@@ -212,7 +211,7 @@ func setupOld(version int) (*MySQL, error) {
 		}
 	}
 
-	o.SetSetting("version", strconv.Itoa(version))
+	o.SetSetting("version", "1")
 
 	return &o, nil
 }
@@ -268,7 +267,7 @@ func TestCheckVersion(t *testing.T) {
 func TestUpgrade(t *testing.T) {
 	t.Log("Setting up testing database variables.")
 	t.Log("Initializing database version 1.")
-	db, err := setupOld(1)
+	db, err := setupOld()
 	defer db.dropTables()
 	if err != nil {
 		t.Fatalf("Error initializing database. %v", err)
@@ -292,15 +291,32 @@ func TestUpgrade(t *testing.T) {
 	if version != 2 {
 		t.Fatalf("Version set to '%v' expected '2'.", version)
 	}
-	// Verify update works.
+	// Verify version 3
 	err = db.updateTables(version, 3)
 	if err != nil {
 		t.Fatalf("error updating database from %d to %d: %v", version, 3, err)
 	}
-	// Verify version 3
 	version = db.checkVersion()
 	if version != 3 {
 		t.Fatalf("Version set to '%v' expected '3'.", version)
+	}
+	// Verify version 4
+	err = db.updateTables(version, 4)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 4, err)
+	}
+	version = db.checkVersion()
+	if version != 4 {
+		t.Fatalf("Version set to '%v' expected '4'.", version)
+	}
+	// Verify version 5
+	err = db.updateTables(version, 5)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 5, err)
+	}
+	version = db.checkVersion()
+	if version != 5 {
+		t.Fatalf("Version set to '%v' expected '5'.", version)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()

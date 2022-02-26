@@ -36,7 +36,7 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 			&key.ValidUntil,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("unable getting key: %v", err)
+			return nil, fmt.Errorf("error getting key: %v", err)
 		}
 		outKeys = append(outKeys, key)
 	}
@@ -71,7 +71,7 @@ func (m *MySQL) GetKey(key string) (*types.Key, error) {
 			&outKey.ValidUntil,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("unable getting key: %v", err)
+			return nil, fmt.Errorf("error getting key: %v", err)
 		}
 	} else {
 		return nil, nil

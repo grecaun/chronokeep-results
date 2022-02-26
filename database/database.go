@@ -24,7 +24,7 @@ type Database interface {
 	GetAccounts() ([]types.Account, error)
 	AddAccount(account types.Account) (*types.Account, error)
 	DeleteAccount(id int64) error
-	ResurrectAccount(emnail string) error
+	ResurrectAccount(email string) error
 	GetDeletedAccount(email string) (*types.Account, error)
 	UpdateAccount(account types.Account) error
 	ChangePassword(email, newPassword string, logout ...bool) error

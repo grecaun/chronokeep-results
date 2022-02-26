@@ -16,6 +16,7 @@ vendor/
 
 # .env file for storing environment variables locally
 .env
+env-bash.sh
 
 # Compiled files
 results
