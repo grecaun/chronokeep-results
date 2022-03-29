@@ -51,6 +51,11 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/key/add", h.AddKey)
 	group.PUT("/key/update", h.UpdateKey)
 	group.DELETE("/key/delete", h.DeleteKey)
+	// Remote Key Handlers
+	group.POST("/remote/key", h.GetRemoteKeys)
+	group.POST("/remote/key/add", h.AddRemoteKey)
+	group.POST("/remote/key/update", h.UpdateRemoteKey)
+	group.DELETE("/remote/key/delete", h.DeleteRemoteKey)
 	// Event handlers (restricted for website use)
 	group.POST("/r/event", h.RGetEvents)
 	group.POST("/r/event/add", h.RAddEvent)
