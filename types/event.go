@@ -49,6 +49,8 @@ func (e *Event) Validate(validate *validator.Validate) error {
 		valid = true
 	case "time":
 		valid = true
+	case "backyardultra":
+		valid = true
 	}
 	if !valid {
 		return errors.New("invalid event type specified")
