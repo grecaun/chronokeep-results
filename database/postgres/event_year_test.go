@@ -435,3 +435,51 @@ func TestUpdateEventYear(t *testing.T) {
 		t.Errorf("Event Year year value changed, found %v", event.Year)
 	}
 }
+
+func TestBadDatabaseEventYear(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetEventYear("", "")
+	if err == nil {
+		t.Fatal("Expected error getting event year.")
+	}
+	_, err = db.GetEventYears("")
+	if err == nil {
+		t.Fatal("Expected error getting event years.")
+	}
+	_, err = db.AddEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error adding event year.")
+	}
+	err = db.DeleteEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error deleting event year.")
+	}
+	err = db.UpdateEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error updating event year.")
+	}
+}
+
+func TestNoDatabaseEventYear(t *testing.T) {
+	db := Postgres{}
+	_, err := db.GetEventYear("", "")
+	if err == nil {
+		t.Fatal("Expected error getting event year.")
+	}
+	_, err = db.GetEventYears("")
+	if err == nil {
+		t.Fatal("Expected error getting event years.")
+	}
+	_, err = db.AddEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error adding event year.")
+	}
+	err = db.DeleteEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error deleting event year.")
+	}
+	err = db.UpdateEventYear(types.EventYear{})
+	if err == nil {
+		t.Fatal("Expected error updating event year.")
+	}
+}

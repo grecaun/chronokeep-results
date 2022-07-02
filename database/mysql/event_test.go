@@ -431,3 +431,67 @@ func TestUpdateEvent(t *testing.T) {
 		t.Errorf("Expected image %v, found %v.", event2.Image, event.Image)
 	}
 }
+
+func TestBadDatabaseEvent(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetEvent("")
+	if err == nil {
+		t.Fatal("Expected error getting event.")
+	}
+	_, err = db.GetEvents()
+	if err == nil {
+		t.Fatal("Expected error getting events.")
+	}
+	_, err = db.GetAccountEvents("")
+	if err == nil {
+		t.Fatal("Expected error getting account events.")
+	}
+	_, err = db.AddEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error adding event.")
+	}
+	err = db.DeleteEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error deleting event.")
+	}
+	err = db.RealDeleteEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error really deleting an event.")
+	}
+	err = db.UpdateEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error updating event.")
+	}
+}
+
+func TestNoDatabaseEvent(t *testing.T) {
+	db := MySQL{}
+	_, err := db.GetEvent("")
+	if err == nil {
+		t.Fatal("Expected error getting event.")
+	}
+	_, err = db.GetEvents()
+	if err == nil {
+		t.Fatal("Expected error getting events.")
+	}
+	_, err = db.GetAccountEvents("")
+	if err == nil {
+		t.Fatal("Expected error getting account events.")
+	}
+	_, err = db.AddEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error adding event.")
+	}
+	err = db.DeleteEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error deleting event.")
+	}
+	err = db.RealDeleteEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error really deleting an event.")
+	}
+	err = db.UpdateEvent(types.Event{})
+	if err == nil {
+		t.Fatal("Expected error updating event.")
+	}
+}

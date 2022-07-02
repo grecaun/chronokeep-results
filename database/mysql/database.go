@@ -30,6 +30,9 @@ func (m *MySQL) GetDatabase(inCfg *util.Config) (*sql.DB, error) {
 	if m.db != nil {
 		return m.db, nil
 	}
+	if inCfg == nil {
+		return nil, fmt.Errorf("no valid config supplied")
+	}
 
 	m.config = inCfg
 	conString := fmt.Sprintf(
@@ -66,6 +69,9 @@ func (m *MySQL) GetDB() (*sql.DB, error) {
 
 // Setup Automatically creates and updates tables for all of our information.
 func (m *MySQL) Setup(config *util.Config) error {
+	if config == nil {
+		return fmt.Errorf("no valid config supplied")
+	}
 	// Set up Validator.
 	m.validate = validator.New()
 	log.Info("Setting up database.")
@@ -307,6 +313,10 @@ func (m *MySQL) createTables() error {
 		},
 	}
 
+	if m.db == nil {
+		return fmt.Errorf("database not setup")
+	}
+
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
@@ -326,6 +336,9 @@ func (m *MySQL) createTables() error {
 
 func (m *MySQL) checkVersion() int {
 	log.Info("Checking database version.")
+	if m.db == nil {
+		return -1
+	}
 	res, err := m.db.Query("SELECT * FROM settings WHERE name='version';")
 	if err != nil {
 		return -1
@@ -343,6 +356,9 @@ func (m *MySQL) checkVersion() int {
 }
 
 func (m *MySQL) updateTables(oldVersion, newVersion int) error {
+	if m.db == nil {
+		return fmt.Errorf("database not set up")
+	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	if oldVersion < 2 && newVersion >= 2 {

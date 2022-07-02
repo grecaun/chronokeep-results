@@ -465,3 +465,59 @@ func TestGetBibResults(t *testing.T) {
 		t.Errorf("Unable to find our first result in the database. %+v", res)
 	}
 }
+
+func TestBadDatabaseResult(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetResults(0)
+	if err == nil {
+		t.Fatalf("Expected error getting results by event year.")
+	}
+	_, err = db.GetLastResults(0)
+	if err == nil {
+		t.Fatalf("Expected error getting last results by event year.")
+	}
+	_, err = db.GetBibResults(0, "fake bib")
+	if err == nil {
+		t.Fatalf("Expected error getting results by event year and bib.")
+	}
+	err = db.DeleteResults(0, make([]types.Result, 0))
+	if err == nil {
+		t.Fatalf("Expected error deleting results.")
+	}
+	_, err = db.DeleteEventResults(0)
+	if err == nil {
+		t.Fatalf("Expected error deleting event year results.")
+	}
+	_, err = db.AddResults(0, make([]types.Result, 0))
+	if err == nil {
+		t.Fatalf("Expected error adding results.")
+	}
+}
+
+func TestNoDatabaseResult(t *testing.T) {
+	db := Postgres{}
+	_, err := db.GetResults(0)
+	if err == nil {
+		t.Fatalf("Expected error getting results by event year.")
+	}
+	_, err = db.GetLastResults(0)
+	if err == nil {
+		t.Fatalf("Expected error getting last results by event year.")
+	}
+	_, err = db.GetBibResults(0, "fake bib")
+	if err == nil {
+		t.Fatalf("Expected error getting results by event year and bib.")
+	}
+	err = db.DeleteResults(0, make([]types.Result, 0))
+	if err == nil {
+		t.Fatalf("Expected error deleting results.")
+	}
+	_, err = db.DeleteEventResults(0)
+	if err == nil {
+		t.Fatalf("Expected error deleting event year results.")
+	}
+	_, err = db.AddResults(0, make([]types.Result, 0))
+	if err == nil {
+		t.Fatalf("Expected error adding results.")
+	}
+}

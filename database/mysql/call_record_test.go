@@ -329,3 +329,43 @@ func TestGetAccountCallRecords(t *testing.T) {
 		t.Errorf("Expected %v call records, found %v", 0, len(recs))
 	}
 }
+
+func TestBadDatabaseCallRecord(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetAccountCallRecords("")
+	if err == nil {
+		t.Fatal("Expected error getting account call records.")
+	}
+	_, err = db.GetCallRecord("", 0)
+	if err == nil {
+		t.Fatal("Expected error getting specific call record.")
+	}
+	err = db.AddCallRecord(types.CallRecord{})
+	if err == nil {
+		t.Fatal("Expected error adding call record.")
+	}
+	err = db.AddCallRecords(make([]types.CallRecord, 0))
+	if err == nil {
+		t.Fatal("Expected error adding call records.")
+	}
+}
+
+func TestNoDatabaseCallRecord(t *testing.T) {
+	db := MySQL{}
+	_, err := db.GetAccountCallRecords("")
+	if err == nil {
+		t.Fatal("Expected error getting account call records.")
+	}
+	_, err = db.GetCallRecord("", 0)
+	if err == nil {
+		t.Fatal("Expected error getting specific call record.")
+	}
+	err = db.AddCallRecord(types.CallRecord{})
+	if err == nil {
+		t.Fatal("Expected error adding call record.")
+	}
+	err = db.AddCallRecords(make([]types.CallRecord, 0))
+	if err == nil {
+		t.Fatal("Expected error adding call records.")
+	}
+}

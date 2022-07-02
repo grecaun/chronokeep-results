@@ -58,3 +58,19 @@ func TestGetPerson(t *testing.T) {
 		}
 	}
 }
+
+func TestBadDatabasePerson(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetPerson("", "", "")
+	if err == nil {
+		t.Fatalf("Expected error getting person")
+	}
+}
+
+func TestNoDatabasePerson(t *testing.T) {
+	db := MySQL{}
+	_, err := db.GetPerson("", "", "")
+	if err == nil {
+		t.Fatalf("Expected error getting person")
+	}
+}

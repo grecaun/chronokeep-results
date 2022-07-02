@@ -28,6 +28,9 @@ func (p *Postgres) GetDatabase(inCfg *util.Config) (*pgxpool.Pool, error) {
 	if p.db != nil {
 		return p.db, nil
 	}
+	if inCfg == nil {
+		return nil, fmt.Errorf("no valid config supplied")
+	}
 
 	p.config = inCfg
 	conString := fmt.Sprintf(
@@ -66,6 +69,9 @@ func (p *Postgres) GetDB() (*pgxpool.Pool, error) {
 
 // Setup Automatically creates and updates tables for all of our information.
 func (p *Postgres) Setup(config *util.Config) error {
+	if config == nil {
+		return fmt.Errorf("no valid config supplied")
+	}
 	// Set up Validator.
 	p.validate = validator.New()
 	log.Info("Setting up database.")
@@ -383,6 +389,10 @@ func (p *Postgres) createTables() error {
 		},
 	}
 
+	if p.db == nil {
+		return fmt.Errorf("database not setup")
+	}
+
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
@@ -402,6 +412,9 @@ func (p *Postgres) createTables() error {
 
 func (p *Postgres) checkVersion() int {
 	log.Info("Checking database version.")
+	if p.db == nil {
+		return -1
+	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var name string
@@ -421,6 +434,9 @@ func (p *Postgres) checkVersion() int {
 }
 
 func (p *Postgres) updateTables(oldVersion, newVersion int) error {
+	if p.db == nil {
+		return fmt.Errorf("database not set up")
+	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	if oldVersion < 2 && newVersion >= 2 {
