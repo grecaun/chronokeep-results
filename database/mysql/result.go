@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, all bool) ([]types.Result, error) {
+func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, all bool, distance string) ([]types.Result, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -28,6 +28,17 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, all bool) ([]
 				"WHERE event_year_id=? AND bib=? ORDER BY seconds DESC;",
 			eventYearID,
 			bib,
+		)
+	} else if distance != "" {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+				"gender_ranking, finish, result_type FROM result NATURAL JOIN person "+
+				"WHERE event_year_id=? AND bib=? AND distance=? ORDER BY seconds DESC;",
+			eventYearID,
+			bib,
+			distance,
 		)
 	} else if all {
 		res, err = db.QueryContext(
@@ -89,17 +100,21 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, all bool) ([]
 
 // GetResults Gets results for an event year.
 func (m *MySQL) GetResults(eventYearID int64) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, nil, true)
+	return m.getResultsInternal(eventYearID, nil, true, "")
+}
+
+func (m *MySQL) GetDistanceResults(eventYearID int64, distance string) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil, false, distance)
 }
 
 // GetLastResults Gets the last result for a bib in an event year.
 func (m *MySQL) GetLastResults(eventYearID int64) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, nil, false)
+	return m.getResultsInternal(eventYearID, nil, false, "")
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
 func (m *MySQL) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, &bib, false)
+	return m.getResultsInternal(eventYearID, &bib, false, "")
 }
 
 // DeleteResults Deletes results from the database.

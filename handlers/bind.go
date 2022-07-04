@@ -26,6 +26,7 @@ func (h Handler) Bind(group *echo.Group) {
 	group.DELETE("/event/delete", h.DeleteEvent)
 	// Result handlers
 	group.POST("/results", h.GetResults)
+	group.POST("/results/distance", h.GetDistanceResults)
 	group.POST("/results/all", h.GetAllResults)
 	group.POST("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)

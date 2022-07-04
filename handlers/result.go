@@ -75,6 +75,77 @@ func (h Handler) GetResults(c echo.Context) error {
 	})
 }
 
+func (h Handler) GetDistanceResults(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
+	var request types.GetResultsRequest
+	if err := c.Bind(&request); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
+	}
+	if request.Distance == nil {
+		return getAPIError(c, http.StatusBadRequest, "Distance Not Specified", nil)
+	}
+	// Get Key
+	mkey, err := database.GetKeyAndAccount(*k)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
+	}
+	// And Event for verification of whether or not we can allow access to this key
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	mult, err := database.GetEventAndYear(request.Slug, year)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
+	}
+	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
+	}
+	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
+		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
+	}
+	years, err := database.GetEventYears(request.Slug)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	results, err := database.GetDistanceResults(mult.EventYear.Identifier, *request.Distance)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
+	}
+	outRes := make(map[string][]types.Result)
+	for _, result := range results {
+		if _, ok := outRes[result.Distance]; !ok {
+			outRes[result.Distance] = make([]types.Result, 0, 1)
+		}
+		outRes[result.Distance] = append(outRes[result.Distance], result)
+	}
+	return c.JSON(http.StatusOK, types.GetResultsResponse{
+		Event:     *mult.Event,
+		EventYear: *mult.EventYear,
+		Years:     years,
+		Results:   outRes,
+		Count:     len(results),
+	})
+}
+
 func (h Handler) GetAllResults(c echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())

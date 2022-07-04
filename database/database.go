@@ -60,6 +60,7 @@ type Database interface {
 	// Result Functions
 	GetResults(eventYearID int64) ([]types.Result, error)
 	GetLastResults(eventYearID int64) ([]types.Result, error)
+	GetDistanceResults(eventYearID int64, distance string) ([]types.Result, error)
 	GetBibResults(eventYearID int64, bib string) ([]types.Result, error)
 	DeleteResults(eventYearID int64, results []types.Result) error
 	DeleteEventResults(eventYearID int64) (int64, error)

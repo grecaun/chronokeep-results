@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool) ([]types.Result, error) {
+func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool, distance string) ([]types.Result, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -28,6 +28,16 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool) 
 				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds DESC;",
 			eventYearID,
 			bib,
+		)
+	} else if distance != "" {
+		res, err = db.Query(
+			ctx,
+			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 AND distance=$3 ORDER BY seconds DESC;",
+			eventYearID,
+			bib,
+			distance,
 		)
 	} else if all {
 		res, err = db.Query(
@@ -87,17 +97,21 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool) 
 
 // GetResults Gets results for an event year.
 func (p *Postgres) GetResults(eventYearID int64) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil, true)
+	return p.getResultsInternal(eventYearID, nil, true, "")
 }
 
 // GetLastResults Gets the last result for a bib in an event year.
 func (p *Postgres) GetLastResults(eventYearID int64) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil, false)
+	return p.getResultsInternal(eventYearID, nil, false, "")
+}
+
+func (p *Postgres) GetDistanceResults(eventYearID int64, distance string) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, false, distance)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
 func (p *Postgres) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, &bib, false)
+	return p.getResultsInternal(eventYearID, &bib, false, "")
 }
 
 // DeleteResults Deletes results from the database.
