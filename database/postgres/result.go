@@ -10,7 +10,15 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool, distance string) ([]types.Result, error) {
+type ResultType int
+
+const (
+	All ResultType = iota
+	Finish
+	Last
+)
+
+func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype ResultType, distance string, limit, page int) ([]types.Result, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -21,43 +29,147 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool, 
 		res pgx.Rows
 	)
 	if bib != nil {
-		res, err = db.Query(
-			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
-				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds DESC;",
-			eventYearID,
-			bib,
-		)
+		if limit > 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
+				eventYearID,
+				bib,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds ASC;",
+				eventYearID,
+				bib,
+			)
+		}
 	} else if distance != "" {
-		res, err = db.Query(
-			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
-				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 AND bib=$2 AND distance=$3 ORDER BY seconds DESC;",
-			eventYearID,
-			bib,
-			distance,
-		)
-	} else if all {
-		res, err = db.Query(
-			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
-				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-				"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 ORDER BY seconds DESC;",
-			eventYearID,
-		)
+		if rtype == Finish {
+			if limit > 0 {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE finish=TRUE AND event_year_id=$1 AND distance=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
+					eventYearID,
+					distance,
+					limit,
+					page*limit,
+				)
+			} else {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE finish=TRUE AND event_year_id=$1 AND distance=$2 ORDER BY seconds ASC;",
+					eventYearID,
+					distance,
+				)
+			}
+		} else {
+			if limit > 0 {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
+						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
+						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
+						"WHERE event_year_id=$1 AND distance=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
+					eventYearID,
+					distance,
+					limit,
+					page*limit,
+				)
+			} else {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
+						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
+						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
+						"WHERE event_year_id=$1 AND distance=$2 ORDER BY seconds ASC;",
+					eventYearID,
+					distance,
+				)
+			}
+		}
+	} else if rtype == All {
+		if limit > 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 ORDER BY seconds ASC;",
+				eventYearID,
+			)
+		}
+	} else if rtype == Finish {
+		if limit > 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person "+
+					"WHERE finish=TRUE AND event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result NATURAL JOIN person "+
+					"WHERE finish=TRUE AND event_year_id=$1 ORDER BY seconds ASC;",
+				eventYearID,
+			)
+		}
 	} else {
-		res, err = db.Query(
-			ctx,
-			"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
-				"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-				"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
-				"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
-				"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
-				"WHERE event_year_id=$1 ORDER BY seconds DESC;",
-			eventYearID,
-		)
+		if limit > 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
+					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
+					"WHERE event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+					"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
+					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
+					"WHERE event_year_id=$1 ORDER BY seconds ASC;",
+				eventYearID,
+			)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving results: %v", err)
@@ -96,22 +208,28 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, all bool, 
 }
 
 // GetResults Gets results for an event year.
-func (p *Postgres) GetResults(eventYearID int64) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil, true, "")
+func (p *Postgres) GetResults(eventYearID int64, limit, page int) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, All, "", limit, page)
 }
 
 // GetLastResults Gets the last result for a bib in an event year.
-func (p *Postgres) GetLastResults(eventYearID int64) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil, false, "")
+func (p *Postgres) GetLastResults(eventYearID int64, limit, page int) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, Last, "", limit, page)
 }
 
-func (p *Postgres) GetDistanceResults(eventYearID int64, distance string) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, nil, false, distance)
+// GetDistanceResults Gets the distance results (last only) for a distance.
+func (m *Postgres) GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil, Last, distance, limit, page)
+}
+
+// GetFinishResults Gets the finish results for an entire event (empty distance) or just a distance.
+func (m *Postgres) GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil, Finish, distance, limit, page)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
 func (p *Postgres) GetBibResults(eventYearID int64, bib string) ([]types.Result, error) {
-	return p.getResultsInternal(eventYearID, &bib, false, "")
+	return p.getResultsInternal(eventYearID, &bib, All, "", 0, 0)
 }
 
 // DeleteResults Deletes results from the database.

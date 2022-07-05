@@ -58,9 +58,10 @@ type Database interface {
 	DeleteKey(key types.Key) error
 	UpdateKey(key types.Key) error
 	// Result Functions
-	GetResults(eventYearID int64) ([]types.Result, error)
-	GetLastResults(eventYearID int64) ([]types.Result, error)
-	GetDistanceResults(eventYearID int64, distance string) ([]types.Result, error)
+	GetResults(eventYearID int64, limit, page int) ([]types.Result, error)
+	GetLastResults(eventYearID int64, limit, page int) ([]types.Result, error)
+	GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
+	GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
 	GetBibResults(eventYearID int64, bib string) ([]types.Result, error)
 	DeleteResults(eventYearID int64, results []types.Result) error
 	DeleteEventResults(eventYearID int64) (int64, error)

@@ -55,7 +55,17 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
-	results, err := database.GetLastResults(mult.EventYear.Identifier)
+	distance := ""
+	if request.Distance != nil {
+		distance = *request.Distance
+	}
+	limit := 0
+	page := 0
+	if request.Limit != nil && request.Page != nil {
+		limit = *request.Limit
+		page = *request.Page
+	}
+	results, err := database.GetDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
@@ -75,7 +85,7 @@ func (h Handler) GetResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetDistanceResults(c echo.Context) error {
+func (h Handler) GetFinishResults(c echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -87,9 +97,6 @@ func (h Handler) GetDistanceResults(c echo.Context) error {
 	var request types.GetResultsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
-	}
-	if request.Distance == nil {
-		return getAPIError(c, http.StatusBadRequest, "Distance Not Specified", nil)
 	}
 	// Get Key
 	mkey, err := database.GetKeyAndAccount(*k)
@@ -126,7 +133,17 @@ func (h Handler) GetDistanceResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
-	results, err := database.GetDistanceResults(mult.EventYear.Identifier, *request.Distance)
+	distance := ""
+	if request.Distance != nil {
+		distance = *request.Distance
+	}
+	limit := 0
+	page := 0
+	if request.Limit != nil && request.Page != nil {
+		limit = *request.Limit
+		page = *request.Page
+	}
+	results, err := database.GetFinishResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
@@ -194,7 +211,13 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
-	results, err := database.GetResults(mult.EventYear.Identifier)
+	limit := 0
+	page := 0
+	if request.Limit != nil && request.Page != nil {
+		limit = *request.Limit
+		page = *request.Page
+	}
+	results, err := database.GetResults(mult.EventYear.Identifier, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}

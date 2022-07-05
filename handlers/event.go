@@ -132,7 +132,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 	}
 	var res []types.Result
 	if recent != nil {
-		res, err = database.GetResults(recent.Identifier)
+		res, err = database.GetResults(recent.Identifier, 0, 0)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 		}

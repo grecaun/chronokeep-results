@@ -35,6 +35,8 @@ type GetResultsRequest struct {
 	Slug     string  `json:"slug"`
 	Year     *string `json:"year"`
 	Distance *string `json:"distance"`
+	Limit    *int    `json:"limit"`
+	Page     *int    `json:"page"`
 }
 
 // AddResultsRequest Struct used to add/update Results.
