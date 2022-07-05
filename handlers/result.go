@@ -56,14 +56,19 @@ func (h Handler) GetResults(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	distance := ""
+	limit := 0
+	page := 0
 	if request.Distance != nil {
 		distance = *request.Distance
 	}
-	limit := 0
-	page := 0
-	if request.Limit != nil && request.Page != nil {
+	if request.Limit != nil {
 		limit = *request.Limit
+	}
+	if request.Page != nil {
 		page = *request.Page
+		if page > 0 {
+			page--
+		}
 	}
 	results, err := database.GetDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
@@ -134,14 +139,19 @@ func (h Handler) GetFinishResults(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	distance := ""
+	limit := 0
+	page := 0
 	if request.Distance != nil {
 		distance = *request.Distance
 	}
-	limit := 0
-	page := 0
-	if request.Limit != nil && request.Page != nil {
+	if request.Limit != nil {
 		limit = *request.Limit
+	}
+	if request.Page != nil {
 		page = *request.Page
+		if page > 0 {
+			page--
+		}
 	}
 	results, err := database.GetFinishResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
@@ -213,9 +223,14 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	}
 	limit := 0
 	page := 0
-	if request.Limit != nil && request.Page != nil {
+	if request.Limit != nil {
 		limit = *request.Limit
+	}
+	if request.Page != nil {
 		page = *request.Page
+		if page > 0 {
+			page--
+		}
 	}
 	results, err := database.GetResults(mult.EventYear.Identifier, limit, page)
 	if err != nil {

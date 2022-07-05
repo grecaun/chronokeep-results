@@ -321,12 +321,21 @@ func (m *MySQL) createTables() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 
+	tx, err := m.db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
 	for _, single := range queries {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
-		_, err := m.db.ExecContext(ctx, single.query)
+		_, err := tx.ExecContext(ctx, single.query)
 		if err != nil {
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
 		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 
 	m.SetSetting("version", strconv.Itoa(database.CurrentVersion))

@@ -152,8 +152,8 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 					"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
-					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
-					"WHERE event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
+					"AND b.mx_occurence=r.occurence WHERE event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
 				eventYearID,
 				limit,
 				page*limit,
@@ -165,8 +165,8 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 					"gender_ranking, finish, result_type FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(occurence) as mx_occurence "+
-					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id AND b.mx_occurence=r.occurence "+
-					"WHERE event_year_id=$1 ORDER BY seconds ASC;",
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
+					"AND b.mx_occurence=r.occurence WHERE event_year_id=$1 ORDER BY seconds ASC;",
 				eventYearID,
 			)
 		}
@@ -382,5 +382,10 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			return nil, err
 		}
 	}
-	return results, tx.Commit(ctx)
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, err
+	}
+	return results, nil
 }

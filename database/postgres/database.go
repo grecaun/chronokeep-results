@@ -397,12 +397,21 @@ func (p *Postgres) createTables() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 
+	tx, err := p.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
 	for _, single := range queries {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
-		_, err := p.db.Exec(ctx, single.query)
+		_, err := tx.Exec(ctx, single.query)
 		if err != nil {
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
 		}
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("unable to commit transaction: %v", err)
 	}
 
 	p.SetSetting("version", strconv.Itoa(database.CurrentVersion))

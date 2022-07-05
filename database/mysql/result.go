@@ -4,7 +4,6 @@ import (
 	"chronokeep/results/types"
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 )
@@ -301,9 +300,13 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancelfunc()
-	personstmt, err := db.PrepareContext(
+	personstmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO person("+
 			"event_year_id, "+
@@ -328,7 +331,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 		return nil, fmt.Errorf("unable to prepare statement for person add: %v", err)
 	}
 	defer personstmt.Close()
-	stmt, err := db.PrepareContext(
+	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO result("+
 			"person_id, "+
@@ -362,23 +365,6 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)
 	}
 	defer stmt.Close()
-	// Add people to the database and get their ids.
-	for _, result := range results {
-		_, err = personstmt.QueryContext(
-			ctx,
-			eventYearID,
-			result.Bib,
-			result.First,
-			result.Last,
-			result.Age,
-			result.Gender,
-			result.AgeGroup,
-			result.Distance,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error adding person to database: %v", err)
-		}
-	}
 	// Get person ids from the database.
 	bibMap := make(map[string]int64)
 	res, err := db.QueryContext(
@@ -401,14 +387,35 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 		}
 		bibMap[bib] = id
 	}
+	// Add people to the database and get their ids.
 	var outResults []types.Result
 	for _, result := range results {
-		if _, ok := bibMap[result.Bib]; !ok {
-			return outResults, errors.New("something went wrong and bib not found")
+		res, err := personstmt.ExecContext(
+			ctx,
+			eventYearID,
+			result.Bib,
+			result.First,
+			result.Last,
+			result.Age,
+			result.Gender,
+			result.AgeGroup,
+			result.Distance,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error adding person to database: %v", err)
+		}
+		id, err := res.LastInsertId()
+		if err != nil {
+			return nil, fmt.Errorf("error adding person to database: %v", err)
+		}
+		if id > 0 {
+			bibMap[result.Bib] = id
+		} else if bib, ok := bibMap[result.Bib]; ok {
+			id = bib
 		}
 		_, err = stmt.ExecContext(
 			ctx,
-			bibMap[result.Bib],
+			id,
 			result.Seconds,
 			result.Milliseconds,
 			result.ChipSeconds,
@@ -426,6 +433,11 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			return outResults, fmt.Errorf("error adding result to database: %v", err)
 		}
 		outResults = append(outResults, result)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("unable to commit transaction: %v", err)
 	}
 	return outResults, nil
 }
