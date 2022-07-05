@@ -25,19 +25,25 @@ func (p *Postgres) getAccountInternal(email, key *string, id *int64) (*types.Acc
 	if email != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE AND account_email=$1;",
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, "+
+				"account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE "+
+				"AND account_email=$1;",
 			email,
 		)
 	} else if key != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=$1;",
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, "+
+				"account_wrong_pass, account_token, account_refresh_token FROM account NATURAL JOIN api_key WHERE "+
+				"account_deleted=FALSE AND key_deleted=FALSE AND key_value=$1;",
 			key,
 		)
 	} else if id != nil {
 		res, err = db.Query(
 			ctx,
-			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE AND account_id=$1;",
+			"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, "+
+				"account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE "+
+				"AND account_id=$1;",
 			id,
 		)
 	} else {
@@ -94,7 +100,8 @@ func (p *Postgres) GetAccounts() ([]types.Account, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE;",
+		"SELECT account_id, account_name, account_email, account_type, account_password, account_locked, "+
+			"account_wrong_pass, account_token, account_refresh_token FROM account WHERE account_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving accounts: %v", err)
@@ -163,24 +170,36 @@ func (p *Postgres) DeleteAccount(id int64) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Exec(
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.Exec(
 		ctx,
 		"UPDATE account SET account_deleted=TRUE WHERE account_id=$1",
 		id,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting account: %v", err)
 	}
 	if res.RowsAffected() != 1 {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting account, rows affected: %v", res.RowsAffected())
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"UPDATE api_key SET key_deleted=TRUE WHERE account_id=$1",
 		id,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting keys attached to account: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }
@@ -360,7 +379,8 @@ func (p *Postgres) InvalidPassword(account types.Account) error {
 	}
 	stmt := "UPDATE account SET account_locked=$1, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=$2;"
 	if locked {
-		stmt = "UPDATE account SET account_locked=$1, account_wrong_pass=account_wrong_pass + 1, account_token='', account_refresh_token='' WHERE account_email=$2;"
+		stmt = "UPDATE account SET account_locked=$1, account_wrong_pass=account_wrong_pass + 1, account_token='', " +
+			"account_refresh_token='' WHERE account_email=$2;"
 	}
 	res, err := db.Exec(
 		ctx,

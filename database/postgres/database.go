@@ -405,6 +405,7 @@ func (p *Postgres) createTables() error {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := tx.Exec(ctx, single.query)
 		if err != nil {
+			tx.Rollback(ctx)
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
 		}
 	}
@@ -448,13 +449,19 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
+
+	tx, err := p.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
 	if oldVersion < 2 && newVersion >= 2 {
 		log.Debug("Updating to database version 2.")
-		_, err := p.db.Exec(
+		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE result ADD COLUMN result_type INT DEFAULT 0;",
 		)
 		if err != nil {
+			tx.Rollback(ctx)
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
@@ -526,40 +533,49 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			},
 		}
 		for _, q := range queries {
-			_, err := p.db.Exec(
+			_, err := tx.Exec(
 				ctx,
 				q.query,
 			)
 			if err != nil {
+				tx.Rollback(ctx)
 				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
 			}
 		}
 	}
 	if oldVersion < 4 && newVersion >= 4 {
-		_, err := p.db.Exec(
+		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
 		)
 		if err != nil {
+			tx.Rollback(ctx)
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	if oldVersion < 5 && newVersion >= 5 {
-		_, err := p.db.Exec(
+		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
 		)
 		if err != nil {
+			tx.Rollback(ctx)
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
-	_, err := p.db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"UPDATE settings SET value=$1 WHERE name='version';",
 		strconv.Itoa(newVersion),
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }

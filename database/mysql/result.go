@@ -248,7 +248,11 @@ func (m *MySQL) DeleteResults(eventYearID int64, results []types.Result) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	stmt, err := db.PrepareContext(
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction to delete results: %v", err)
+	}
+	stmt, err := tx.PrepareContext(
 		ctx,
 		"DELETE r FROM result AS r WHERE location=? AND occurence=? AND EXISTS (SELECT * FROM person AS p WHERE event_year_id=? AND bib=? AND p.person_id=r.person_id);",
 	)
@@ -265,8 +269,14 @@ func (m *MySQL) DeleteResults(eventYearID int64, results []types.Result) error {
 			result.Bib,
 		)
 		if err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error executing prepared delete statement: %v", err)
 		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }
@@ -279,17 +289,37 @@ func (m *MySQL) DeleteEventResults(eventYearID int64) (int64, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.ExecContext(
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.ExecContext(
 		ctx,
 		"DELETE r FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=? AND p.person_id=r.person_id);",
 		eventYearID,
 	)
 	if err != nil {
+		tx.Rollback()
 		return 0, fmt.Errorf("unable to delete results for event year: %v", err)
 	}
 	count, err := res.RowsAffected()
 	if err != nil {
+		tx.Rollback()
 		return 0, fmt.Errorf("error fetching rows affected from event year results deletion: %v", err)
+	}
+	_, err = tx.ExecContext(
+		ctx,
+		"DELETE FROM person WHERE event_year_id=?;",
+		eventYearID,
+	)
+	if err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("unable to delete persons for event year: %v", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("error committing transaction: %v", err)
 	}
 	return count, nil
 }
@@ -367,7 +397,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 	defer stmt.Close()
 	// Get person ids from the database.
 	bibMap := make(map[string]int64)
-	res, err := db.QueryContext(
+	res, err := tx.QueryContext(
 		ctx,
 		"SELECT person_id, bib FROM person WHERE event_year_id=?;",
 		eventYearID,
@@ -402,10 +432,12 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.Distance,
 		)
 		if err != nil {
+			tx.Rollback()
 			return nil, fmt.Errorf("error adding person to database: %v", err)
 		}
 		id, err := res.LastInsertId()
 		if err != nil {
+			tx.Rollback()
 			return nil, fmt.Errorf("error adding person to database: %v", err)
 		}
 		if id > 0 {
@@ -430,6 +462,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.Type,
 		)
 		if err != nil {
+			tx.Rollback()
 			return outResults, fmt.Errorf("error adding result to database: %v", err)
 		}
 		outResults = append(outResults, result)

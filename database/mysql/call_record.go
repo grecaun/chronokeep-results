@@ -107,7 +107,11 @@ func (m *MySQL) AddCallRecords(records []types.CallRecord) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	stmt, err := db.PrepareContext(
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO call_record(account_id, time, count) VALUES (?,  ?, ?) ON DUPLICATE KEY UPDATE count=VALUES(count);",
 	)
@@ -123,8 +127,14 @@ func (m *MySQL) AddCallRecords(records []types.CallRecord) error {
 			record.Count,
 		)
 		if err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error adding call record to database: %v", err)
 		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }

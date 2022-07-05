@@ -329,6 +329,7 @@ func (m *MySQL) createTables() error {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := tx.ExecContext(ctx, single.query)
 		if err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error executing %s query: %v", single.name, err)
 		}
 	}
@@ -379,6 +380,10 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		if err != nil {
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
+	}
+	tx, err := m.db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
 	}
 	if oldVersion < 3 && newVersion >= 3 {
 		log.Debug("Updating to database version 3.")
@@ -449,41 +454,50 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			},
 		}
 		for _, q := range queries {
-			_, err := m.db.ExecContext(
+			_, err := tx.ExecContext(
 				ctx,
 				q.query,
 			)
 			if err != nil {
+				tx.Rollback()
 				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
 			}
 		}
 	}
 	if oldVersion < 4 && newVersion >= 4 {
 		log.Info("Updating to database version 4.")
-		_, err := m.db.ExecContext(
+		_, err := tx.ExecContext(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
 		)
 		if err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	if oldVersion < 5 && newVersion >= 5 {
-		_, err := m.db.ExecContext(
+		_, err := tx.ExecContext(
 			ctx,
 			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
 		)
 		if err != nil {
+			tx.Rollback()
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
-	_, err := m.db.ExecContext(
+	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=? WHERE name='version';",
 		newVersion,
 	)
 	if err != nil {
+		tx.Rollback()
 		return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }

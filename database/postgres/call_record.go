@@ -111,15 +111,24 @@ func (p *Postgres) AddCallRecords(records []types.CallRecord) error {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
 	for _, record := range records {
-		tx.Exec(
+		_, err = tx.Exec(
 			ctx,
 			"INSERT INTO call_record(account_id, time, count) VALUES ($1, $2, $3) ON CONFLICT (account_id, time) DO UPDATE SET count=$3;",
 			record.AccountIdentifier,
 			record.DateTime,
 			record.Count,
 		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return fmt.Errorf("error adding call record to database: %v", err)
+		}
 	}
-	return tx.Commit(ctx)
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	return nil
 }
 
 /*

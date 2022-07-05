@@ -268,21 +268,32 @@ func (p *Postgres) DeleteEventResults(eventYearID int64) (int64, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Exec(
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.Exec(
 		ctx,
 		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p WHERE event_year_id=$1 AND p.person_id=r.person_id);",
 		eventYearID,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return 0, fmt.Errorf("unable to delete results for event year: %v", err)
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM person WHERE event_year_id=$1;",
 		eventYearID,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return 0, fmt.Errorf("unable to delete persons for event year: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return 0, fmt.Errorf("error committing transaction: %v", err)
 	}
 	return res.RowsAffected(), nil
 }
@@ -330,9 +341,11 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.Distance,
 		).Scan(&id)
 		if err != nil {
+			tx.Rollback(ctx)
 			return nil, err
 		}
 		if id == 0 {
+			tx.Rollback(ctx)
 			return nil, errors.New("id value set to 0")
 		}
 		_, err = tx.Exec(
@@ -379,6 +392,7 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.Type,
 		)
 		if err != nil {
+			tx.Rollback(ctx)
 			return nil, err
 		}
 	}

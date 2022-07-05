@@ -161,24 +161,36 @@ func (p *Postgres) DeleteEvent(event types.Event) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Exec(
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.Exec(
 		ctx,
 		"UPDATE event SET event_deleted=TRUE WHERE event_id=$1;",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event: %v", err)
 	}
 	if res.RowsAffected() != 1 {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event, rows affected: %v", res.RowsAffected())
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"UPDATE event_year SET year_deleted=TRUE where event_id=$1;",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event years attached to event: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }
@@ -191,37 +203,50 @@ func (p *Postgres) RealDeleteEvent(event types.Event) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	_, err = db.Exec(
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p NATURAL JOIN event_year y WHERE r.person_id=p.person_id AND y.event_id=$1);",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event results: %v", err)
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM person p WHERE EXISTS (SELECT * FROM event_year y WHERE p.event_year_id=y.event_year_id AND y.event_id=$1);",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event people: %v", err)
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM event_year WHERE event_id=$1;",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event years: %v", err)
 	}
-	_, err = db.Exec(
+	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM event WHERE event_id=$1;",
 		event.Identifier,
 	)
 	if err != nil {
+		tx.Rollback(ctx)
 		return fmt.Errorf("error deleting event: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }
