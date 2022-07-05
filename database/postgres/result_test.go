@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	results     []types.Result
-	longresults []types.Result
+	results []types.Result
 )
 
 func setupResultTests() {
