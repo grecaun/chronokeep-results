@@ -4,6 +4,7 @@ import (
 	db "chronokeep/results/database"
 	"chronokeep/results/database/mysql"
 	"chronokeep/results/database/postgres"
+	"chronokeep/results/database/sqlite"
 	"chronokeep/results/util"
 	"errors"
 
@@ -26,6 +27,10 @@ func Setup(inCfg *util.Config) error {
 	case "postgres":
 		log.Info("Database set to Postgresql")
 		database = &postgres.Postgres{}
+		return database.Setup(config)
+	case "sqlite3":
+		log.Info("Database set to SQLite")
+		database = &sqlite.SQLite{}
 		return database.Setup(config)
 	default:
 		return errors.New("unknown database driver specified")

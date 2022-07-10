@@ -254,11 +254,50 @@ func TestAddResults(t *testing.T) {
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
+	if res[0].First != results[0].First {
+		t.Errorf("Expected to find result with first name %v, found %v.", results[0].First, res[0].First)
+	}
+	if res[0].Last != results[0].Last {
+		t.Errorf("Expected to find result with last name %v, found %v.", results[0].Last, res[0].Last)
+	}
+	if res[0].Age != results[0].Age {
+		t.Errorf("Expected to find result with age %v, found %v.", results[0].Age, res[0].Age)
+	}
+	if res[0].Gender != results[0].Gender {
+		t.Errorf("Expected to find result with gender %v, found %v.", results[0].Gender, res[0].Gender)
+	}
+	if res[0].AgeGroup != results[0].AgeGroup {
+		t.Errorf("Expected to find result with age group %v, found %v.", results[0].AgeGroup, res[0].AgeGroup)
+	}
+	if res[0].Distance != results[0].Distance {
+		t.Errorf("Expected to find result with distance %v, found %v.", results[0].Distance, res[0].Distance)
+	}
+	if res[0].Seconds != results[0].Seconds {
+		t.Errorf("Expected to find result with seconds %v, found %v.", results[0].Seconds, res[0].Seconds)
+	}
+	if res[0].Milliseconds != results[0].Milliseconds {
+		t.Errorf("Expected to find result with milliseconds %v, found %v.", results[0].Milliseconds, res[0].Milliseconds)
+	}
+	if res[0].Segment != results[0].Segment {
+		t.Errorf("Expected to find result with segment %v, found %v.", results[0].Segment, res[0].Segment)
+	}
+	if res[0].Ranking != results[0].Ranking {
+		t.Errorf("Expected to find result with ranking %v, found %v.", results[0].Ranking, res[0].Ranking)
+	}
+	if res[0].AgeRanking != results[0].AgeRanking {
+		t.Errorf("Expected to find result with age ranking %v, found %v.", results[0].AgeRanking, res[0].AgeRanking)
+	}
+	if res[0].GenderRanking != results[0].GenderRanking {
+		t.Errorf("Expected to find result with gender ranking %v, found %v.", results[0].GenderRanking, res[0].GenderRanking)
+	}
+	if res[0].Finish != results[0].Finish {
+		t.Errorf("Expected to find result with finish %v, found %v.", results[0].Finish, res[0].Finish)
+	}
 	res, _ = db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != len(results) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results), len(res))
 	}
-	// Test the update feature of AddResults.
+	// Test the update feature of AddResults. (person update, but add another result)
 	results[1].Seconds = 30
 	results[1].First = "Rebecca"
 	results[1].Last = "Small"
@@ -279,9 +318,81 @@ func TestAddResults(t *testing.T) {
 	if len(res) != 1 {
 		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
 	}
+	if res[0].First != results[1].First {
+		t.Errorf("Expected to find result with first name %v, found %v.", results[1].First, res[0].First)
+	}
+	if res[0].Last != results[1].Last {
+		t.Errorf("Expected to find result with last name %v, found %v.", results[1].Last, res[0].Last)
+	}
+	if res[0].Age != results[1].Age {
+		t.Errorf("Expected to find result with age %v, found %v.", results[1].Age, res[0].Age)
+	}
+	if res[0].Gender != results[1].Gender {
+		t.Errorf("Expected to find result with gender %v, found %v.", results[1].Gender, res[0].Gender)
+	}
+	if res[0].AgeGroup != results[1].AgeGroup {
+		t.Errorf("Expected to find result with age group %v, found %v.", results[1].AgeGroup, res[0].AgeGroup)
+	}
+	if res[0].Distance != results[1].Distance {
+		t.Errorf("Expected to find result with distance %v, found %v.", results[1].Distance, res[0].Distance)
+	}
+	if res[0].Seconds != results[1].Seconds {
+		t.Errorf("Expected to find result with seconds %v, found %v.", results[1].Seconds, res[0].Seconds)
+	}
+	if res[0].Milliseconds != results[1].Milliseconds {
+		t.Errorf("Expected to find result with milliseconds %v, found %v.", results[1].Milliseconds, res[0].Milliseconds)
+	}
+	if res[0].Segment != results[1].Segment {
+		t.Errorf("Expected to find result with segment %v, found %v.", results[1].Segment, res[0].Segment)
+	}
+	if res[0].Ranking != results[1].Ranking {
+		t.Errorf("Expected to find result with ranking %v, found %v.", results[1].Ranking, res[0].Ranking)
+	}
+	if res[0].AgeRanking != results[1].AgeRanking {
+		t.Errorf("Expected to find result with age ranking %v, found %v.", results[1].AgeRanking, res[0].AgeRanking)
+	}
+	if res[0].GenderRanking != results[1].GenderRanking {
+		t.Errorf("Expected to find result with gender ranking %v, found %v.", results[1].GenderRanking, res[0].GenderRanking)
+	}
+	if res[0].Finish != results[1].Finish {
+		t.Errorf("Expected to find result with finish %v, found %v.", results[1].Finish, res[0].Finish)
+	}
 	res, _ = db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != (len(results) + 1) {
 		t.Errorf("Expected %v results to be added, %v added.", (len(results) + 1), len(res))
+	}
+	// check to make sure that we actually updated the information
+	// because AddResults only returns the copy that it thinks it added
+	var found1 = false
+	var found2 = 0
+	for _, r := range res {
+		if r.First == results[0].First &&
+			r.Last == results[0].Last &&
+			r.Age == results[0].Age &&
+			r.Gender == results[0].Gender &&
+			r.AgeGroup == results[0].AgeGroup &&
+			r.Distance == results[0].Distance &&
+			r.Seconds == results[0].Seconds &&
+			r.Milliseconds == results[0].Milliseconds &&
+			r.Segment == results[0].Segment &&
+			r.Ranking == results[0].Ranking &&
+			r.AgeRanking == results[0].AgeRanking &&
+			r.GenderRanking == results[0].GenderRanking &&
+			r.Finish == results[0].Finish {
+			found1 = true
+		} else if r.First == results[1].First &&
+			r.Last == results[1].Last &&
+			r.Age == results[1].Age &&
+			r.Gender == results[1].Gender &&
+			r.AgeGroup == results[1].AgeGroup {
+			found2++
+		}
+	}
+	if !found1 {
+		t.Errorf("Expected to find %v %v in the results but did not.", results[0].First, results[0].Last)
+	}
+	if found2 < 2 {
+		t.Errorf("Expected to find %v %v in the results but did not.", results[1].First, results[1].Last)
 	}
 	setupPageResultTests()
 	_, err = db.AddResults(eventYear.Identifier, results)

@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"chronokeep/results/types"
@@ -84,7 +84,7 @@ func setupResultTests() {
 			Age:           35,
 			Gender:        "F",
 			AgeGroup:      "30-39",
-			Distance:      "5 Mile",
+			Distance:      "2 Mile",
 			Seconds:       653,
 			Milliseconds:  0,
 			Segment:       "",
@@ -102,7 +102,7 @@ func setupResultTests() {
 			Age:           35,
 			Gender:        "F",
 			AgeGroup:      "30-39",
-			Distance:      "5 Mile",
+			Distance:      "2 Mile",
 			Seconds:       1003,
 			Milliseconds:  0,
 			Segment:       "",
@@ -542,7 +542,7 @@ func TestGetDistanceResults(t *testing.T) {
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetDistanceResults(eventYear.Identifier, "test", 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting last results: %v", err)
+		t.Fatalf("Error getting distance results (1): %v", err)
 	}
 	if len(res) != 0 {
 		t.Errorf("Results not added but we've found %v results.", len(res))
@@ -550,7 +550,7 @@ func TestGetDistanceResults(t *testing.T) {
 	db.AddResults(eventYear.Identifier, results[0:1])
 	res, err = db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting last results: %v", err)
+		t.Fatalf("Error getting distance results (2): %v", err)
 	}
 	if len(res) != 1 {
 		t.Fatalf("Expected %v results to be added, %v added.", 1, len(res))
@@ -561,7 +561,7 @@ func TestGetDistanceResults(t *testing.T) {
 	db.AddResults(eventYear.Identifier, results)
 	res, err = db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting last results: %v", err)
+		t.Fatalf("Error getting distance results (3): %v", err)
 	}
 	if len(res) != (len(results) - 2) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results)-2, len(res))
@@ -598,12 +598,7 @@ func TestGetDistanceResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	for i := 0; i < len(results); i += 10 {
-		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
-		if err != nil {
-			t.Fatalf("Something went wrong trying to add results: %v", err)
-		}
-	}
+	db.AddResults(eventYear.EventIdentifier, results)
 	// every distance
 	res, err := db.GetDistanceResults(eventYear.EventIdentifier, "", 50, 0)
 	if err != nil {
@@ -778,12 +773,7 @@ func TestGetFinishResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	for i := 0; i < len(results); i += 10 {
-		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
-		if err != nil {
-			t.Fatalf("Something went wrong trying to add results: %v", err)
-		}
-	}
+	db.AddResults(eventYear.EventIdentifier, results)
 	// every distance
 	res, err := db.GetFinishResults(eventYear.EventIdentifier, "", 50, 0)
 	if err != nil {
@@ -943,12 +933,7 @@ func TestGetResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	for i := 0; i < len(results); i += 10 {
-		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
-		if err != nil {
-			t.Fatalf("Something went wrong trying to add results: %v", err)
-		}
-	}
+	db.AddResults(eventYear.EventIdentifier, results)
 	res, err := db.GetResults(eventYear.EventIdentifier, 50, 0)
 	if err != nil {
 		t.Fatalf("Error getting first page of results: %v", err)
@@ -1245,7 +1230,7 @@ func TestBadDatabaseResult(t *testing.T) {
 }
 
 func TestNoDatabaseResult(t *testing.T) {
-	db := MySQL{}
+	db := SQLite{}
 	_, err := db.GetResults(0, 0, 0)
 	if err == nil {
 		t.Fatalf("Expected error getting results by event year.")

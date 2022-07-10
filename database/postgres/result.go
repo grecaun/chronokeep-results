@@ -218,13 +218,13 @@ func (p *Postgres) GetLastResults(eventYearID int64, limit, page int) ([]types.R
 }
 
 // GetDistanceResults Gets the distance results (last only) for a distance.
-func (m *Postgres) GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, nil, Last, distance, limit, page)
+func (p *Postgres) GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, Last, distance, limit, page)
 }
 
 // GetFinishResults Gets the finish results for an entire event (empty distance) or just a distance.
-func (m *Postgres) GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
-	return m.getResultsInternal(eventYearID, nil, Finish, distance, limit, page)
+func (p *Postgres) GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, Finish, distance, limit, page)
 }
 
 // GetBibResults Gets results for an event year of a specific individual specified by their bib.
