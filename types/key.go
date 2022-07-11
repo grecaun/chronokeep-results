@@ -48,6 +48,9 @@ func (k *Key) Equal(other *Key) bool {
 func (k *Key) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
+	case "default":
+		k.Type = "read"
+		valid = true
 	case "read":
 		valid = true
 	case "write":
@@ -66,6 +69,9 @@ func (k *Key) Validate(validate *validator.Validate) error {
 func (k RequestKey) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
+	case "default":
+		k.Type = "read"
+		valid = true
 	case "read":
 		valid = true
 	case "write":

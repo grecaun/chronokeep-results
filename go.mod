@@ -14,6 +14,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.14
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
