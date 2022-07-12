@@ -213,7 +213,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        true,
 		})
 	}
-	for i := 301; i < 501; i++ {
+	for i := 300; i < 500; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
 			Bib:           tmpStr,
@@ -232,6 +232,27 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        true,
+		})
+	}
+	for i := 0; i < 300; i++ {
+		tmpStr := strconv.Itoa(i)
+		res = append(res, types.Result{
+			Bib:           tmpStr,
+			First:         "John" + tmpStr,
+			Last:          "Smith",
+			Age:           24,
+			Gender:        "M",
+			AgeGroup:      "20-29",
+			Distance:      "1 Mile",
+			Seconds:       i,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     0,
+			Ranking:       i + 1,
+			AgeRanking:    i + 1,
+			GenderRanking: i + 1,
+			Finish:        false,
 		})
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2021"].Identifier, res)
