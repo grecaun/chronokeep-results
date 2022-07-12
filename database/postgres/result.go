@@ -73,6 +73,30 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					distance,
 				)
 			}
+		} else if rtype == All {
+			if limit > 0 {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 "+
+						"AND distance=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
+					eventYearID,
+					distance,
+					limit,
+					page*limit,
+				)
+			} else {
+				res, err = db.Query(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person WHERE event_year_id=$1 "+
+						"AND distance=$2 ORDER BY seconds ASC;",
+					eventYearID,
+					distance,
+				)
+			}
 		} else {
 			if limit > 0 {
 				res, err = db.Query(
@@ -220,6 +244,11 @@ func (p *Postgres) GetLastResults(eventYearID int64, limit, page int) ([]types.R
 // GetDistanceResults Gets the distance results (last only) for a distance.
 func (p *Postgres) GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
 	return p.getResultsInternal(eventYearID, nil, Last, distance, limit, page)
+}
+
+// GetAllDistanceResults Gets the distance results (last only) for a distance.
+func (p *Postgres) GetAllDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return p.getResultsInternal(eventYearID, nil, All, distance, limit, page)
 }
 
 // GetFinishResults Gets the finish results for an entire event (empty distance) or just a distance.

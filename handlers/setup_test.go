@@ -27,9 +27,15 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	output := SetupVariables{
 		testPassword1: "amazingpassword",
 		testPassword2: "othergoodpassword",
+		knownValues:   make(map[string]string),
+		keys:          make(map[string][]types.Key),
+		events:        make(map[string]types.Event),
+		eventYears:    make(map[string]map[string]types.EventYear),
+		results:       make(map[string]map[string][]types.Result),
 	}
 	// add accounts
 	t.Log("Adding accounts.")
+	output.knownValues["admin"] = "j@test.com"
 	for _, account := range []types.Account{
 		{
 			Name:     "John Smith",
@@ -63,6 +69,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
 		time.Now().Add(time.Hour * 20).Truncate(time.Second),
 	}
+	output.knownValues["expired"] = "030001-1ACSDD-K2389A-00123B"
+	output.knownValues["delete"] = "030001-1ACSCT-K2389A-22023B"
+	output.knownValues["read"] = "030001-1ACSCT-K2389A-22423B"
+	output.knownValues["write"] = "030001-1ACSDD-K2389A-22123B"
 	for _, key := range []types.Key{
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
@@ -83,30 +93,27 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22023B",
 			Type:              "delete",
-			AllowedHosts:      "",
+			AllowedHosts:      "chronokeep.com",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423B",
 			Type:              "read",
-			AllowedHosts:      "chronokeep.com",
+			AllowedHosts:      "",
 			ValidUntil:        nil,
 		},
 	} {
 		database.AddKey(key)
 	}
-	output.keys = make([]types.Key, 0)
-	acckeys, err := database.GetAccountKeys(output.accounts[0].Email)
+	output.keys[output.accounts[0].Email], err = database.GetAccountKeys(output.accounts[0].Email)
 	if err != nil {
 		t.Fatalf("Unexptected error getting keys: %v", err)
 	}
-	output.keys = append(output.keys, acckeys...)
-	acckeys, err = database.GetAccountKeys(output.accounts[1].Email)
+	output.keys[output.accounts[1].Email], err = database.GetAccountKeys(output.accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Unexptected error getting keys: %v", err)
 	}
-	output.keys = append(output.keys, acckeys...)
 	t.Log("Adding events.")
 	// add two events, one for each account
 	for _, event := range []types.Event{
@@ -132,31 +139,35 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		if err != nil {
 			t.Fatalf("Unexpected error getting events: %v", err)
 		}
-		output.events = append(output.events, tmp...)
+		for _, event := range tmp {
+			output.events[event.Slug] = event
+			output.eventYears[event.Slug] = make(map[string]types.EventYear)
+			output.results[event.Slug] = make(map[string][]types.Result)
+		}
 	}
 	// add event years, two per event
 	t.Log("Adding event years.")
 	for _, eventYear := range []types.EventYear{
 		{
-			EventIdentifier: output.events[0].Identifier,
+			EventIdentifier: output.events["event1"].Identifier,
 			Year:            "2021",
 			DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 			Live:            false,
 		},
 		{
-			EventIdentifier: output.events[0].Identifier,
+			EventIdentifier: output.events["event1"].Identifier,
 			Year:            "2020",
 			DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 			Live:            false,
 		},
 		{
-			EventIdentifier: output.events[1].Identifier,
+			EventIdentifier: output.events["event2"].Identifier,
 			Year:            "2021",
 			DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 		},
 		{
-			EventIdentifier: output.events[1].Identifier,
+			EventIdentifier: output.events["event2"].Identifier,
 			Year:            "2020",
 			DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
@@ -164,20 +175,24 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	} {
 		database.AddEventYear(eventYear)
 	}
-	evYear, err := database.GetEventYears(output.events[0].Slug)
+	evYear, err := database.GetEventYears(output.events["event1"].Slug)
 	if err != nil {
 		t.Fatalf("Unexpected error getting event years: %v", err)
 	}
-	output.eventYears = append(output.eventYears, evYear...)
-	evYear, err = database.GetEventYears(output.events[1].Slug)
+	for _, eventYear := range evYear {
+		output.eventYears[output.events["event1"].Slug][eventYear.Year] = eventYear
+	}
+	evYear, err = database.GetEventYears(output.events["event2"].Slug)
 	if err != nil {
 		t.Fatalf("Unexpected error getting event years: %v", err)
 	}
-	output.eventYears = append(output.eventYears, evYear...)
+	for _, eventYear := range evYear {
+		output.eventYears[output.events["event2"].Slug][eventYear.Year] = eventYear
+	}
 	// add results
 	t.Log("Adding results.")
 	res := make([]types.Result, 0)
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
 			Bib:           tmpStr,
@@ -198,11 +213,127 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        true,
 		})
 	}
-	_, err = database.AddResults(output.eventYears[0].Identifier, res)
+	for i := 301; i < 501; i++ {
+		tmpStr := strconv.Itoa(i)
+		res = append(res, types.Result{
+			Bib:           tmpStr,
+			First:         "Jane" + tmpStr,
+			Last:          "Smithson",
+			Age:           27,
+			Gender:        "F",
+			AgeGroup:      "20-29",
+			Distance:      "2 Mile",
+			Seconds:       377 + i*5,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       i + 1,
+			AgeRanking:    i + 1,
+			GenderRanking: i + 1,
+			Finish:        true,
+		})
+	}
+	_, err = database.AddResults(output.eventYears["event1"]["2021"].Identifier, res)
 	if err != nil {
 		t.Fatalf("Unexpected error adding 500 results to database: %v", err)
 	}
-	for _, eventYear := range output.eventYears[1:] {
+	_, err = database.AddResults(output.eventYears["event1"]["2020"].Identifier, []types.Result{
+		{
+			Bib:           "100",
+			First:         "John",
+			Last:          "Smith",
+			Age:           24,
+			Gender:        "M",
+			AgeGroup:      "20-29",
+			Distance:      "1 Mile",
+			Seconds:       377,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       1,
+			AgeRanking:    1,
+			GenderRanking: 1,
+			Finish:        true,
+		},
+		{
+			Bib:           "106",
+			First:         "Rose",
+			Last:          "Johnson",
+			Age:           55,
+			Gender:        "F",
+			AgeGroup:      "50-59",
+			Distance:      "1 Mile",
+			Seconds:       577,
+			Milliseconds:  100,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       3,
+			AgeRanking:    1,
+			GenderRanking: 1,
+			Finish:        true,
+		},
+		{
+			Bib:           "209",
+			First:         "Tony",
+			Last:          "Starke",
+			Age:           45,
+			Gender:        "M",
+			AgeGroup:      "40-49",
+			Distance:      "1 Mile",
+			Seconds:       405,
+			Milliseconds:  20,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       2,
+			AgeRanking:    1,
+			GenderRanking: 2,
+			Finish:        true,
+		},
+		{
+			Bib:           "287",
+			First:         "Jamie",
+			Last:          "Fischer",
+			Age:           35,
+			Gender:        "F",
+			AgeGroup:      "30-39",
+			Distance:      "2 Mile",
+			Seconds:       653,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       4,
+			AgeRanking:    1,
+			GenderRanking: 2,
+			Finish:        false,
+		},
+		{
+			Bib:           "287",
+			First:         "Jamie",
+			Last:          "Fischer",
+			Age:           35,
+			Gender:        "F",
+			AgeGroup:      "30-39",
+			Distance:      "2 Mile",
+			Seconds:       1003,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     2,
+			Ranking:       4,
+			AgeRanking:    1,
+			GenderRanking: 2,
+			Finish:        true,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error adding small number of results to database: %v", err)
+	}
+	for _, eventYear := range output.eventYears["event2"] {
 		_, err = database.AddResults(eventYear.Identifier, []types.Result{
 			{
 				Bib:           "100",
@@ -220,7 +351,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				Ranking:       1,
 				AgeRanking:    1,
 				GenderRanking: 1,
-				Finish:        false,
+				Finish:        true,
 			},
 			{
 				Bib:           "106",
@@ -299,12 +430,13 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			t.Fatalf("Unexpected error adding small number of results to database: %v", err)
 		}
 	}
-	for _, eventYear := range output.eventYears {
-		res, err = database.GetResults(eventYear.Identifier, 0, 0)
-		if err != nil {
-			t.Fatalf("Unexpected error getting results from database: %v", err)
+	for eventKey, eventYears := range output.eventYears {
+		for yearKey, eventYear := range eventYears {
+			output.results[eventKey][yearKey], err = database.GetResults(eventYear.Identifier, 0, 0)
+			if err != nil {
+				t.Fatalf("Unexpected error getting results from database: %v", err)
+			}
 		}
-		output.results = append(output.results, res...)
 	}
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
@@ -326,8 +458,9 @@ type SetupVariables struct {
 	accounts      []types.Account
 	testPassword1 string
 	testPassword2 string
-	keys          []types.Key
-	events        []types.Event
-	eventYears    []types.EventYear
-	results       []types.Result
+	keys          map[string][]types.Key
+	events        map[string]types.Event
+	eventYears    map[string]map[string]types.EventYear
+	results       map[string]map[string][]types.Result
+	knownValues   map[string]string
 }

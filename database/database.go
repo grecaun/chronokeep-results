@@ -61,6 +61,7 @@ type Database interface {
 	GetResults(eventYearID int64, limit, page int) ([]types.Result, error)
 	GetLastResults(eventYearID int64, limit, page int) ([]types.Result, error)
 	GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
+	GetAllDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
 	GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
 	GetBibResults(eventYearID int64, bib string) ([]types.Result, error)
 	DeleteResults(eventYearID int64, results []types.Result) error

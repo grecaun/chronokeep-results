@@ -84,7 +84,7 @@ func setupResultTests() {
 			Age:           35,
 			Gender:        "F",
 			AgeGroup:      "30-39",
-			Distance:      "2 Mile",
+			Distance:      "5 Mile",
 			Seconds:       653,
 			Milliseconds:  0,
 			Segment:       "",
@@ -102,7 +102,7 @@ func setupResultTests() {
 			Age:           35,
 			Gender:        "F",
 			AgeGroup:      "30-39",
-			Distance:      "2 Mile",
+			Distance:      "5 Mile",
 			Seconds:       1003,
 			Milliseconds:  0,
 			Segment:       "",
@@ -542,7 +542,7 @@ func TestGetDistanceResults(t *testing.T) {
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetDistanceResults(eventYear.Identifier, "test", 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting distance results (1): %v", err)
+		t.Fatalf("Error getting last results: %v", err)
 	}
 	if len(res) != 0 {
 		t.Errorf("Results not added but we've found %v results.", len(res))
@@ -550,7 +550,7 @@ func TestGetDistanceResults(t *testing.T) {
 	db.AddResults(eventYear.Identifier, results[0:1])
 	res, err = db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting distance results (2): %v", err)
+		t.Fatalf("Error getting last results: %v", err)
 	}
 	if len(res) != 1 {
 		t.Fatalf("Expected %v results to be added, %v added.", 1, len(res))
@@ -559,9 +559,16 @@ func TestGetDistanceResults(t *testing.T) {
 		t.Errorf("Expected results %+v, found %+v.", results[0], res[0])
 	}
 	db.AddResults(eventYear.Identifier, results)
+	res, err = db.GetDistanceResults(eventYear.Identifier, results[3].Distance, 0, 0)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 1 {
+		t.Errorf("Expected %v results to be added, %v added.", 1, len(res))
+	}
 	res, err = db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
 	if err != nil {
-		t.Fatalf("Error getting distance results (3): %v", err)
+		t.Fatalf("Error getting last results: %v", err)
 	}
 	if len(res) != (len(results) - 2) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results)-2, len(res))
@@ -598,7 +605,12 @@ func TestGetDistanceResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	db.AddResults(eventYear.EventIdentifier, results)
+	for i := 0; i < len(results); i += 10 {
+		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
+		if err != nil {
+			t.Fatalf("Something went wrong trying to add results: %v", err)
+		}
+	}
 	// every distance
 	res, err := db.GetDistanceResults(eventYear.EventIdentifier, "", 50, 0)
 	if err != nil {
@@ -671,6 +683,177 @@ func TestGetDistanceResultsPage(t *testing.T) {
 		t.Fatalf("Found %v, expected %v", res[0], results[250])
 	}
 	res, err = db.GetDistanceResults(eventYear.EventIdentifier, "1 Mile", 50, 6)
+	if err != nil {
+		t.Fatalf("Error getting second last of results: %v", err)
+	}
+	if len(res) != 0 {
+		t.Fatalf("Expected %v results, found %v.", 0, len(res))
+	}
+}
+
+func TestGetAllDistanceResults(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupResultTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	res, err := db.GetAllDistanceResults(eventYear.Identifier, "test", 0, 0)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 0 {
+		t.Errorf("Results not added but we've found %v results.", len(res))
+	}
+	db.AddResults(eventYear.Identifier, results[0:1])
+	res, err = db.GetAllDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 1 {
+		t.Fatalf("Expected %v results to be added, %v added.", 1, len(res))
+	}
+	if res[0] != results[0] {
+		t.Errorf("Expected results %+v, found %+v.", results[0], res[0])
+	}
+	db.AddResults(eventYear.Identifier, results)
+	res, err = db.GetAllDistanceResults(eventYear.Identifier, results[3].Distance, 0, 0)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != 2 {
+		t.Errorf("Expected %v results to be added, %v added.", 2, len(res))
+	}
+	res, err = db.GetAllDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
+	if err != nil {
+		t.Fatalf("Error getting last results: %v", err)
+	}
+	if len(res) != (len(results) - 2) {
+		t.Errorf("Expected %v results to be added, %v added.", len(results)-2, len(res))
+	}
+	// Verify that we've got correct information for our results.
+	found := false
+	for _, result := range res {
+		if result == results[0] {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Unable to find our first result in the database. %+v", res)
+	}
+}
+
+func TestGetAllDistanceResultsPage(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupPageResultTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	for i := 0; i < len(results); i += 10 {
+		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
+		if err != nil {
+			t.Fatalf("Something went wrong trying to add results: %v", err)
+		}
+	}
+	// every distance
+	res, err := db.GetAllDistanceResults(eventYear.EventIdentifier, "", 50, 0)
+	if err != nil {
+		t.Fatalf("Error getting first page of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[400] {
+		t.Fatalf("Found %v, expected %v", res[0], results[400])
+	}
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "", 50, 1)
+	if err != nil {
+		t.Fatalf("Error getting second page of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[450] {
+		t.Fatalf("Found %v, expected %v", res[0], results[50])
+	}
+	// for this one, this should return the same as GetResults
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "", 50, 7)
+	if err != nil {
+		t.Fatalf("Error getting second last of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[150] {
+		t.Fatalf("Found %v, expected %v", res[0], results[150])
+	}
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "", 50, 12)
+	if err != nil {
+		t.Fatalf("Error getting second last of results: %v", err)
+	}
+	if len(res) != 0 {
+		t.Fatalf("Expected %v results, found %v.", 0, len(res))
+	}
+	// just one distance
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "1 Mile", 50, 0)
+	if err != nil {
+		t.Fatalf("Error getting first page of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[400] {
+		t.Fatalf("Found %v, expected %v", res[400], results[400])
+	}
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "1 Mile", 50, 1)
+	if err != nil {
+		t.Fatalf("Error getting second page of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[450] {
+		t.Fatalf("Found %v, expected %v", res[0], results[450])
+	}
+	// this one ignores the last 100 entries
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "1 Mile", 50, 5)
+	if err != nil {
+		t.Fatalf("Error getting second last of results: %v", err)
+	}
+	if len(res) != 50 {
+		t.Fatalf("Expected %v results, found %v.", 50, len(res))
+	}
+	if res[0] != results[50] {
+		t.Fatalf("Found %v, expected %v", res[0], results[50])
+	}
+	res, err = db.GetAllDistanceResults(eventYear.EventIdentifier, "1 Mile", 50, 10)
 	if err != nil {
 		t.Fatalf("Error getting second last of results: %v", err)
 	}
@@ -773,7 +956,12 @@ func TestGetFinishResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	db.AddResults(eventYear.EventIdentifier, results)
+	for i := 0; i < len(results); i += 10 {
+		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
+		if err != nil {
+			t.Fatalf("Something went wrong trying to add results: %v", err)
+		}
+	}
 	// every distance
 	res, err := db.GetFinishResults(eventYear.EventIdentifier, "", 50, 0)
 	if err != nil {
@@ -933,7 +1121,12 @@ func TestGetResultsPage(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	db.AddResults(eventYear.EventIdentifier, results)
+	for i := 0; i < len(results); i += 10 {
+		_, err = db.AddResults(eventYear.EventIdentifier, results[i:i+10])
+		if err != nil {
+			t.Fatalf("Something went wrong trying to add results: %v", err)
+		}
+	}
 	res, err := db.GetResults(eventYear.EventIdentifier, 50, 0)
 	if err != nil {
 		t.Fatalf("Error getting first page of results: %v", err)

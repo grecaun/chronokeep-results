@@ -75,6 +75,30 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					distance,
 				)
 			}
+		} else if rtype == All {
+			if limit > 0 {
+				res, err = db.QueryContext(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person "+
+						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
+					eventYearID,
+					distance,
+					limit,
+					page*limit,
+				)
+			} else {
+				res, err = db.QueryContext(
+					ctx,
+					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
+						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
+						"gender_ranking, finish, result_type FROM result NATURAL JOIN person "+
+						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC;",
+					eventYearID,
+					distance,
+				)
+			}
 		} else {
 			if limit > 0 {
 				res, err = db.QueryContext(
@@ -228,6 +252,11 @@ func (m *MySQL) GetLastResults(eventYearID int64, limit, page int) ([]types.Resu
 // GetDistanceResults Gets the distance results (last only) for a distance.
 func (m *MySQL) GetDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
 	return m.getResultsInternal(eventYearID, nil, Last, distance, limit, page)
+}
+
+// GetDistanceResults Gets the distance results (last only) for a distance.
+func (m *MySQL) GetAllDistanceResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error) {
+	return m.getResultsInternal(eventYearID, nil, All, distance, limit, page)
 }
 
 // GetFinishResults Gets the finish results for an entire event (empty distance) or just a distance.

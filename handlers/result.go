@@ -221,8 +221,12 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
+	distance := ""
 	limit := 0
 	page := 0
+	if request.Distance != nil {
+		distance = *request.Distance
+	}
 	if request.Limit != nil {
 		limit = *request.Limit
 	}
@@ -232,7 +236,7 @@ func (h Handler) GetAllResults(c echo.Context) error {
 			page--
 		}
 	}
-	results, err := database.GetResults(mult.EventYear.Identifier, limit, page)
+	results, err := database.GetAllDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
