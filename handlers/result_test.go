@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -1734,46 +1735,423 @@ func TestGetBibResults(t *testing.T) {
 
 func TestAddResults(t *testing.T) {
 	// POST, /results/add
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
+	// add eventYear to upload to
+	eventYear, err := database.AddEventYear(types.EventYear{
+		EventIdentifier: variables.events["event2"].Identifier,
+		Year:            "2023",
+		DateTime:        time.Date(2023, 04, 05, 11, 0, 0, 0, time.Local),
+		Live:            false,
+	})
+	assert.NoError(t, err)
 	// Test no key
+	results := variables.results["event2"]["2021"]
+	t.Log("Testing no key given.")
+	body, err := json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test expired key
+	t.Log("Testing expired key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test invalid key
+	t.Log("Testing invalid key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test read key (vs delete/write)
+	t.Log("Testing read key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test different account's key
+	t.Log("Testing different account's key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test invalid authorization header
+	t.Log("Testing invalid authorization header.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test bad request
+	t.Log("Testing bad request.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader("////"))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test without slug/other info
+	t.Log("Testing no slug.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader("{}"))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
 	// Test wrong content type
-	// Test invalid host
-	// Test a valid request with just a slug.
-	// Test with slug, limits
-	// Test with slug, distance
-	// Test with slug, distance, limits
-	// Test with slug and year
-	// Test with slug, year and limits
-	// Test with slug, year, distance
-	// Test with slug, year, distance, limits
+	t.Log("Testing wrong content type.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test a valid request with a write key
+	t.Log("Testing valid write key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results), resp.Count)
+		}
+	}
+	// verify add results adds information
+	t.Log("Verifying information was added.")
+	uploaded, err := database.GetResults(eventYear.Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		found := 0
+		for _, res := range uploaded {
+			for _, inner := range results {
+				if res == inner {
+					found++
+				}
+			}
+		}
+		assert.Equal(t, found, len(results))
+	}
+	for ix, _ := range results {
+		results[ix].Seconds = results[ix].Seconds + 2
+	}
+	// Test a valid request with a delete key
+	t.Log("Testing valid write key.")
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results), resp.Count)
+		}
+	}
+	t.Log("Verifying information was updated.")
+	uploaded, err = database.GetResults(eventYear.Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		found := 0
+		for _, res := range uploaded {
+			for _, inner := range results {
+				if res == inner {
+					found++
+				}
+			}
+		}
+		assert.Equal(t, found, len(results))
+	}
 	// Test invalid event
+	t.Log("Testing invalid event.")
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    "invalid event",
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
 	// Test valid event invalid year
-	// Test valid event, valid year, invalid distance
-	// Test valid key with restricted event
+	t.Log("Testing invalid event.")
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "invalid-year",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test invalid host
+	t.Log("Testing invalid host.")
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(""))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 }
-
 func TestDeleteResults(t *testing.T) {
 	// DELETE, /results/delete
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
 	// Test no key
+	t.Log("Testing no key given.")
+	year := variables.eventYears["event2"]["2021"].Year
+	body, err := json.Marshal(types.GetResultsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test expired key
+	t.Log("Testing expired key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test invalid key
+	t.Log("Testing invalid key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test read key
+	t.Log("Testing read key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test different account's key
+	t.Log("Testing different account's key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test invalid authorization header
+	t.Log("Testing invalid authorization header.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test bad request
+	t.Log("Testing bad request.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader("////"))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test without slug/other info
+	t.Log("Testing no slug.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader("{}"))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
 	// Test wrong content type
-	// Test invalid host
-	// Test a valid request with just a slug.
-	// Test with slug, limits
-	// Test with slug, distance
-	// Test with slug, distance, limits
-	// Test with slug and year
-	// Test with slug, year and limits
-	// Test with slug, year, distance
-	// Test with slug, year, distance, limits
+	t.Log("Testing wrong content type.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// verify information is there to delete
+	t.Log("Verifying information before deletion.")
+	deleted, err := database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(variables.results["event2"]["2021"]), len(deleted))
+	}
+	// Test write key
+	t.Log("Testing write key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(deleted), resp.Count)
+		}
+	}
+	// verify delete remotes information
+	t.Log("Verifying information was deleted.")
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(deleted))
+	}
+	// Test a valid request
+	t.Log("Testing valid key.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(deleted), resp.Count)
+		}
+	}
+	// verify delete remotes information
+	t.Log("Verifying information was deleted.")
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(deleted))
+	}
 	// Test invalid event
+	t.Log("Testing invalid event.")
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug: "invalid event",
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
 	// Test valid event invalid year
-	// Test valid event, valid year, invalid distance
-	// Test valid key with restricted event
+	t.Log("Testing invalid event.")
+	year = "invalid-year"
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test invalid host
+	t.Log("Testing invalid host.")
+	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(""))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 }

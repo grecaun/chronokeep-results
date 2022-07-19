@@ -51,8 +51,7 @@ func main() {
 	// Setup the Handler for validator
 	handler.Setup()
 	handler.Bind(e.Group(""))
-	r := e.Group("")
-	handler.BindRestricted(r)
+	handler.BindRestricted(e.Group(""))
 
 	e.GET("/health", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)

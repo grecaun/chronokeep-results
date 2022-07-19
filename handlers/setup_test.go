@@ -71,8 +71,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	}
 	output.knownValues["expired"] = "030001-1ACSDD-K2389A-00123B"
 	output.knownValues["delete"] = "030001-1ACSCT-K2389A-22023B"
+	output.knownValues["delete2"] = "030001-1ACSCT-K2389A-22023BAA"
 	output.knownValues["read"] = "030001-1ACSCT-K2389A-22423B"
 	output.knownValues["write"] = "030001-1ACSDD-K2389A-22123B"
+	output.knownValues["write2"] = "030001-1ACSCT-K2389A-22423BAA"
 	for _, key := range []types.Key{
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
@@ -100,6 +102,20 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423B",
 			Type:              "read",
+			AllowedHosts:      "",
+			ValidUntil:        nil,
+		},
+		{
+			AccountIdentifier: output.accounts[1].Identifier,
+			Value:             "030001-1ACSCT-K2389A-22423BAA",
+			Type:              "write",
+			AllowedHosts:      "",
+			ValidUntil:        nil,
+		},
+		{
+			AccountIdentifier: output.accounts[1].Identifier,
+			Value:             "030001-1ACSCT-K2389A-22023BAA",
+			Type:              "delete",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
 		},
