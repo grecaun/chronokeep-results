@@ -1874,7 +1874,7 @@ func TestAddResults(t *testing.T) {
 		}
 		assert.Equal(t, found, len(results))
 	}
-	for ix, _ := range results {
+	for ix := range results {
 		results[ix].Seconds = results[ix].Seconds + 2
 	}
 	// Test a valid request with a delete key
@@ -1957,6 +1957,244 @@ func TestAddResults(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddResults(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test validation - Bib
+	t.Log("Test validation check - Bib.")
+	results[0].Bib = ""
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - First
+	t.Log("Test validation check - First.")
+	results[0].Bib = "55235"
+	results[0].First = ""
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Last
+	t.Log("Test validation check - Last.")
+	results[0].First = "John"
+	results[0].Last = ""
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Age1
+	t.Log("Test validation check - Age1.")
+	results[0].Last = "Smith-Johnson"
+	results[0].Age = -1
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Age2
+	t.Log("Test validation check - Age2.")
+	results[0].Age = 135
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Seconds
+	t.Log("Test validation check - Seconds.")
+	results[0].Age = 13
+	results[0].Seconds = -100
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - ChipSeconds
+	t.Log("Test validation check - ChipSeconds.")
+	results[0].Seconds = 300
+	results[0].ChipSeconds = -51
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Location
+	t.Log("Test validation check - Location.")
+	results[0].ChipSeconds = -51
+	results[0].Location = ""
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Occurence
+	t.Log("Test validation check - Occurence.")
+	results[0].Location = "Start/Finish"
+	results[0].Occurence = -1
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
+	}
+	// Test validation - Gender
+	t.Log("Test validation check - Gender.")
+	results[0].Occurence = 1
+	results[0].Gender = ""
+	body, err = json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2023",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(results)-1, resp.Count)
+		}
 	}
 }
 func TestDeleteResults(t *testing.T) {
@@ -2089,8 +2327,22 @@ func TestDeleteResults(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(deleted))
 	}
-	// Test a valid request
-	t.Log("Testing valid key.")
+	// verify information is there to delete
+	t.Log("Verifying information before deletion.")
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(variables.results["event2"]["2021"]), len(deleted))
+	}
+	// Test a delete request
+	year = variables.eventYears["event2"]["2020"].Year
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	t.Log("Testing delete key.")
 	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
@@ -2105,7 +2357,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// verify delete remotes information
 	t.Log("Verifying information was deleted.")
-	deleted, err = database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(deleted))
 	}
