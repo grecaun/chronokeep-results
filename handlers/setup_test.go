@@ -185,7 +185,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			EventIdentifier: output.events["event2"].Identifier,
 			Year:            "2020",
-			DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
+			DateTime:        time.Date(2020, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 		},
 	} {
