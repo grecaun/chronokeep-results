@@ -70,8 +70,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		time.Now().Add(time.Hour * 20).Truncate(time.Second),
 	}
 	output.knownValues["expired"] = "030001-1ACSDD-K2389A-00123B"
+	output.knownValues["expired2"] = "030001-1ACSDD-K2389A-001230B"
 	output.knownValues["delete"] = "030001-1ACSCT-K2389A-22023B"
 	output.knownValues["delete2"] = "030001-1ACSCT-K2389A-22023BAA"
+	output.knownValues["delete3"] = "0030001-1ACSCT-K2389A-22023BAA"
 	output.knownValues["read"] = "030001-1ACSCT-K2389A-22423B"
 	output.knownValues["write"] = "030001-1ACSDD-K2389A-22123B"
 	output.knownValues["write2"] = "030001-1ACSCT-K2389A-22423BAA"
@@ -90,6 +92,13 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Type:              "write",
 			AllowedHosts:      "",
 			ValidUntil:        &times[1],
+		},
+		{
+			AccountIdentifier: output.accounts[0].Identifier,
+			Value:             "0030001-1ACSCT-K2389A-22023BAA",
+			Type:              "delete",
+			AllowedHosts:      "",
+			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
@@ -118,6 +127,14 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Type:              "delete",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
+		},
+		{
+			AccountIdentifier: output.accounts[0].Identifier,
+			Name:              "expired2",
+			Value:             "030001-1ACSDD-K2389A-001230B",
+			Type:              "delete",
+			AllowedHosts:      "",
+			ValidUntil:        &times[0],
 		},
 	} {
 		database.AddKey(key)

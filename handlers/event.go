@@ -165,7 +165,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	// Validate the Event Year
+	// Validate the Event
 	if err := request.Event.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
 	}

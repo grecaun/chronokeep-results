@@ -38,10 +38,10 @@ func (e *Event) Equals(other *Event) bool {
 func (e *Event) Validate(validate *validator.Validate) error {
 	e.Slug = strings.ToLower(e.Slug)
 	if !validSlug(e.Slug) {
-		return errors.New("invalid slug (only letters and - character allowed)")
+		return errors.New("invalid slug (only letters, numbers, and - character allowed)")
 	}
 	if !validEventName(e.Name) {
-		return errors.New("invalid event name (only letters, ', /, and spaces allowed)")
+		return errors.New("invalid event name (only letters, numbers, ', /, and spaces allowed)")
 	}
 	valid := false
 	switch e.Type {
