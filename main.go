@@ -85,6 +85,9 @@ func main() {
 }
 
 func healthEndpointSkipper(c echo.Context) bool {
+	if c.Request().URL.Path == "/account/login" {
+		return true
+	}
 	return strings.HasPrefix(c.Path(), "/health")
 }
 
