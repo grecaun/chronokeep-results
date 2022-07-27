@@ -514,6 +514,14 @@ func TestAddEvent(t *testing.T) {
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
 		}
+		var resp types.ModifyEventResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.Slug, resp.Event.Slug)
+			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, event.Type, resp.Event.Type)
+		}
 	}
 	// Test slug collision
 	body, err = json.Marshal(types.AddEventRequest{
@@ -874,6 +882,14 @@ func TestUpdateEvent(t *testing.T) {
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
+		}
+		var resp types.ModifyEventResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.Slug, resp.Event.Slug)
+			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, event.Type, resp.Event.Type)
 		}
 	}
 	// Test unknown event
