@@ -2214,7 +2214,7 @@ func TestDeleteResults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request := httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -2223,7 +2223,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -2233,7 +2233,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -2243,7 +2243,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test read key
 	t.Log("Testing read key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -2253,7 +2253,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test different account's key
 	t.Log("Testing different account's key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -2263,7 +2263,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -2273,7 +2273,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2283,7 +2283,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test without slug/other info
 	t.Log("Testing no slug.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader("{}"))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader("{}"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2293,7 +2293,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2309,7 +2309,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test write key
 	t.Log("Testing write key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])
 	response = httptest.NewRecorder()
@@ -2343,7 +2343,7 @@ func TestDeleteResults(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing delete key.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2370,7 +2370,7 @@ func TestDeleteResults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2388,7 +2388,7 @@ func TestDeleteResults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -2398,7 +2398,7 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/results/delete", strings.NewReader(""))
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(""))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()

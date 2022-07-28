@@ -21,7 +21,10 @@ const (
 
 func (h Handler) GetAccount(c echo.Context) error {
 	var request types.GetAccountRequest
-	_ = c.Bind(&request)
+	err := c.Bind(&request)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request", nil)
+	}
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
@@ -139,7 +142,7 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	if account.Type != "admin" && account.Email != request.Account.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	if account.Type != "admin" && account.Locked {
+	if account.Locked {
 		account.RefreshToken = ""
 		account.Token = ""
 		err = database.UpdateTokens(*account)

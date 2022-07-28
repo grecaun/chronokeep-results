@@ -11,6 +11,7 @@ const (
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
 	CurrentVersion        = 5
+	MaxLoginAttempts      = 4
 )
 
 type Database interface {

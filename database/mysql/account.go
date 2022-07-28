@@ -1,16 +1,13 @@
 package mysql
 
 import (
+	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"time"
-)
-
-const (
-	MaxLoginAttempts = 4
 )
 
 func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
@@ -398,7 +395,7 @@ func (m *MySQL) InvalidPassword(account types.Account) error {
 		return fmt.Errorf("error trying to retrieve account: %v", err)
 	}
 	locked := false
-	if pAcc.WrongPassAttempts >= MaxLoginAttempts {
+	if pAcc.WrongPassAttempts >= database.MaxLoginAttempts {
 		locked = true
 	}
 	stmt := "UPDATE account SET account_locked=?, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=?;"

@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"context"
 	"errors"
@@ -8,10 +9,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4"
-)
-
-const (
-	MaxLoginAttempts = 4
 )
 
 func (p *Postgres) getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
@@ -374,7 +371,7 @@ func (p *Postgres) InvalidPassword(account types.Account) error {
 		return fmt.Errorf("error trying to retrieve account: %v", err)
 	}
 	locked := false
-	if pAcc.WrongPassAttempts >= MaxLoginAttempts {
+	if pAcc.WrongPassAttempts >= database.MaxLoginAttempts {
 		locked = true
 	}
 	stmt := "UPDATE account SET account_locked=$1, account_wrong_pass=account_wrong_pass + 1 WHERE account_email=$2;"

@@ -186,7 +186,7 @@ func TestGetEvents(t *testing.T) {
 	h := Handler{}
 	// Test no key
 	t.Log("Testing no key given.")
-	request := httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -195,7 +195,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -205,7 +205,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -215,7 +215,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()
@@ -225,7 +225,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -235,7 +235,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test bad request (body doesn't matter)
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -245,7 +245,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test wrong content type (body doesn't matter)
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -255,7 +255,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test valid request without restricted events
 	t.Log("Testing request with account without restricted events.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -269,7 +269,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	// Test valid request with account with restricted events
 	t.Log("Testing request with account with restricted events.  This should not pull up restricted events.")
-	request = httptest.NewRequest(http.MethodPost, "/event/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -291,7 +291,7 @@ func TestGetMyEvents(t *testing.T) {
 	h := Handler{}
 	// Test no key
 	t.Log("Testing no key given.")
-	request := httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -300,7 +300,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -310,7 +310,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -320,7 +320,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()
@@ -330,7 +330,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -340,7 +340,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -350,7 +350,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -360,7 +360,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test valid request
 	t.Log("Testing request with account without restricted events.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -374,7 +374,7 @@ func TestGetMyEvents(t *testing.T) {
 	}
 	// Test with restricted events
 	t.Log("Testing request with account with restricted events.  This should pull up restricted events.")
-	request = httptest.NewRequest(http.MethodPost, "/event/my", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/event/my", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -769,7 +769,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test no key
 	t.Log("Testing no key given.")
-	request := httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -778,7 +778,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -788,7 +788,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -798,7 +798,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test read key
 	t.Log("Testing read host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -808,7 +808,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test wrong account key
 	t.Log("Testing wrong account key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -818,7 +818,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()
@@ -828,7 +828,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -838,7 +838,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -848,7 +848,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -858,7 +858,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -868,7 +868,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	// Test valid request
 	t.Log("Testing valid request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -906,7 +906,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing unknown event.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -928,7 +928,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid slug.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -950,7 +950,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing no slug.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -972,7 +972,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid name.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -994,7 +994,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing no name.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1016,7 +1016,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1038,7 +1038,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing no type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1061,7 +1061,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid website.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1084,7 +1084,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid image.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1106,7 +1106,7 @@ func TestUpdateEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid email.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -1130,7 +1130,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test no key
 	t.Log("Testing no key given.")
-	request := httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -1139,7 +1139,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired2"])
 	response = httptest.NewRecorder()
@@ -1149,7 +1149,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -1159,7 +1159,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test read key
 	t.Log("Testing read host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -1169,7 +1169,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test write key
 	t.Log("Testing read host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])
 	response = httptest.NewRecorder()
@@ -1185,7 +1185,7 @@ func TestDeleteEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing wrong account key.")
-	request = httptest.NewRequest(http.MethodPost, "/event/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -1201,7 +1201,7 @@ func TestDeleteEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()
@@ -1211,7 +1211,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -1221,7 +1221,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -1231,7 +1231,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -1241,7 +1241,7 @@ func TestDeleteEvent(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -1257,7 +1257,7 @@ func TestDeleteEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing valid request.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -1277,7 +1277,7 @@ func TestDeleteEvent(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing unknown event.")
-	request = httptest.NewRequest(http.MethodPost, "/event/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/event/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"chronokeep/results/auth"
+	"chronokeep/results/database"
 	"chronokeep/results/types"
 	"testing"
 	"time"
@@ -563,19 +564,19 @@ func TestInvalidPassword(t *testing.T) {
 	if nAccount.Token == "" || nAccount.RefreshToken == "" {
 		t.Error("Expected tokens to be set.")
 	}
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
+	for i := 1; i <= database.MaxLoginAttempts+3; i++ {
 		err = db.InvalidPassword(*nAccount)
 		if err != nil {
 			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
 		}
 		dAccount, _ = db.GetAccount(nAccount.Email)
-		if dAccount.WrongPassAttempts > MaxLoginAttempts && dAccount.Locked == false {
-			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, MaxLoginAttempts+1)
+		if dAccount.WrongPassAttempts > database.MaxLoginAttempts && dAccount.Locked == false {
+			t.Errorf("account is not locked after (%v) invalid password attempts; should be after (%v)", i, database.MaxLoginAttempts+1)
 			if dAccount.Token != "" || dAccount.RefreshToken != "" {
 				t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", dAccount.Token, dAccount.RefreshToken)
 			}
-		} else if dAccount.WrongPassAttempts <= MaxLoginAttempts && dAccount.Locked == true {
-			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, MaxLoginAttempts+1)
+		} else if dAccount.WrongPassAttempts <= database.MaxLoginAttempts && dAccount.Locked == true {
+			t.Errorf("account is locked after (%v) invalid password attempts; should be (%v)", i, database.MaxLoginAttempts+1)
 			if dAccount.Token == "" || dAccount.RefreshToken == "" {
 				t.Error("Expected tokens to be set.")
 			}
@@ -712,7 +713,7 @@ func TestValidPassword(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
-	for i := 1; i <= MaxLoginAttempts-2; i++ {
+	for i := 1; i <= database.MaxLoginAttempts-2; i++ {
 		err = db.InvalidPassword(*nAccount)
 		if err != nil {
 			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
@@ -731,7 +732,7 @@ func TestValidPassword(t *testing.T) {
 		t.Errorf("Expected zero wrong pass attempts; found %v.", nAccount.WrongPassAttempts)
 	}
 	// Test to make sure we don't unlock if locked.
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
+	for i := 1; i <= database.MaxLoginAttempts+3; i++ {
 		err = db.InvalidPassword(*nAccount)
 		if err != nil {
 			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
@@ -760,7 +761,7 @@ func TestUnlockAccount(t *testing.T) {
 	if err == nil {
 		t.Fatal("no error thrown on unlock of unlocked account")
 	}
-	for i := 1; i <= MaxLoginAttempts+3; i++ {
+	for i := 1; i <= database.MaxLoginAttempts+3; i++ {
 		err = db.InvalidPassword(*nAccount)
 		if err != nil {
 			t.Fatalf("(%v) error telling the database about an invalid password: %v", i, err)
