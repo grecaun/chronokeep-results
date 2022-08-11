@@ -31,7 +31,7 @@ func (h Handler) GetAccount(c echo.Context) error {
 	}
 	// check if the user is trying to use a locked account
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	// only allow admins to modify accounts not their own
 	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
@@ -80,7 +80,7 @@ func (h Handler) GetAccounts(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	accounts, err := database.GetAccounts()
 	if err != nil {
@@ -104,7 +104,7 @@ func (h Handler) AddAccount(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	if err = request.Account.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Account Information", err)
@@ -149,7 +149,7 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Database Error", nil)
 		}
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	acc, err := database.GetAccount(request.Account.Email)
 	if err != nil {
@@ -184,7 +184,7 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	err = h.validate.Struct(request)
 	if len(request.Email) < 2 || err != nil {
@@ -221,7 +221,7 @@ func (h Handler) ChangePassword(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Account Not Found", nil)
 	}
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
 	if len(request.NewPassword) == 0 && len(request.OldPassword) == 0 && len(request.Email) == 0 {
 		return getAPIError(c, http.StatusBadRequest, "Empty Request", nil)
@@ -282,7 +282,7 @@ func (h Handler) ChangeEmail(c echo.Context) error {
 	}
 	// Only let admins change emails.
 	if account.Locked || account.Type != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked / not admin"))
 	}
 	account, err = database.GetAccount(request.OldEmail)
 	if err != nil {
@@ -318,7 +318,7 @@ func (h Handler) Login(c echo.Context) error {
 	// If done after a bad actor could potentially figure out if they had a correct password by trying
 	// even after it was locked until they received the locked message.
 	if account.Locked {
-		return getAPIError(c, http.StatusUnauthorized, "Account Locked", fmt.Errorf("account locked: %+v", account))
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", fmt.Errorf("account locked: %+v", account))
 	}
 	log.Info("Verifying password.")
 	err = auth.VerifyPassword(account.Password, request.Password)

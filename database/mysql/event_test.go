@@ -104,7 +104,7 @@ func TestGetEvent(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	db.AddEventYear(*eventYear1)
@@ -188,7 +188,7 @@ func TestGetEvents(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	db.AddEventYear(*eventYear1)
@@ -337,7 +337,7 @@ func TestDeleteEvent(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{

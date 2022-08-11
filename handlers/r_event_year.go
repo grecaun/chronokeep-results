@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"chronokeep/results/types"
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,12 @@ func (h Handler) RGetEventYears(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	if len(request.Slug) < 1 {
+		return getAPIError(c, http.StatusBadRequest, "Bad Request", errors.New("no slug specified"))
+	}
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", nil)
@@ -28,7 +35,7 @@ func (h Handler) RGetEventYears(c echo.Context) error {
 	}
 	// Verify they're allowed to pull these identifiers
 	if account.Type != "admin" && account.Identifier != event.AccountIdentifier {
-		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	eventYears, err := database.GetEventYears(request.Slug)
 	if err != nil {
@@ -51,7 +58,14 @@ func (h Handler) RAddEventYear(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
-
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	// validate information we're adding
+	err = request.EventYear.Validate(h.validate)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
+	}
 	event, err := database.GetEvent(request.Slug)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event", err)
@@ -61,7 +75,7 @@ func (h Handler) RAddEventYear(c echo.Context) error {
 	}
 	// Verify they're allowed to add this event.
 	if account.Identifier != event.AccountIdentifier && account.Type != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	eventYear, err := database.AddEventYear(types.EventYear{
 		EventIdentifier: event.Identifier,
@@ -70,7 +84,7 @@ func (h Handler) RAddEventYear(c echo.Context) error {
 		Live:            request.EventYear.Live,
 	})
 	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event Year", err)
+		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event Year (Duplicate Year Likely)", err)
 	}
 	return c.JSON(http.StatusOK, types.EventYearResponse{
 		Event:     *event,
@@ -90,6 +104,14 @@ func (h Handler) RUpdateEventYear(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	// validate information we're adding
+	err = request.EventYear.Validate(h.validate)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Validation Error", err)
+	}
 	mult, err := database.GetEventAndYear(request.Slug, request.EventYear.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
@@ -99,7 +121,7 @@ func (h Handler) RUpdateEventYear(c echo.Context) error {
 	}
 	// Verify they're allowed to modify this event year.
 	if account.Identifier != mult.Event.AccountIdentifier && account.Type != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	err = database.UpdateEventYear(types.EventYear{
 		EventIdentifier: mult.EventYear.EventIdentifier,
@@ -133,6 +155,12 @@ func (h Handler) RDeleteEventYear(c echo.Context) error {
 	if account == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	if len(request.Slug) < 1 || len(request.Year) < 1 {
+		return getAPIError(c, http.StatusBadRequest, "Bad Request", errors.New("no slug/year specified"))
+	}
 	mult, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", err)
@@ -142,7 +170,7 @@ func (h Handler) RDeleteEventYear(c echo.Context) error {
 	}
 	// Verify they're allowed to modify this event year.
 	if account.Identifier != mult.Event.AccountIdentifier && account.Type != "admin" {
-		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	err = database.DeleteEventYear(*mult.EventYear)
 	if err != nil {

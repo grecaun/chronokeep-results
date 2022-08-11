@@ -2329,9 +2329,9 @@ func TestDeleteResults(t *testing.T) {
 	}
 	// verify information is there to delete
 	t.Log("Verifying information before deletion.")
-	deleted, err = database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 	if assert.NoError(t, err) {
-		assert.Equal(t, len(variables.results["event2"]["2021"]), len(deleted))
+		assert.Equal(t, len(variables.results["event2"]["2020"]), len(deleted))
 	}
 	// Test a delete request
 	year = variables.eventYears["event2"]["2020"].Year

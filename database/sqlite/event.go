@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const timeFormat = "2006-01-02 03:04:00-07:00"
+const timeFormat = "2006-01-02 15:04:05-07:00"
 
 // GetEvent Gets an event with a slug.
 func (s *SQLite) GetEvent(slug string) (*types.Event, error) {

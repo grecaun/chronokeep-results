@@ -1047,7 +1047,7 @@ func TestDeleteEventYear(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.DeleteEventYear(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		nEv, err := database.GetEvent("event3")
+		nEv, err := database.GetEventYear(variables.events["event2"].Slug, variables.eventYears["event2"]["2021"].Year)
 		if assert.NoError(t, err) {
 			assert.Nil(t, nEv)
 		}

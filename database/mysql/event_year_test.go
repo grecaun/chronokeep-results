@@ -53,7 +53,7 @@ func TestAddEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
@@ -132,7 +132,7 @@ func TestGetEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
@@ -237,7 +237,7 @@ func TestGetEventYears(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
@@ -321,7 +321,7 @@ func TestDeleteEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
@@ -396,7 +396,7 @@ func TestUpdateEventYear(t *testing.T) {
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
-		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
 	}
 	eventYear2 := &types.EventYear{
