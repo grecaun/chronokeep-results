@@ -75,6 +75,10 @@ type Database interface {
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
 	// Person Functions
 	GetPerson(slug, year, bib string) (*types.Person, error)
+	GetPeople(slug, year string) ([]types.Person, error)
+	AddPerson(eventYearID int64, person types.Person) (*types.Person, error)
+	AddPeople(eventYearID int64, people []types.Person) ([]types.Person, error)
+	DeletePeople(eventYearID int64, bibs []string) error
 	// Close the database.
 	Close()
 }

@@ -31,6 +31,10 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)
 	group.DELETE("/results/delete", h.DeleteResults)
+	// Participants handlers
+	group.POST("/participants", h.GetParticipants)
+	group.POST("/participants/add", h.AddParticipants)
+	group.DELETE("/participants/delete", h.DeleteParticipants)
 	// Account Login
 	group.POST("/account/login", h.Login)
 	group.POST("/account/refresh", h.Refresh)
@@ -62,4 +66,8 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/r/event-year/add", h.RAddEventYear)
 	group.PUT("/r/event-year/update", h.RUpdateEventYear)
 	group.DELETE("/r/event-year/delete", h.RDeleteEventYear)
+	// Participants handlers
+	group.POST("/r/participants", h.RGetParticipants)
+	group.POST("/r/participants/add", h.RAddParticipants)
+	group.DELETE("/r/participants/delete", h.RDeleteParticipants)
 }
