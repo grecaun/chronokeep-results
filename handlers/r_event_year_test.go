@@ -256,7 +256,7 @@ func TestRGetEventYears(t *testing.T) {
 		}
 	}
 	// test invalid request - non-admin for other
-	t.Log("Testing valid request -- non-admin for other.")
+	t.Log("Testing invalid request -- non-admin for other.")
 	token, refresh, err = createTokens(variables.accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
@@ -311,7 +311,7 @@ func TestRGetEventYears(t *testing.T) {
 	if assert.NoError(t, h.RGetEventYears(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
-	// test unknown event name
+	// test known slug, unknown year
 	t.Log("Testing unknown event year.")
 	token, refresh, err = createTokens(variables.accounts[0].Email)
 	if err != nil {
@@ -374,12 +374,12 @@ func TestRGetEventYears(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RGetEvents(c)) {
+	if assert.NoError(t, h.RGetEventYears(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }
@@ -836,12 +836,12 @@ func TestRAddEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RGetEvents(c)) {
+	if assert.NoError(t, h.RAddEventYear(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }
@@ -855,7 +855,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -864,7 +864,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -874,7 +874,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -888,7 +888,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -909,7 +909,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -923,7 +923,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -945,7 +945,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -971,7 +971,7 @@ func TestRUpdateEventYear(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -981,7 +981,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1003,7 +1003,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1036,7 +1036,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1087,7 +1087,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1138,7 +1138,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1171,7 +1171,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1204,7 +1204,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1237,7 +1237,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1265,12 +1265,12 @@ func TestRUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/r/event-year/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RGetEvents(c)) {
+	if assert.NoError(t, h.RUpdateEventYear(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }
@@ -1283,7 +1283,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	h := Handler{}
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -1292,7 +1292,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1302,7 +1302,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1316,7 +1316,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1337,7 +1337,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1351,7 +1351,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1373,7 +1373,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1399,7 +1399,7 @@ func TestRDeleteEventYear(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1409,7 +1409,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1426,7 +1426,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1454,7 +1454,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1496,7 +1496,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1528,7 +1528,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1556,7 +1556,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1584,7 +1584,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1612,7 +1612,7 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event-year/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1640,12 +1640,12 @@ func TestRDeleteEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/r/event-year/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RGetEvents(c)) {
+	if assert.NoError(t, h.RDeleteEventYear(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }

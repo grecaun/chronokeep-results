@@ -75,7 +75,18 @@ func (h Handler) RAddParticipants(c echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
-	participants, err := database.AddPeople(multi.EventYear.Identifier, request.Participants)
+	// validate participants
+	var partToAdd []types.Person
+	for _, part := range request.Participants {
+		// Validate all results, only add the results that pass validation.
+		if err := part.Validate(h.validate); err == nil {
+			partToAdd = append(partToAdd, part)
+		}
+	}
+	if len(partToAdd) < 1 {
+		return getAPIError(c, http.StatusBadRequest, "No Valid Participants", nil)
+	}
+	participants, err := database.AddPeople(multi.EventYear.Identifier, partToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
