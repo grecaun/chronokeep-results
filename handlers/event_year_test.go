@@ -945,7 +945,7 @@ func TestDeleteEventYear(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test read key
-	t.Log("Testing read host.")
+	t.Log("Testing read key.")
 	request = httptest.NewRequest(http.MethodDelete, "/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
@@ -955,7 +955,7 @@ func TestDeleteEventYear(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test write key
-	t.Log("Testing read host.")
+	t.Log("Testing read key.")
 	request = httptest.NewRequest(http.MethodDelete, "/event-year/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])

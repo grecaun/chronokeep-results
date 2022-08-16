@@ -88,6 +88,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		},
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
+			Name:              "write",
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
 			AllowedHosts:      "",
@@ -96,6 +97,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
 			Value:             "0030001-1ACSCT-K2389A-22023BAA",
+			Name:              "delete3",
 			Type:              "delete",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
@@ -103,6 +105,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22023B",
+			Name:              "delete",
 			Type:              "delete",
 			AllowedHosts:      "chronokeep.com",
 			ValidUntil:        nil,
@@ -110,6 +113,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423B",
+			Name:              "read",
 			Type:              "read",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
@@ -117,6 +121,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423BAA",
+			Name:              "write2",
 			Type:              "write",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
@@ -124,6 +129,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22023BAA",
+			Name:              "delete2",
 			Type:              "delete",
 			AllowedHosts:      "",
 			ValidUntil:        nil,
