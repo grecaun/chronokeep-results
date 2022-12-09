@@ -255,7 +255,7 @@ func (s *SQLite) createTables() error {
 				"first VARCHAR(100) NOT NULL, " +
 				"last VARCHAR(100) NOT NULL, " +
 				"age INT NOT NULL, " +
-				"gender CHAR(1) NOT NULL, " +
+				"gender VARCHAR(5) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
 				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
@@ -409,9 +409,16 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
 	// SQLite starts at version 5.  6 will be the first update version.
-	//if oldVersion < 6 && newVersion >= 6 {
-	//     update code for version 6 or greater
-	//}
+	if oldVersion < 6 && newVersion >= 6 {
+		_, err := tx.ExecContext(
+			ctx,
+			"ALTER TABLE person COLUMN gender VARCHAR(5);",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=$1 WHERE name='version';",

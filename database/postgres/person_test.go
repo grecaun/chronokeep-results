@@ -56,7 +56,7 @@ func setupPeople() {
 			First:    "Jamie",
 			Last:     "Fischer",
 			Age:      35,
-			Gender:   "F",
+			Gender:   "NB",
 			AgeGroup: "30-39",
 			Distance: "5 Mile",
 		},
