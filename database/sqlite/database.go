@@ -412,7 +412,35 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 	if oldVersion < 6 && newVersion >= 6 {
 		_, err := tx.ExecContext(
 			ctx,
-			"ALTER TABLE person COLUMN gender VARCHAR(5);",
+			"CREATE TABLE IF NOT EXISTS person_new("+
+				"person_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+				"event_year_id BIGINT NOT NULL, "+
+				"bib VARCHAR(100) NOT NULL, "+
+				"first VARCHAR(100) NOT NULL, "+
+				"last VARCHAR(100) NOT NULL, "+
+				"age INT NOT NULL, "+
+				"gender VARCHAR(5) NOT NULL, "+
+				"age_group VARCHAR(200), "+
+				"distance VARCHAR(200) NOT NULL, "+
+				"CONSTRAINT one_person UNIQUE (event_year_id, bib), "+
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)"+
+				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+		_, err = tx.ExecContext(
+			ctx,
+			"INSERT INTO person_new SELECT * FROM person;",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+		_, err = tx.ExecContext(
+			ctx,
+			"DROP TABLE person; ALTER TABLE person_new RENAME TO person;",
 		)
 		if err != nil {
 			tx.Rollback()

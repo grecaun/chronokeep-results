@@ -488,7 +488,7 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 	if oldVersion < 6 && newVersion >= 6 {
 		_, err := tx.ExecContext(
 			ctx,
-			"ALTER TABLE person COLUMN gender VARCHAR(5);",
+			"ALTER TABLE person MODIFY gender VARCHAR(5);",
 		)
 		if err != nil {
 			tx.Rollback()

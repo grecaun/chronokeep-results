@@ -233,6 +233,23 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, temp.Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
 	}
+	temp = people[1]
+	temp.Age = 4
+	temp.AgeGroup = "Youngling"
+	temp.First = "Update!"
+	temp.Last = "Test"
+	temp.Distance = "12 Mile Fun"
+	temp.Gender = "NB"
+	person, err = db.AddPerson(eventYear.Identifier, temp)
+	if assert.NoError(t, err) && assert.NotNil(t, person) {
+		assert.Equal(t, temp.Age, person.Age)
+		assert.Equal(t, temp.AgeGroup, person.AgeGroup)
+		assert.Equal(t, temp.Bib, person.Bib)
+		assert.Equal(t, temp.Distance, person.Distance)
+		assert.Equal(t, temp.First, person.First)
+		assert.Equal(t, temp.Gender, person.Gender)
+		assert.Equal(t, temp.Last, person.Last)
+	}
 }
 
 func TestAddPeople(t *testing.T) {
