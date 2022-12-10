@@ -34,8 +34,8 @@ type Result struct {
 // Validate Ensures valid data in the struct.
 func (r *Result) Validate(validate *validator.Validate) error {
 	r.Gender = strings.ToUpper(r.Gender)
-	if r.Gender != "M" && r.Gender != "F" && r.Gender != "O" && r.Gender != "U" {
-		return errors.New("invalid gender (M/F/O/U)")
+	if r.Gender != "M" && r.Gender != "F" && r.Gender != "O" && r.Gender != "U" && r.Gender != "NB" {
+		return errors.New("invalid gender (M/F/NB/O/U)")
 	}
 	return validate.Struct(r)
 }
