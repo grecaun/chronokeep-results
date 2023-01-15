@@ -12,7 +12,7 @@ var (
 	people []types.Person
 )
 
-func setupPeople() {
+func setupPeopleTests() {
 	if len(accounts) < 1 {
 		accounts = []types.Account{
 			{
@@ -25,22 +25,26 @@ func setupPeople() {
 	}
 	people = []types.Person{
 		{
-			Bib:      "100",
-			First:    "John",
-			Last:     "Smith",
-			Age:      24,
-			Gender:   "M",
-			AgeGroup: "20-29",
-			Distance: "1 Mile",
+			Bib:       "100",
+			First:     "John",
+			Last:      "Smith",
+			Age:       24,
+			Gender:    "M",
+			AgeGroup:  "20-29",
+			Distance:  "1 Mile",
+			Chip:      "1003",
+			Anonymous: true,
 		},
 		{
-			Bib:      "106",
-			First:    "Rose",
-			Last:     "Johnson",
-			Age:      55,
-			Gender:   "F",
-			AgeGroup: "50-59",
-			Distance: "1 Mile",
+			Bib:       "106",
+			First:     "Rose",
+			Last:      "Johnson",
+			Age:       55,
+			Gender:    "F",
+			AgeGroup:  "50-59",
+			Distance:  "1 Mile",
+			Chip:      "1002",
+			Anonymous: false,
 		},
 		{
 			Bib:      "209",
@@ -78,7 +82,7 @@ func TestGetPerson(t *testing.T) {
 		t.Fatalf("Error setting up tests. %v", err)
 	}
 	defer finalize(t)
-	setupResultTests()
+	setupPeopleTests()
 	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
@@ -92,35 +96,40 @@ func TestGetPerson(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	person, err := db.GetPerson(event.Slug, eventYear.Year, results[0].Bib)
+	person, err := db.GetPerson(event.Slug, eventYear.Year, people[0].Bib)
 	if err != nil {
 		t.Errorf("Error finding non existent person: %v", err)
 	}
 	if person != nil {
 		t.Errorf("Found someone when no one should exist: %v", person)
 	}
-	db.AddResults(eventYear.Identifier, results)
-	for _, res := range results {
-		person, err = db.GetPerson(event.Slug, eventYear.Year, res.Bib)
+	db.AddPeople(eventYear.Identifier, people)
+	for _, p := range people {
+		person, err = db.GetPerson(event.Slug, eventYear.Year, p.Bib)
 		if err != nil {
 			t.Errorf("Error finding non existent person: %v", err)
 		}
+		assert.True(t, person.Equals(&p))
 		if person == nil {
 			t.Errorf("Expected to find someone but did not.")
-		} else if person.Bib != res.Bib {
-			t.Errorf("Bib doesn't match: %v+ %v+", *person, res)
-		} else if person.First != res.First {
-			t.Errorf("First name doesn't match: %v+ %v+", *person, res)
-		} else if person.Last != res.Last {
-			t.Errorf("Last name doesn't match: %v+ %v+", *person, res)
-		} else if person.Age != res.Age {
-			t.Errorf("Age doesn't match: %v+ %v+", *person, res)
-		} else if person.AgeGroup != res.AgeGroup {
-			t.Errorf("Age Group doesn't match: %v+ %v+", *person, res)
-		} else if person.Gender != res.Gender {
-			t.Errorf("Gender doesn't match: %v+ %v+", *person, res)
-		} else if person.Distance != res.Distance {
-			t.Errorf("Distance doesn't match: %v+ %v+", *person, res)
+		} else if person.Bib != p.Bib {
+			t.Errorf("Bib doesn't match: %v+ %v+", *person, p)
+		} else if person.First != p.First {
+			t.Errorf("First name doesn't match: %v+ %v+", *person, p)
+		} else if person.Last != p.Last {
+			t.Errorf("Last name doesn't match: %v+ %v+", *person, p)
+		} else if person.Age != p.Age {
+			t.Errorf("Age doesn't match: %v+ %v+", *person, p)
+		} else if person.AgeGroup != p.AgeGroup {
+			t.Errorf("Age Group doesn't match: %v+ %v+", *person, p)
+		} else if person.Gender != p.Gender {
+			t.Errorf("Gender doesn't match: %v+ %v+", *person, p)
+		} else if person.Distance != p.Distance {
+			t.Errorf("Distance doesn't match: %v+ %v+", *person, p)
+		} else if person.Chip != p.Chip {
+			t.Errorf("Chip doesn't match: %v+ %v+", *person, p)
+		} else if person.Anonymous != p.Anonymous {
+			t.Errorf("Anonymous doesn't match: %v+ %v+", *person, p)
 		}
 	}
 }
@@ -131,7 +140,7 @@ func TestGetPeople(t *testing.T) {
 		t.Fatalf("Error setting up tests. %v", err)
 	}
 	defer finalize(t)
-	setupResultTests()
+	setupPeopleTests()
 	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
@@ -145,18 +154,19 @@ func TestGetPeople(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	people, err := db.GetPeople(event.Slug, eventYear.Year)
+	iPeople, err := db.GetPeople(event.Slug, eventYear.Year)
 	if assert.NoError(t, err) {
-		assert.Equal(t, 0, len(people))
+		assert.Equal(t, 0, len(iPeople))
 	}
-	db.AddResults(eventYear.Identifier, results)
-	people, err = db.GetPeople(event.Slug, eventYear.Year)
+	db.AddPeople(eventYear.Identifier, people)
+	iPeople, err = db.GetPeople(event.Slug, eventYear.Year)
 	if assert.NoError(t, err) {
-		assert.Equal(t, len(results)-1, len(people))
-		for _, outer := range results {
+		assert.Equal(t, len(people), len(iPeople))
+		for _, outer := range iPeople {
 			found := false
-			for _, inner := range people {
+			for _, inner := range iPeople {
 				if outer.Bib == inner.Bib {
+					assert.True(t, outer.Equals(&inner))
 					assert.Equal(t, outer.Age, inner.Age)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
 					assert.Equal(t, outer.Bib, inner.Bib)
@@ -164,6 +174,8 @@ func TestGetPeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Chip, inner.Chip)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					found = true
 				}
 			}
@@ -178,7 +190,7 @@ func TestAddPerson(t *testing.T) {
 		t.Fatalf("Error setting up tests. %v", err)
 	}
 	defer finalize(t)
-	setupPeople()
+	setupPeopleTests()
 	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
@@ -194,6 +206,7 @@ func TestAddPerson(t *testing.T) {
 	eventYear, _ = db.AddEventYear(*eventYear)
 	person, err := db.AddPerson(eventYear.Identifier, people[0])
 	if assert.NoError(t, err) {
+		assert.True(t, people[0].Equals(person))
 		assert.Equal(t, people[0].Age, person.Age)
 		assert.Equal(t, people[0].AgeGroup, person.AgeGroup)
 		assert.Equal(t, people[0].Bib, person.Bib)
@@ -201,13 +214,13 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, people[0].First, person.First)
 		assert.Equal(t, people[0].Gender, person.Gender)
 		assert.Equal(t, people[0].Last, person.Last)
+		assert.Equal(t, people[0].Chip, person.Chip)
+		assert.Equal(t, people[0].Anonymous, person.Anonymous)
 	}
-	var id int64 = 0
-	if person != nil {
-		id = person.Identifier
-	}
+	id := person.Identifier
 	person, err = db.GetPerson(event.Slug, eventYear.Year, people[0].Bib)
-	if assert.NoError(t, err) && assert.NotNil(t, person) {
+	if assert.NoError(t, err) {
+		assert.True(t, people[0].Equals(person))
 		assert.Equal(t, people[0].Age, person.Age)
 		assert.Equal(t, people[0].AgeGroup, person.AgeGroup)
 		assert.Equal(t, people[0].Bib, person.Bib)
@@ -216,6 +229,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, people[0].Gender, person.Gender)
 		assert.Equal(t, people[0].Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
+		assert.Equal(t, people[0].Chip, person.Chip)
+		assert.Equal(t, people[0].Anonymous, person.Anonymous)
 	}
 	// test the update function
 	temp := people[0]
@@ -226,7 +241,8 @@ func TestAddPerson(t *testing.T) {
 	temp.Distance = "12 Mile Fun"
 	temp.Gender = "U"
 	person, err = db.AddPerson(eventYear.Identifier, temp)
-	if assert.NoError(t, err) && assert.NotNil(t, person) {
+	if assert.NoError(t, err) {
+		assert.True(t, temp.Equals(person))
 		assert.Equal(t, temp.Age, person.Age)
 		assert.Equal(t, temp.AgeGroup, person.AgeGroup)
 		assert.Equal(t, temp.Bib, person.Bib)
@@ -235,6 +251,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, temp.Gender, person.Gender)
 		assert.Equal(t, temp.Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
+		assert.Equal(t, temp.Chip, person.Chip)
+		assert.Equal(t, temp.Anonymous, person.Anonymous)
 	}
 	temp = people[1]
 	temp.Age = 4
@@ -243,8 +261,11 @@ func TestAddPerson(t *testing.T) {
 	temp.Last = "Test"
 	temp.Distance = "12 Mile Fun"
 	temp.Gender = "NB"
+	temp.Chip = "upd"
+	temp.Anonymous = true
 	person, err = db.AddPerson(eventYear.Identifier, temp)
 	if assert.NoError(t, err) && assert.NotNil(t, person) {
+		assert.True(t, temp.Equals(person))
 		assert.Equal(t, temp.Age, person.Age)
 		assert.Equal(t, temp.AgeGroup, person.AgeGroup)
 		assert.Equal(t, temp.Bib, person.Bib)
@@ -252,6 +273,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, temp.First, person.First)
 		assert.Equal(t, temp.Gender, person.Gender)
 		assert.Equal(t, temp.Last, person.Last)
+		assert.Equal(t, temp.Chip, person.Chip)
+		assert.Equal(t, temp.Anonymous, person.Anonymous)
 	}
 }
 
@@ -261,7 +284,7 @@ func TestAddPeople(t *testing.T) {
 		t.Fatalf("Error setting up tests. %v", err)
 	}
 	defer finalize(t)
-	setupPeople()
+	setupPeopleTests()
 	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
@@ -286,6 +309,7 @@ func TestAddPeople(t *testing.T) {
 			found := false
 			for _, inner := range p {
 				if outer.Bib == inner.Bib {
+					assert.True(t, outer.Equals(&inner))
 					assert.Equal(t, outer.Age, inner.Age)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
 					assert.Equal(t, outer.Bib, inner.Bib)
@@ -293,6 +317,8 @@ func TestAddPeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Chip, inner.Chip)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					found = true
 				}
 			}
@@ -307,13 +333,15 @@ func TestAddPeople(t *testing.T) {
 	upd := make([]types.Person, 0)
 	for _, temp := range people {
 		upd = append(upd, types.Person{
-			Bib:      temp.Bib,
-			Age:      4,
-			AgeGroup: "Youngling",
-			First:    "Update!",
-			Last:     "Test",
-			Distance: "12 Mile Fun",
-			Gender:   "U",
+			Bib:       temp.Bib,
+			Age:       4,
+			AgeGroup:  "Youngling",
+			First:     "Update!",
+			Last:      "Test",
+			Distance:  "12 Mile Fun",
+			Gender:    "U",
+			Chip:      "upd" + temp.Bib,
+			Anonymous: true,
 		})
 	}
 	p, err = db.AddPeople(eventYear.Identifier, upd)
@@ -330,6 +358,8 @@ func TestAddPeople(t *testing.T) {
 					assert.Equal(t, "Update!", inner.First)
 					assert.Equal(t, "U", inner.Gender)
 					assert.Equal(t, "Test", inner.Last)
+					assert.Equal(t, "upd"+outer.Bib, inner.Chip)
+					assert.Equal(t, true, inner.Anonymous)
 					found = true
 				}
 			}
@@ -344,7 +374,7 @@ func TestDeletePeople(t *testing.T) {
 		t.Fatalf("Error setting up tests. %v", err)
 	}
 	defer finalize(t)
-	setupPeople()
+	setupPeopleTests()
 	account, _ := db.AddAccount(accounts[0])
 	event := &types.Event{
 		AccountIdentifier: account.Identifier,
@@ -400,6 +430,8 @@ func TestDeletePeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Chip, inner.Chip)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					found = true
 				}
 			}

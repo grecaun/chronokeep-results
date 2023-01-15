@@ -16,7 +16,7 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
 		slug,
 		year,
 		bib,
@@ -27,6 +27,7 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer res.Close()
 	if res.Next() {
 		var outPerson types.Person
+		var anonymous int
 		err = res.Scan(
 			&outPerson.Identifier,
 			&outPerson.Bib,
@@ -36,7 +37,10 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 			&outPerson.Gender,
 			&outPerson.AgeGroup,
 			&outPerson.Distance,
+			&outPerson.Chip,
+			&anonymous,
 		)
+		outPerson.Anonymous = anonymous != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -54,7 +58,7 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
 		slug,
 		year,
 	)
@@ -65,6 +69,7 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 	output := make([]types.Person, 0)
 	for res.Next() {
 		var person types.Person
+		var anonymous int
 		err := res.Scan(
 			&person.Identifier,
 			&person.Bib,
@@ -74,7 +79,10 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 			&person.Gender,
 			&person.AgeGroup,
 			&person.Distance,
+			&person.Chip,
+			&anonymous,
 		)
+		person.Anonymous = anonymous != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -104,16 +112,20 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 			"age, "+
 			"gender, "+
 			"age_group, "+
-			"distance"+
+			"distance, "+
+			"chip, "+
+			"anonymous"+
 			")"+
-			" VALUES (?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
 			"age=VALUES(age), "+
 			"gender=VALUES(gender), "+
 			"age_group=VALUES(age_group), "+
-			"distance=VALUES(distance);",
+			"distance=VALUES(distance),"+
+			"chip=VALUES(chip),"+
+			"anonymous=VALUES(anonymous);",
 		eventYearID,
 		person.Bib,
 		person.First,
@@ -122,6 +134,8 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 		person.Gender,
 		person.AgeGroup,
 		person.Distance,
+		person.Chip,
+		person.AnonyInt(),
 	)
 	if err != nil {
 		tx.Rollback()
@@ -139,13 +153,15 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 	}
 	defer res.Close()
 	output := types.Person{
-		Bib:      person.Bib,
-		First:    person.First,
-		Last:     person.Last,
-		Age:      person.Age,
-		Gender:   person.Gender,
-		AgeGroup: person.AgeGroup,
-		Distance: person.Distance,
+		Bib:       person.Bib,
+		First:     person.First,
+		Last:      person.Last,
+		Age:       person.Age,
+		Gender:    person.Gender,
+		AgeGroup:  person.AgeGroup,
+		Distance:  person.Distance,
+		Chip:      person.Chip,
+		Anonymous: person.Anonymous,
 	}
 	if res.Next() {
 		res.Scan(
@@ -184,16 +200,20 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 			"age, "+
 			"gender, "+
 			"age_group, "+
-			"distance"+
+			"distance,"+
+			"chip,"+
+			"anonymous"+
 			")"+
-			" VALUES (?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
 			"age=VALUES(age), "+
 			"gender=VALUES(gender), "+
 			"age_group=VALUES(age_group), "+
-			"distance=VALUES(distance);",
+			"distance=VALUES(distance),"+
+			"chip=VALUES(chip),"+
+			"anonymous=VALUES(anonymous);",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error preparing statement for adding people: %v", err)
@@ -209,6 +229,8 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 			person.Gender,
 			person.AgeGroup,
 			person.Distance,
+			person.Chip,
+			person.AnonyInt(),
 		)
 		if err != nil {
 			tx.Rollback()
@@ -250,6 +272,8 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 				Gender:     person.Gender,
 				AgeGroup:   person.AgeGroup,
 				Distance:   person.Distance,
+				Chip:       person.Chip,
+				Anonymous:  person.Anonymous,
 			})
 		} else {
 			tx.Rollback()

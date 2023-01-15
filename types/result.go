@@ -29,6 +29,8 @@ type Result struct {
 	GenderRanking    int    `json:"gender_ranking"`
 	Finish           bool   `json:"finish"`
 	Type             int    `json:"type"`
+	Chip             string `json:"chip"`
+	Anonymous        bool   `json:"anonymous"`
 }
 
 // Validate Ensures valid data in the struct.
@@ -38,4 +40,47 @@ func (r *Result) Validate(validate *validator.Validate) error {
 		return errors.New("invalid gender (M/F/NB/O/U)")
 	}
 	return validate.Struct(r)
+}
+
+func (one *Result) Equals(two *Result) bool {
+	return one.Bib == two.Bib &&
+		one.First == two.First &&
+		one.Last == two.Last &&
+		one.Age == two.Age &&
+		one.Gender == two.Gender &&
+		one.AgeGroup == two.AgeGroup &&
+		one.Distance == two.Distance &&
+		one.Seconds == two.Seconds &&
+		one.Milliseconds == two.Milliseconds &&
+		one.ChipSeconds == two.ChipSeconds &&
+		one.ChipMilliseconds == two.ChipMilliseconds &&
+		one.Segment == two.Segment &&
+		one.Location == two.Location &&
+		one.Occurence == two.Occurence &&
+		one.Ranking == two.Ranking &&
+		one.AgeRanking == two.AgeRanking &&
+		one.GenderRanking == two.GenderRanking &&
+		one.Finish == two.Finish &&
+		one.Type == two.Type &&
+		one.Chip == two.Chip &&
+		one.Anonymous == two.Anonymous
+}
+
+func (one *Result) SamePerson(two *Result) bool {
+	return one.Bib == two.Bib &&
+		one.First == two.First &&
+		one.Last == two.Last &&
+		one.Age == two.Age &&
+		one.Gender == two.Gender &&
+		one.AgeGroup == two.AgeGroup &&
+		one.Distance == two.Distance &&
+		one.Chip == two.Chip &&
+		one.Anonymous == two.Anonymous
+}
+
+func (r *Result) AnonyInt() int {
+	if r.Anonymous {
+		return 1
+	}
+	return 0
 }

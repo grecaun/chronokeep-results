@@ -258,6 +258,8 @@ func (s *SQLite) createTables() error {
 				"gender VARCHAR(5) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
+				"chip VARCHAR(200) DEFAULT '', " +
+				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
 				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
@@ -445,6 +447,18 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 7 && newVersion >= 7 {
+		_, err := tx.ExecContext(
+			ctx,
+			"ALTER TABLE person "+
+				"ADD COLUMN chip VARCHAR(200) DEFAULT '', "+
+				"ADD COLUMN anonymous SMALLINT NOT NULL DEFAULT 0;",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	_, err = tx.ExecContext(

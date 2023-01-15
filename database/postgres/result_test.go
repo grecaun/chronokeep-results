@@ -40,6 +40,8 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 1,
 			Finish:        false,
+			Chip:          "10003",
+			Anonymous:     true,
 		},
 		{
 			Bib:           "106",
@@ -58,6 +60,8 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 1,
 			Finish:        true,
+			Chip:          "1000004",
+			Anonymous:     false,
 		},
 		{
 			Bib:           "209",
@@ -293,6 +297,12 @@ func TestAddResults(t *testing.T) {
 	if res[0].Finish != results[0].Finish {
 		t.Errorf("Expected to find result with finish %v, found %v.", results[0].Finish, res[0].Finish)
 	}
+	if res[0].Chip != results[0].Chip {
+		t.Errorf("Expected to find result with chip %v, found %v.", results[0].Chip, res[0].Chip)
+	}
+	if res[0].Anonymous != results[0].Anonymous {
+		t.Errorf("Expected to find result with anonymous %v, found %v.", results[0].Anonymous, res[0].Anonymous)
+	}
 	res, _ = db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != len(results) {
 		t.Errorf("Expected %v results to be added, %v added.", len(results), len(res))
@@ -357,6 +367,12 @@ func TestAddResults(t *testing.T) {
 	if res[0].Finish != results[1].Finish {
 		t.Errorf("Expected to find result with finish %v, found %v.", results[1].Finish, res[0].Finish)
 	}
+	if res[0].Chip != results[1].Chip {
+		t.Errorf("Expected to find result with chip %v, found %v.", results[1].Chip, res[0].Chip)
+	}
+	if res[0].Anonymous != results[1].Anonymous {
+		t.Errorf("Expected to find result with anonymous %v, found %v.", results[1].Anonymous, res[0].Anonymous)
+	}
 	res, _ = db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != (len(results) + 1) {
 		t.Errorf("Expected %v results to be added, %v added.", (len(results) + 1), len(res))
@@ -366,25 +382,9 @@ func TestAddResults(t *testing.T) {
 	var found1 = false
 	var found2 = 0
 	for _, r := range res {
-		if r.First == results[0].First &&
-			r.Last == results[0].Last &&
-			r.Age == results[0].Age &&
-			r.Gender == results[0].Gender &&
-			r.AgeGroup == results[0].AgeGroup &&
-			r.Distance == results[0].Distance &&
-			r.Seconds == results[0].Seconds &&
-			r.Milliseconds == results[0].Milliseconds &&
-			r.Segment == results[0].Segment &&
-			r.Ranking == results[0].Ranking &&
-			r.AgeRanking == results[0].AgeRanking &&
-			r.GenderRanking == results[0].GenderRanking &&
-			r.Finish == results[0].Finish {
+		if r.Equals(&results[0]) {
 			found1 = true
-		} else if r.First == results[1].First &&
-			r.Last == results[1].Last &&
-			r.Age == results[1].Age &&
-			r.Gender == results[1].Gender &&
-			r.AgeGroup == results[1].AgeGroup {
+		} else if r.SamePerson(&results[1]) {
 			found2++
 		}
 	}
