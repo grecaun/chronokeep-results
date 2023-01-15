@@ -398,12 +398,13 @@ func TestDeletePeople(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(people), len(p))
 	}
-	err = db.DeletePeople(eventYear.Identifier, nil)
+	count, err := db.DeletePeople(eventYear.Identifier, nil)
 	assert.NoError(t, err)
 	p, err = db.GetPeople(event.Slug, eventYear.Year)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
+	assert.Equal(t, count, int64(len(people)))
 	_, err = db.AddPeople(eventYear.Identifier, people)
 	assert.NoError(t, err)
 	p, err = db.GetPeople(event.Slug, eventYear.Year)
@@ -414,8 +415,9 @@ func TestDeletePeople(t *testing.T) {
 		people[0].Bib,
 		people[1].Bib,
 	}
-	err = db.DeletePeople(eventYear.Identifier, toDelete)
+	count, err = db.DeletePeople(eventYear.Identifier, toDelete)
 	assert.NoError(t, err)
+	assert.Equal(t, count, int64(len(toDelete)))
 	p, err = db.GetPeople(event.Slug, eventYear.Year)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(people)-2, len(p))
@@ -458,7 +460,7 @@ func TestBadDatabasePerson(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error adding people")
 	}
-	err = db.DeletePeople(0, nil)
+	_, err = db.DeletePeople(0, nil)
 	if err == nil {
 		t.Fatalf("Expected error deleting people")
 	}
@@ -482,7 +484,7 @@ func TestNoDatabasePerson(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error adding people")
 	}
-	err = db.DeletePeople(0, nil)
+	_, err = db.DeletePeople(0, nil)
 	if err == nil {
 		t.Fatalf("Expected error deleting people")
 	}

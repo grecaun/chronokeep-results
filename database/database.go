@@ -78,7 +78,7 @@ type Database interface {
 	GetPeople(slug, year string) ([]types.Person, error)
 	AddPerson(eventYearID int64, person types.Person) (*types.Person, error)
 	AddPeople(eventYearID int64, people []types.Person) ([]types.Person, error)
-	DeletePeople(eventYearID int64, bibs []string) error
+	DeletePeople(eventYearID int64, bibs []string) (int64, error)
 	// Close the database.
 	Close()
 }

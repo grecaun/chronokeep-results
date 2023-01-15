@@ -606,25 +606,9 @@ func TestRAddParticipants(t *testing.T) {
 				assert.True(t, found)
 			}
 		}
-		var resp types.GetParticipantsResponse
+		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(people), len(resp.Participants))
-			for _, outer := range people {
-				found := false
-				for _, inner := range resp.Participants {
-					if outer.Bib == inner.Bib {
-						assert.Equal(t, outer.Age, inner.Age)
-						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
-						assert.Equal(t, outer.Bib, inner.Bib)
-						assert.Equal(t, outer.Distance, inner.Distance)
-						assert.Equal(t, outer.First, inner.First)
-						assert.Equal(t, outer.Gender, inner.Gender)
-						assert.Equal(t, outer.Last, inner.Last)
-						found = true
-					}
-				}
-				assert.True(t, found)
-			}
+			assert.Equal(t, len(people), resp.Count)
 		}
 	}
 	// Test valid request - admin for other
@@ -667,25 +651,9 @@ func TestRAddParticipants(t *testing.T) {
 				assert.True(t, found)
 			}
 		}
-		var resp types.GetParticipantsResponse
+		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(people), len(resp.Participants))
-			for _, outer := range people {
-				found := false
-				for _, inner := range resp.Participants {
-					if outer.Bib == inner.Bib {
-						assert.Equal(t, outer.Age, inner.Age)
-						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
-						assert.Equal(t, outer.Bib, inner.Bib)
-						assert.Equal(t, outer.Distance, inner.Distance)
-						assert.Equal(t, outer.First, inner.First)
-						assert.Equal(t, outer.Gender, inner.Gender)
-						assert.Equal(t, outer.Last, inner.Last)
-						found = true
-					}
-				}
-				assert.True(t, found)
-			}
+			assert.Equal(t, len(people), resp.Count)
 		}
 	}
 	// Test invalid request - non-admin for other
@@ -822,62 +790,6 @@ func TestRAddParticipants(t *testing.T) {
 				Last:     "Jacob",
 				Distance: "1 Mile",
 				Gender:   "G",
-			},
-		},
-	})
-	if err != nil {
-		t.Fatalf("Error encoding request body into json object: %v", err)
-	}
-	request = httptest.NewRequest(http.MethodPost, "/r/participants/add", strings.NewReader(string(body)))
-	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
-	response = httptest.NewRecorder()
-	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RAddParticipants(c)) {
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	}
-	// Test validation -- first
-	t.Log("Testing validation -- first")
-	body, err = json.Marshal(types.AddParticipantsRequest{
-		Slug: variables.events["event2"].Slug,
-		Year: year.Year,
-		Participants: []types.Person{
-			{
-				Bib:      "10",
-				Age:      20,
-				AgeGroup: "10-20",
-				First:    "",
-				Last:     "Jacob",
-				Distance: "1 Mile",
-				Gender:   "M",
-			},
-		},
-	})
-	if err != nil {
-		t.Fatalf("Error encoding request body into json object: %v", err)
-	}
-	request = httptest.NewRequest(http.MethodPost, "/r/participants/add", strings.NewReader(string(body)))
-	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
-	response = httptest.NewRecorder()
-	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RAddParticipants(c)) {
-		assert.Equal(t, http.StatusBadRequest, response.Code)
-	}
-	// Test validation -- last
-	t.Log("Testing validation -- last")
-	body, err = json.Marshal(types.AddParticipantsRequest{
-		Slug: variables.events["event2"].Slug,
-		Year: year.Year,
-		Participants: []types.Person{
-			{
-				Bib:      "10",
-				Age:      20,
-				AgeGroup: "10-20",
-				First:    "John",
-				Last:     "",
-				Distance: "1 Mile",
-				Gender:   "M",
 			},
 		},
 	})

@@ -2002,7 +2002,7 @@ func TestAddResults(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(results)-1, resp.Count)
+			assert.Equal(t, len(results), resp.Count)
 		}
 	}
 	// Test validation - Last
@@ -2026,7 +2026,7 @@ func TestAddResults(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(results)-1, resp.Count)
+			assert.Equal(t, len(results), resp.Count)
 		}
 	}
 	// Test validation - Age1

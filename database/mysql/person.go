@@ -288,19 +288,22 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 	return output, nil
 }
 
-func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) error {
+func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	db, err := m.GetDB()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	tx, err := db.Begin()
 	if err != nil {
-		return fmt.Errorf("error starting transaction: %v", err)
+		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
+	var count int64
 	if len(bibs) > 0 {
+		count = 0
 		for _, bib := range bibs {
+			count++
 			_, err = tx.ExecContext(
 				ctx,
 				"DELETE FROM person WHERE event_year_id=? AND bib=?;",
@@ -309,24 +312,29 @@ func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) error {
 			)
 			if err != nil {
 				tx.Rollback()
-				return fmt.Errorf("error deleting participant: %v", err)
+				return 0, fmt.Errorf("error deleting participant: %v", err)
 			}
 		}
 	} else {
-		_, err = tx.ExecContext(
+		res, err := tx.ExecContext(
 			ctx,
 			"DELETE FROM person WHERE event_year_id=?;",
 			eventYearId,
 		)
 		if err != nil {
 			tx.Rollback()
-			return fmt.Errorf("error deleting participants: %v", err)
+			return 0, fmt.Errorf("error deleting participants: %v", err)
+		}
+		count, err = res.RowsAffected()
+		if err != nil {
+			tx.Rollback()
+			return 0, fmt.Errorf("error fetching rows affected from event year results deletion: %v", err)
 		}
 	}
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
-		return fmt.Errorf("error committing transaction: %v", err)
+		return 0, fmt.Errorf("error committing transaction: %v", err)
 	}
-	return nil
+	return count, nil
 }

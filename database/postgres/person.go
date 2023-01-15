@@ -234,19 +234,22 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 	return output, nil
 }
 
-func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) error {
+func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	db, err := p.GetDB()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	tx, err := db.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("error starting transaction: %v", err)
+		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	var count int64
 	if len(bibs) > 0 {
+		count = 0
 		for _, bib := range bibs {
+			count++
 			_, err = tx.Exec(
 				ctx,
 				"DELETE FROM person WHERE event_year_id=$1 AND bib=$2;",
@@ -255,24 +258,25 @@ func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) error {
 			)
 			if err != nil {
 				tx.Rollback(ctx)
-				return fmt.Errorf("error deleting participant: %v", err)
+				return 0, fmt.Errorf("error deleting participant: %v", err)
 			}
 		}
 	} else {
-		_, err = tx.Exec(
+		res, err := tx.Exec(
 			ctx,
 			"DELETE FROM person WHERE event_year_id=$1;",
 			eventYearId,
 		)
 		if err != nil {
 			tx.Rollback(ctx)
-			return fmt.Errorf("error deleting participants: %v", err)
+			return 0, fmt.Errorf("error deleting participants: %v", err)
 		}
+		count = res.RowsAffected()
 	}
 	err = tx.Commit(ctx)
 	if err != nil {
 		tx.Rollback(ctx)
-		return fmt.Errorf("error committing transaction: %v", err)
+		return 0, fmt.Errorf("error committing transaction: %v", err)
 	}
-	return nil
+	return count, nil
 }

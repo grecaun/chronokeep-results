@@ -90,8 +90,8 @@ func (h Handler) RAddParticipants(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
-	return c.JSON(http.StatusOK, types.GetParticipantsResponse{
-		Participants: participants,
+	return c.JSON(http.StatusOK, types.AddResultsResponse{
+		Count: len(participants),
 	})
 }
 
@@ -124,9 +124,11 @@ func (h Handler) RDeleteParticipants(c echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
-	err = database.DeletePeople(multi.EventYear.Identifier, request.Bibs)
+	count, err := database.DeletePeople(multi.EventYear.Identifier, request.Bibs)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Participants", err)
 	}
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, types.AddResultsResponse{
+		Count: int(count),
+	})
 }
