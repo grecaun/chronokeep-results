@@ -11,8 +11,8 @@ import (
 type Person struct {
 	Identifier int64  `json:"-"`
 	Bib        string `json:"bib" validate:"required"`
-	First      string `json:"first" validate:"required"`
-	Last       string `json:"last" validate:"required"`
+	First      string `json:"first"`
+	Last       string `json:"last"`
 	Age        int    `json:"age" validate:"gte=0,lte=130"`
 	Gender     string `json:"gender"`
 	AgeGroup   string `json:"age_group"`
