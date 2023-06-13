@@ -491,14 +491,14 @@ func TestAddParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	t.Log("Testing validation -- gender.")
+	t.Log("Testing validation -- gender.") // Previously gender was checked, it no longer is.
 	request = httptest.NewRequest(http.MethodPost, "/participants/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddParticipants(c)) {
-		assert.Equal(t, http.StatusBadRequest, response.Code)
+		assert.Equal(t, http.StatusOK, response.Code)
 	}
 	// validation -- distance
 	body, err = json.Marshal(types.AddParticipantsRequest{

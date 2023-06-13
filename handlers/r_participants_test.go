@@ -777,7 +777,7 @@ func TestRAddParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 	// Test validation -- gender
-	t.Log("Testing validation -- gender")
+	t.Log("Testing validation -- gender") // Gender is no longer validated to allow for unknown genders
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
@@ -802,7 +802,7 @@ func TestRAddParticipants(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddParticipants(c)) {
-		assert.Equal(t, http.StatusBadRequest, response.Code)
+		assert.Equal(t, http.StatusOK, response.Code)
 	}
 	// Test validation -- distance
 	t.Log("Testing validation -- distance")

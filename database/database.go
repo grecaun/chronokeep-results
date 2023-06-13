@@ -10,7 +10,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 7
+	CurrentVersion        = 8
 	MaxLoginAttempts      = 4
 )
 

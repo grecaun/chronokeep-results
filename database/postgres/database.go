@@ -269,7 +269,7 @@ func (p *Postgres) createTables() error {
 				"first VARCHAR(100) NOT NULL, " +
 				"last VARCHAR(100) NOT NULL, " +
 				"age INT NOT NULL, " +
-				"gender VARCHAR(5) NOT NULL, " +
+				"gender VARCHAR(50) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
 				"chip VARCHAR(200) DEFAULT '', " +
@@ -546,6 +546,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 4 && newVersion >= 4 {
+		log.Debug("Updating to database version 4.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
@@ -556,6 +557,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 5 && newVersion >= 5 {
+		log.Debug("Updating to database version 5.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
@@ -566,6 +568,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 6 && newVersion >= 6 {
+		log.Debug("Updating to database version 6.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(5);",
@@ -576,6 +579,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 7 && newVersion >= 7 {
+		log.Debug("Updating to database version 7.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person "+
@@ -585,6 +589,54 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		if err != nil {
 			tx.Rollback(ctx)
 			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 8 && newVersion >= 8 {
+		log.Debug("Updating to database version 8.")
+		queries := []myQuery{
+			{
+				name:  "RenamePerson",
+				query: "ALTER TABLE person RENAME TO person_old;",
+			},
+			{
+				name: "CreateNewPerson",
+				query: "CREATE TABLE IF NOT EXISTS person(" +
+					"person_id BIGSERIAL NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"age INT NOT NULL, " +
+					"gender VARCHAR(50) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"chip VARCHAR(200) DEFAULT '', " +
+					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+					"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (person_id)" +
+					");",
+			},
+			{
+				name: "InsertPerson",
+				query: "INSERT INTO person(person_id, event_year_id, bib, first, last, age, " +
+					"gender, age_group, distance, chip, anonymous) " +
+					"SELECT * FROM person_old;",
+			},
+			{
+				name:  "DeleteOldPerson",
+				query: "DROP TABLE person_old;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.Exec(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback(ctx)
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
 		}
 	}
 	_, err = tx.Exec(
