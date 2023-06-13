@@ -593,50 +593,13 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 	}
 	if oldVersion < 8 && newVersion >= 8 {
 		log.Debug("Updating to database version 8.")
-		queries := []myQuery{
-			{
-				name:  "RenamePerson",
-				query: "ALTER TABLE person RENAME TO person_old;",
-			},
-			{
-				name: "CreateNewPerson",
-				query: "CREATE TABLE IF NOT EXISTS person(" +
-					"person_id BIGSERIAL NOT NULL, " +
-					"event_year_id BIGINT NOT NULL, " +
-					"bib VARCHAR(100) NOT NULL, " +
-					"first VARCHAR(100) NOT NULL, " +
-					"last VARCHAR(100) NOT NULL, " +
-					"age INT NOT NULL, " +
-					"gender VARCHAR(50) NOT NULL, " +
-					"age_group VARCHAR(200), " +
-					"distance VARCHAR(200) NOT NULL, " +
-					"chip VARCHAR(200) DEFAULT '', " +
-					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
-					"CONSTRAINT one_person_new UNIQUE (event_year_id, bib), " +
-					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
-					"PRIMARY KEY (person_id)" +
-					");",
-			},
-			{
-				name: "InsertPerson",
-				query: "INSERT INTO person(person_id, event_year_id, bib, first, last, age, " +
-					"gender, age_group, distance, chip, anonymous) " +
-					"SELECT * FROM person_old;",
-			},
-			{
-				name:  "DeleteOldPerson",
-				query: "DROP TABLE person_old;",
-			},
-		}
-		for _, q := range queries {
-			_, err := tx.Exec(
-				ctx,
-				q.query,
-			)
-			if err != nil {
-				tx.Rollback(ctx)
-				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
-			}
+		_, err := tx.Exec(
+			ctx,
+			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(50) NOT NULL;",
+		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	_, err = tx.Exec(
