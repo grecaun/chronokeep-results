@@ -516,7 +516,7 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		log.Debug("Updating to database version 8.")
 		_, err := tx.ExecContext(
 			ctx,
-			"ALTER TABLE person MODIFY gender VARCHAR(50) NOT NULL;",
+			"ALTER TABLE person MODIFY gender VARCHAR(50);",
 		)
 		if err != nil {
 			tx.Rollback()

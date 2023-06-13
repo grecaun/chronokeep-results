@@ -595,7 +595,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		log.Debug("Updating to database version 8.")
 		_, err := tx.Exec(
 			ctx,
-			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(50) NOT NULL;",
+			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(50);",
 		)
 		if err != nil {
 			tx.Rollback(ctx)
