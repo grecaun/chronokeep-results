@@ -612,7 +612,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 					"distance VARCHAR(200) NOT NULL, " +
 					"chip VARCHAR(200) DEFAULT '', " +
 					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
-					"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+					"CONSTRAINT one_person_new UNIQUE (event_year_id, bib), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 					"PRIMARY KEY (person_id)" +
 					");",
