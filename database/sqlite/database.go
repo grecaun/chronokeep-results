@@ -215,7 +215,7 @@ func (s *SQLite) createTables() error {
 				"event_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
-				"slug VARCHAR(20) NOT NULL, " +
+				"slug VARCHAR(50) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
@@ -455,7 +455,8 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		_, err := tx.ExecContext(
 			ctx,
 			"ALTER TABLE person "+
-				"ADD COLUMN chip VARCHAR(200) DEFAULT '', "+
+				"ADD COLUMN chip VARCHAR(200) DEFAULT ''; "+
+				"ALTER TABLE person "+
 				"ADD COLUMN anonymous SMALLINT NOT NULL DEFAULT 0;",
 		)
 		if err != nil {
@@ -497,6 +498,55 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "DeleteOldPerson",
 				query: "DROP TABLE person_old;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 9 && newVersion >= 9 {
+		log.Debug("Updating to database version 9.")
+		queries := []myQuery{
+			{
+				name:  "RenameEvent",
+				query: "ALTER TABLE event RENAME TO event_old;",
+			},
+			{
+				name: "CreateNewEvent",
+				query: "CREATE TABLE IF NOT EXISTS event(" +
+					"event_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"account_id BIGINT NOT NULL, " +
+					"event_name VARCHAR(100) NOT NULL, " +
+					"slug VARCHAR(50) NOT NULL, " +
+					"website VARCHAR(200), " +
+					"image VARCHAR(200), " +
+					"contact_email VARCHAR(100), " +
+					"access_restricted BOOL DEFAULT FALSE, " +
+					"event_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+					"event_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+					"event_deleted BOOL DEFAULT FALSE, " +
+					"event_type VARCHAR(20) DEFAULT 'distance', " +
+					"UNIQUE(event_name), " +
+					"UNIQUE(slug)," +
+					"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
+					");",
+			},
+			{
+				name: "InsertEvent",
+				query: "INSERT INTO event(event_id, account_id, event_name, slug, website, image, " +
+					"contact_email, access_restricted, event_created_at, event_updated_at, event_deleted, event_type) " +
+					"SELECT * FROM event_old;",
+			},
+			{
+				name:  "DeleteOldEvent",
+				query: "DROP TABLE event_old;",
 			},
 		}
 		for _, q := range queries {

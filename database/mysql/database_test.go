@@ -3,6 +3,7 @@ package mysql
 import (
 	"chronokeep/results/auth"
 	"chronokeep/results/database"
+	"chronokeep/results/types"
 	"chronokeep/results/util"
 	"context"
 	"errors"
@@ -13,7 +14,7 @@ import (
 
 const (
 	dbName     = "results_test"
-	dbHost     = "database.lan"
+	dbHost     = "localhost"
 	dbUser     = "results_test"
 	dbPassword = "results_test"
 	dbPort     = 3306
@@ -285,6 +286,53 @@ func TestUpgrade(t *testing.T) {
 	if db == nil || db.db == nil {
 		t.Fatalf("db variable not set")
 	}
+	// Set up some basic information in the database to ensure we can
+	// upgrade with existing data.
+	account1 := &types.Account{
+		Name:     "John Smith",
+		Email:    "j@test.com",
+		Type:     "admin",
+		Password: testHashPassword("password"),
+	}
+	account1, _ = db.AddAccount(*account1)
+	event1 := &types.Event{
+		AccountIdentifier: account1.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+		ContactEmail:      "event1@test.com",
+		AccessRestricted:  false,
+	}
+	event1, _ = db.AddEvent(*event1)
+	eventYear1 := &types.EventYear{
+		EventIdentifier: event1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
+		Live:            false,
+	}
+	eventYear1, _ = db.AddEventYear(*eventYear1)
+	results := []types.Result{
+		{
+			Bib:           "100",
+			First:         "John",
+			Last:          "Smith",
+			Age:           24,
+			Gender:        "M",
+			AgeGroup:      "20-29",
+			Distance:      "1 Mile",
+			Seconds:       377,
+			Milliseconds:  0,
+			Segment:       "",
+			Location:      "Start/Finish",
+			Occurence:     1,
+			Ranking:       1,
+			AgeRanking:    1,
+			GenderRanking: 1,
+			Finish:        false,
+			Chip:          "10003",
+			Anonymous:     true,
+		},
+	}
+	_, _ = db.AddResults(eventYear1.Identifier, results)
 	// Verify version 1
 	version := db.checkVersion()
 	if version != 1 {
@@ -327,14 +375,41 @@ func TestUpgrade(t *testing.T) {
 	if version != 5 {
 		t.Fatalf("Version set to '%v' expected '5'.", version)
 	}
-	// Verify verison 6
+	// Verify version 6
 	err = db.updateTables(version, 6)
 	if err != nil {
 		t.Fatalf("error updating database from %d to %d: %v", version, 6, err)
 	}
 	version = db.checkVersion()
 	if version != 6 {
-		t.Fatalf("Version set to '%v' expected '5'.", version)
+		t.Fatalf("Version set to '%v' expected '6'.", version)
+	}
+	// Verify version 7
+	err = db.updateTables(version, 7)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 7, err)
+	}
+	version = db.checkVersion()
+	if version != 7 {
+		t.Fatalf("Version set to '%v' expected '7'.", version)
+	}
+	// Verify version 8
+	err = db.updateTables(version, 8)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 8, err)
+	}
+	version = db.checkVersion()
+	if version != 8 {
+		t.Fatalf("Version set to '%v' expected '8'.", version)
+	}
+	// Verify version 9
+	err = db.updateTables(version, 9)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 9, err)
+	}
+	version = db.checkVersion()
+	if version != 9 {
+		t.Fatalf("Version set to '%v' expected '9'.", version)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()

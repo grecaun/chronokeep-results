@@ -227,7 +227,7 @@ func (p *Postgres) createTables() error {
 				"event_id BIGSERIAL NOT NULL, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
-				"slug VARCHAR(20) NOT NULL, " +
+				"slug VARCHAR(50) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
@@ -596,6 +596,17 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(50);",
+		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 9 && newVersion >= 9 {
+		log.Debug("Updating to database version 9.")
+		_, err := tx.Exec(
+			ctx,
+			"ALTER TABLE event ALTER COLUMN slug TYPE VARCHAR(50);",
 		)
 		if err != nil {
 			tx.Rollback(ctx)

@@ -227,7 +227,7 @@ func (m *MySQL) createTables() error {
 				"event_id BIGINT NOT NULL AUTO_INCREMENT, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
-				"slug VARCHAR(20) NOT NULL, " +
+				"slug VARCHAR(50) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
 				"contact_email VARCHAR(100), " +
@@ -517,6 +517,17 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		_, err := tx.ExecContext(
 			ctx,
 			"ALTER TABLE person MODIFY gender VARCHAR(50);",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	if oldVersion < 9 && newVersion >= 9 {
+		log.Debug("Updating to database version 9.")
+		_, err := tx.ExecContext(
+			ctx,
+			"ALTER TABLE event MODIFY slug VARCHAR(50);",
 		)
 		if err != nil {
 			tx.Rollback()

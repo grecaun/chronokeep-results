@@ -43,7 +43,7 @@ func TestAddEvent(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
-		Slug:              "event1",
+		Slug:              "cascade-express-half-marathon",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
