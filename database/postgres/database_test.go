@@ -14,7 +14,7 @@ import (
 
 const (
 	dbName     = "results_test"
-	dbHost     = "localhost"
+	dbHost     = "database.lan"
 	dbUser     = "results_test"
 	dbPassword = "results_test"
 	dbPort     = 5432
@@ -75,6 +75,168 @@ func setupTests(t *testing.T) (*Postgres, func(t *testing.T), error) {
 		}
 		t.Log("Database successfully deleted.")
 	}, nil
+}
+
+func oldAddEvent(p *Postgres, event types.Event) (*types.Event, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	var id int64
+	err = db.QueryRow(
+		ctx,
+		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING (event_id);",
+		event.Name,
+		event.Slug,
+		event.Website,
+		event.Image,
+		event.ContactEmail,
+		event.AccountIdentifier,
+		event.AccessRestricted,
+	).Scan(&id)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add event: %v", err)
+	}
+	if id == 0 {
+		return nil, errors.New("id value set to 0")
+	}
+	return &types.Event{
+		Identifier:        id,
+		AccountIdentifier: event.AccountIdentifier,
+		Name:              event.Name,
+		Slug:              event.Slug,
+		Website:           event.Website,
+		Image:             event.Image,
+		ContactEmail:      event.ContactEmail,
+		AccessRestricted:  event.AccessRestricted,
+		Type:              "",
+	}, nil
+}
+
+func oldGetEvent(p *Postgres, slug string) (*types.Event, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.Query(
+		ctx,
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, "+
+			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
+		slug,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving event: %v", err)
+	}
+	defer res.Close()
+	if res.Next() {
+		var outEvent types.Event
+		err := res.Scan(
+			&outEvent.Identifier,
+			&outEvent.Name,
+			&outEvent.Slug,
+			&outEvent.Website,
+			&outEvent.Image,
+			&outEvent.AccountIdentifier,
+			&outEvent.ContactEmail,
+			&outEvent.AccessRestricted,
+			&outEvent.RecentTime,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting event: %v", err)
+		}
+		return &outEvent, nil
+	}
+	return nil, nil
+}
+
+func oldAddResults(p *Postgres, eventYearID int64, results []types.Result) ([]types.Result, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to begin transaction to add results: %v", err)
+	}
+	for _, result := range results {
+		_, err = tx.Exec(
+			ctx,
+			"INSERT INTO result("+
+				"event_year_id, "+
+				"bib, "+
+				"first, "+
+				"last, "+
+				"age, "+
+				"gender, "+
+				"age_group, "+
+				"distance, "+
+				"seconds, "+
+				"milliseconds, "+
+				"chip_seconds, "+
+				"chip_milliseconds, "+
+				"segment, "+
+				"location, "+
+				"occurence, "+
+				"ranking, "+
+				"age_ranking, "+
+				"gender_ranking, "+
+				"finish"+
+				") "+
+				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) "+
+				"ON CONFLICT (event_year_id, bib, location, occurence) DO UPDATE SET "+
+				"first=$3, "+
+				"last=$4, "+
+				"age=$5, "+
+				"gender=$6, "+
+				"age_group=$7, "+
+				"distance=$8, "+
+				"seconds=$9, "+
+				"milliseconds=$10, "+
+				"chip_seconds=$11, "+
+				"chip_milliseconds=$12, "+
+				"segment=$13, "+
+				"ranking=$16, "+
+				"age_ranking=$17, "+
+				"gender_ranking=$18, "+
+				"finish=$19;",
+			eventYearID,
+			result.Bib,
+			result.First,
+			result.Last,
+			result.Age,
+			result.Gender,
+			result.AgeGroup,
+			result.Distance,
+			result.Seconds,
+			result.Milliseconds,
+			result.ChipSeconds,
+			result.ChipMilliseconds,
+			result.Segment,
+			result.Location,
+			result.Occurence,
+			result.Ranking,
+			result.AgeRanking,
+			result.GenderRanking,
+			result.Finish,
+		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return nil, err
+		}
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, err
+	}
+	return results, nil
 }
 
 func setupOld() (*Postgres, error) {
@@ -265,24 +427,29 @@ func setupOld() (*Postgres, error) {
 		},
 		// TRIGGERS FOR UPDATING UPDATED_AT timestamps
 		{
-			name:  "AccountTableTrigger",
-			query: "CREATE TRIGGER update_account_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE account_timestamp_column();",
+			name: "AccountTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_account_timestamp ON account; " +
+				"CREATE TRIGGER update_account_timestamp BEFORE UPDATE ON account FOR EACH ROW EXECUTE PROCEDURE account_timestamp_column();",
 		},
 		{
-			name:  "KeyTableTrigger",
-			query: "CREATE TRIGGER update_key_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE key_timestamp_column();",
+			name: "KeyTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_key_timestamp ON api_key; " +
+				"CREATE TRIGGER update_key_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE key_timestamp_column();",
 		},
 		{
-			name:  "EventTableTrigger",
-			query: "CREATE TRIGGER update_event_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE event_timestamp_column();",
+			name: "EventTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_event_timestamp ON event; " +
+				"CREATE TRIGGER update_event_timestamp BEFORE UPDATE ON event FOR EACH ROW EXECUTE PROCEDURE event_timestamp_column();",
 		},
 		{
-			name:  "EventYearTableTrigger",
-			query: "CREATE TRIGGER update_event_year_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE event_year_timestamp_column();",
+			name: "EventYearTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_event_year_timestamp ON event_year; " +
+				"CREATE TRIGGER update_event_year_timestamp BEFORE UPDATE ON event_year FOR EACH ROW EXECUTE PROCEDURE event_year_timestamp_column();",
 		},
 		{
-			name:  "ResultTableTrigger",
-			query: "CREATE TRIGGER update_result_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE result_timestamp_column();",
+			name: "ResultTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_result_timestamp ON result; " +
+				"CREATE TRIGGER update_result_timestamp BEFORE UPDATE ON result FOR EACH ROW EXECUTE PROCEDURE result_timestamp_column();",
 		},
 	}
 
@@ -364,13 +531,19 @@ func TestUpgrade(t *testing.T) {
 	}
 	// Set up some basic information in the database to ensure we can
 	// upgrade with existing data.
+	t.Log("Adding account.")
 	account1 := &types.Account{
 		Name:     "John Smith",
 		Email:    "j@test.com",
 		Type:     "admin",
 		Password: testHashPassword("password"),
 	}
-	account1, _ = db.AddAccount(*account1)
+	_, _ = db.AddAccount(*account1)
+	account1, err = db.GetAccount(account1.Email)
+	if err != nil {
+		t.Fatalf("Error adding account: %v", err)
+	}
+	t.Log("Adding Event.")
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -378,14 +551,24 @@ func TestUpgrade(t *testing.T) {
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
-	event1, _ = db.AddEvent(*event1)
+	_, _ = oldAddEvent(db, *event1)
+	event1, err = oldGetEvent(db, event1.Slug)
+	if err != nil {
+		t.Fatalf("Error adding event: %v", err)
+	}
+	t.Log("Adding EventYear.")
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
 		Live:            false,
 	}
-	eventYear1, _ = db.AddEventYear(*eventYear1)
+	_, _ = db.AddEventYear(*eventYear1)
+	eventYear1, err = db.GetEventYear(event1.Slug, eventYear1.Year)
+	if err != nil {
+		t.Fatalf("Error adding event year: %v", err)
+	}
+	t.Log("Adding results.")
 	results := []types.Result{
 		{
 			Bib:           "100",
@@ -408,7 +591,11 @@ func TestUpgrade(t *testing.T) {
 			Anonymous:     true,
 		},
 	}
-	_, _ = db.AddResults(eventYear1.Identifier, results)
+	_, err = oldAddResults(db, eventYear1.Identifier, results)
+	if err != nil {
+		t.Fatalf("Error adding results: %v", err)
+	}
+	t.Log("Testing upgrades.")
 	// Verify version 1
 	version := db.checkVersion()
 	if version != 1 {

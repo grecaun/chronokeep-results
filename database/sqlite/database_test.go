@@ -343,13 +343,19 @@ func TestUpgrade(t *testing.T) {
 	}
 	// Set up some basic information in the database to ensure we can
 	// upgrade with existing data.
+	t.Log("Adding account.")
 	account1 := &types.Account{
 		Name:     "John Smith",
 		Email:    "j@test.com",
 		Type:     "admin",
 		Password: testHashPassword("password"),
 	}
-	account1, _ = db.AddAccount(*account1)
+	_, _ = db.AddAccount(*account1)
+	account1, err = db.GetAccount(account1.Email)
+	if err != nil {
+		t.Fatalf("Error adding account: %v", err)
+	}
+	t.Log("Adding Event.")
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -357,14 +363,24 @@ func TestUpgrade(t *testing.T) {
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
-	event1, _ = db.AddEvent(*event1)
+	_, _ = db.AddEvent(*event1)
+	event1, err = db.GetEvent(event1.Slug)
+	if err != nil {
+		t.Fatalf("Error adding event: %v", err)
+	}
+	t.Log("Adding EventYear.")
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
 		Live:            false,
 	}
-	eventYear1, _ = db.AddEventYear(*eventYear1)
+	_, _ = db.AddEventYear(*eventYear1)
+	eventYear1, err = db.GetEventYear(event1.Slug, eventYear1.Year)
+	if err != nil {
+		t.Fatalf("Error adding event year: %v", err)
+	}
+	t.Log("Adding results.")
 	results := []types.Result{
 		{
 			Bib:           "100",

@@ -370,24 +370,29 @@ func (p *Postgres) createTables() error {
 		},
 		// TRIGGERS FOR UPDATING UPDATED_AT timestamps
 		{
-			name:  "AccountTableTrigger",
-			query: "CREATE TRIGGER update_account_timestamp BEFORE UPDATE ON account FOR EACH ROW EXECUTE PROCEDURE account_timestamp_column();",
+			name: "AccountTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_account_timestamp ON account; " +
+				"CREATE TRIGGER update_account_timestamp BEFORE UPDATE ON account FOR EACH ROW EXECUTE PROCEDURE account_timestamp_column();",
 		},
 		{
-			name:  "KeyTableTrigger",
-			query: "CREATE TRIGGER update_key_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE key_timestamp_column();",
+			name: "KeyTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_key_timestamp ON api_key; " +
+				"CREATE TRIGGER update_key_timestamp BEFORE UPDATE ON api_key FOR EACH ROW EXECUTE PROCEDURE key_timestamp_column();",
 		},
 		{
-			name:  "EventTableTrigger",
-			query: "CREATE TRIGGER update_event_timestamp BEFORE UPDATE ON event FOR EACH ROW EXECUTE PROCEDURE event_timestamp_column();",
+			name: "EventTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_event_timestamp ON event; " +
+				"CREATE TRIGGER update_event_timestamp BEFORE UPDATE ON event FOR EACH ROW EXECUTE PROCEDURE event_timestamp_column();",
 		},
 		{
-			name:  "EventYearTableTrigger",
-			query: "CREATE TRIGGER update_event_year_timestamp BEFORE UPDATE ON event_year FOR EACH ROW EXECUTE PROCEDURE event_year_timestamp_column();",
+			name: "EventYearTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_event_year_timestamp ON event_year; " +
+				"CREATE TRIGGER update_event_year_timestamp BEFORE UPDATE ON event_year FOR EACH ROW EXECUTE PROCEDURE event_year_timestamp_column();",
 		},
 		{
-			name:  "ResultTableTrigger",
-			query: "CREATE TRIGGER update_result_timestamp BEFORE UPDATE ON result FOR EACH ROW EXECUTE PROCEDURE result_timestamp_column();",
+			name: "ResultTableTrigger",
+			query: "DROP TRIGGER IF EXISTS update_result_timestamp ON result; " +
+				"CREATE TRIGGER update_result_timestamp BEFORE UPDATE ON result FOR EACH ROW EXECUTE PROCEDURE result_timestamp_column();",
 		},
 	}
 

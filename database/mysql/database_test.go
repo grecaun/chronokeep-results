@@ -14,7 +14,7 @@ import (
 
 const (
 	dbName     = "results_test"
-	dbHost     = "localhost"
+	dbHost     = "database.lan"
 	dbUser     = "results_test"
 	dbPassword = "results_test"
 	dbPort     = 3306
@@ -75,6 +75,174 @@ func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 		}
 		t.Log("Database successfully deleted.")
 	}, nil
+}
+
+func oldAddEvent(m *MySQL, event types.Event) (*types.Event, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted) VALUES (?, ?, ?, ?, ?, ?, ?);",
+		event.Name,
+		event.Slug,
+		event.Website,
+		event.Image,
+		event.ContactEmail,
+		event.AccountIdentifier,
+		event.AccessRestricted,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add event: %v", err)
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine ID for event: %v", err)
+	}
+	return &types.Event{
+		Identifier:        id,
+		AccountIdentifier: event.AccountIdentifier,
+		Name:              event.Name,
+		Slug:              event.Slug,
+		Website:           event.Website,
+		Image:             event.Image,
+		ContactEmail:      event.ContactEmail,
+		AccessRestricted:  event.AccessRestricted,
+		Type:              "",
+	}, nil
+}
+
+func oldGetEvent(m *MySQL, slug string) (*types.Event, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, "+
+			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=?;",
+		slug,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving event: %v", err)
+	}
+	defer res.Close()
+	if res.Next() {
+		var outEvent types.Event
+		err := res.Scan(
+			&outEvent.Identifier,
+			&outEvent.Name,
+			&outEvent.Slug,
+			&outEvent.Website,
+			&outEvent.Image,
+			&outEvent.AccountIdentifier,
+			&outEvent.ContactEmail,
+			&outEvent.AccessRestricted,
+			&outEvent.RecentTime,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting event: %v", err)
+		}
+		return &outEvent, nil
+	}
+	return nil, nil
+}
+
+func oldAddResults(m *MySQL, eventYearID int64, results []types.Result) ([]types.Result, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("unable to begin transaction to add results: %v", err)
+	}
+	stmt, err := tx.PrepareContext(
+		ctx,
+		"INSERT INTO result("+
+			"event_year_id, "+
+			"bib, "+
+			"first, "+
+			"last, "+
+			"age, "+
+			"gender, "+
+			"age_group, "+
+			"distance, "+
+			"seconds, "+
+			"milliseconds, "+
+			"chip_seconds, "+
+			"chip_milliseconds, "+
+			"segment, "+
+			"location, "+
+			"occurence, "+
+			"ranking, "+
+			"age_ranking, "+
+			"gender_ranking, "+
+			"finish"+
+			") "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			"ON DUPLICATE KEY UPDATE "+
+			"first=VALUES(first), "+
+			"last=VALUES(last), "+
+			"age=VALUES(age), "+
+			"gender=VALUES(gender), "+
+			"age_group=VALUES(age_group), "+
+			"distance=VALUES(distance), "+
+			"seconds=VALUES(seconds), "+
+			"milliseconds=VALUES(milliseconds), "+
+			"chip_seconds=VALUES(chip_seconds), "+
+			"chip_milliseconds=VALUES(chip_milliseconds), "+
+			"segment=VALUES(segment), "+
+			"ranking=VALUES(ranking), "+
+			"age_ranking=VALUES(age_ranking), "+
+			"gender_ranking=VALUES(gender_ranking), "+
+			"finish=VALUES(finish);",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)
+	}
+	for _, result := range results {
+		_, err = stmt.ExecContext(
+			ctx,
+			eventYearID,
+			result.Bib,
+			result.First,
+			result.Last,
+			result.Age,
+			result.Gender,
+			result.AgeGroup,
+			result.Distance,
+			result.Seconds,
+			result.Milliseconds,
+			result.ChipSeconds,
+			result.ChipMilliseconds,
+			result.Segment,
+			result.Location,
+			result.Occurence,
+			result.Ranking,
+			result.AgeRanking,
+			result.GenderRanking,
+			result.Finish,
+		)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return results, nil
 }
 
 func setupOld() (*MySQL, error) {
@@ -288,13 +456,19 @@ func TestUpgrade(t *testing.T) {
 	}
 	// Set up some basic information in the database to ensure we can
 	// upgrade with existing data.
+	t.Log("Adding account.")
 	account1 := &types.Account{
 		Name:     "John Smith",
 		Email:    "j@test.com",
 		Type:     "admin",
 		Password: testHashPassword("password"),
 	}
-	account1, _ = db.AddAccount(*account1)
+	_, _ = db.AddAccount(*account1)
+	account1, err = db.GetAccount(account1.Email)
+	if err != nil {
+		t.Fatalf("Error adding account: %v", err)
+	}
+	t.Log("Adding Event.")
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -302,14 +476,24 @@ func TestUpgrade(t *testing.T) {
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
-	event1, _ = db.AddEvent(*event1)
+	_, _ = oldAddEvent(db, *event1)
+	event1, err = oldGetEvent(db, event1.Slug)
+	if err != nil {
+		t.Fatalf("Error adding event: %v", err)
+	}
+	t.Log("Adding EventYear.")
 	eventYear1 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
 		Live:            false,
 	}
-	eventYear1, _ = db.AddEventYear(*eventYear1)
+	_, _ = db.AddEventYear(*eventYear1)
+	eventYear1, err = db.GetEventYear(event1.Slug, eventYear1.Year)
+	if err != nil {
+		t.Fatalf("Error adding event year: %v", err)
+	}
+	t.Log("Adding results.")
 	results := []types.Result{
 		{
 			Bib:           "100",
@@ -332,7 +516,11 @@ func TestUpgrade(t *testing.T) {
 			Anonymous:     true,
 		},
 	}
-	_, _ = db.AddResults(eventYear1.Identifier, results)
+	_, err = oldAddResults(db, eventYear1.Identifier, results)
+	if err != nil {
+		t.Fatalf("Error adding results: %v", err)
+	}
+	t.Log("Testing upgrades.")
 	// Verify version 1
 	version := db.checkVersion()
 	if version != 1 {
