@@ -10,7 +10,17 @@ import (
 )
 
 var (
-	hostRegex = regexp.MustCompile(`^https?:\/\/([^\/:]+)`)
+	hostRegex   = regexp.MustCompile(`^https?:\/\/([^\/:]+)`)
+	timeFormats = [...]string{
+		"2006/01/02",
+		"2006/1/2",
+		"01/02/2006",
+		"1/2/2006",
+		"2006-01-02",
+		"2006-1-2",
+		"01-02-2006",
+		"1-2-2006",
+	}
 )
 
 // Key outline for data stored about an PI key
@@ -124,11 +134,13 @@ func (k RequestKey) ToKey() Key {
 		out.ValidUntil = &valid
 		return out
 	}
-	valid, err = time.ParseInLocation("2006/01/02", k.ValidUntil, time.Local)
-	if err == nil {
-		valid = valid.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59)
-		out.ValidUntil = &valid
-		return out
+	for _, val := range timeFormats {
+		valid, err = time.ParseInLocation(val, k.ValidUntil, time.Local)
+		if err == nil {
+			valid = valid.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59)
+			out.ValidUntil = &valid
+			return out
+		}
 	}
 	return out
 }
@@ -139,10 +151,12 @@ func (k RequestKey) GetValidUntil() *time.Time {
 	if err == nil {
 		return &valid
 	}
-	valid, err = time.ParseInLocation("2006/01/02", k.ValidUntil, time.Local)
-	if err == nil {
-		valid = valid.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59)
-		return &valid
+	for _, val := range timeFormats {
+		valid, err = time.ParseInLocation(val, k.ValidUntil, time.Local)
+		if err == nil {
+			valid = valid.Add(time.Hour * 23).Add(time.Minute * 59).Add(time.Second * 59)
+			return &valid
+		}
 	}
 	return nil
 }
