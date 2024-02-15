@@ -20,7 +20,6 @@ env-bash.sh
 
 # Compiled files
 results
-results.exe
 
 *.nginx.conf
 *crontab*

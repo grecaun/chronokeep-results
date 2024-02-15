@@ -48,7 +48,7 @@ else
         exit 1
     fi;
 fi;
-echo "--- Checking latest results release version. ---"
+echo "--- Checking latest results Release version. ---"
 echo "------------------------------------------------"
 LATEST_VERSION=`curl ${REPO_URL} 2>&1 | grep tag_name | sed -e "s/[\":,]//g" | sed -e "s/tag_name//" | sed -e "s/v//"`
 CURRENT_VERSION=`cat ${DEST}version.txt | sed -e "s/v//"`
@@ -67,7 +67,7 @@ CURRENT_VERSION_PATCH=`echo ${CURRENT_VERSION} | cut -d '.' -f 3`
 if [[ ${LATEST_VERSION_MAJOR} -gt ${CURRENT_VERSION_MAJOR} ]] ||
         [[ ${LATEST_VERSION_MAJOR} -eq ${CURRENT_VERSION_MAJOR} && ${LATEST_VERSION_MINOR} -gt ${CURRENT_VERSION_MINOR} ]] ||
         [[ ${LATEST_VERSION_MAJOR} -eq ${CURRENT_VERSION_MAJOR} && ${LATEST_VERSION_MINOR} -eq ${CURRENT_VERSION_MINOR} && ${LATEST_VERSION_PATCH} -gt ${CURRENT_VERSION_PATCH} ]]; then
-        echo "---- New version found! Updating results now ---"
+        echo "---- New version found! Updating Results now ---"
         echo "------------------------------------------------"
         download_url=`curl ${REPO_URL} 2>&1 | grep browser_download_url | sed -e "s/[\",]//g" | sed -e "s/browser_download_url://"`
         curl -L ${download_url} -o ${DEST}release.tar.gz
