@@ -21,3 +21,9 @@ env-bash.sh
 # Compiled files
 results
 results.exe
+
+*.nginx.conf
+*crontab*
+*.service
+*.sh
+*.sqlite
