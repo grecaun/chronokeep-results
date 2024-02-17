@@ -107,7 +107,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 						"gender_ranking, finish, result_type, chip, anonymous FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds, segment as max_segment "+
-						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b "+
+						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
 						"AND b.mx_seconds=r.seconds AND b.mx_segment=r.segment "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
@@ -123,7 +123,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 						"gender_ranking, finish, result_type, chip, anonymous FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds, segment as max_segment "+
-						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b "+
+						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
 						"AND b.mx_seconds=r.seconds AND b.mx_segment=r.segment "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC;",
@@ -184,7 +184,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 					"gender_ranking, finish, result_type, chip, anonymous FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds, segment as max_segment "+
-					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b "+
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
 					"AND b.mx_seconds=r.seconds AND b.mx_segment=r.segment "+
 					"WHERE event_year_id=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
@@ -199,7 +199,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
 					"gender_ranking, finish, result_type, chip, anonymous FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds, segment as max_segment "+
-					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id) b "+
+					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
 					"AND b.mx_seconds=r.seconds AND b.mx_segment=r.segment "+
 					"WHERE event_year_id=? ORDER BY seconds ASC;",
