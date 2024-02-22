@@ -560,6 +560,25 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
+	if oldVersion < 10 && newVersion >= 10 {
+		log.Debug("Updating to database version 10.")
+		queries := []myQuery{
+			{
+				name:  "Update DNF entries.",
+				query: "UPDATE result SET seconds=1000000 WHERE result_type=30 OR result_type=3;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=$1 WHERE name='version';",
