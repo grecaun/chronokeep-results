@@ -38,6 +38,13 @@ func (h Handler) Bind(group *echo.Group) {
 	// Account Login
 	group.POST("/account/login", h.Login)
 	group.POST("/account/refresh", h.Refresh)
+	// Blocked/banned emails/phone numbers
+	group.POST("/blocked/phones/add", h.AddBannedPhone)
+	group.GET("/blocked/phones/get", h.GetBannedPhones)
+	group.POST("/blocked/phones/unblock", h.RemoveBannedPhone)
+	group.POST("/blocked/emails/add", h.AddBannedEmail)
+	group.GET("/blocked/emails/get", h.GetBannedEmails)
+	group.POST("/blocked/emails/unblock", h.RemoveBannedEmail)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {
