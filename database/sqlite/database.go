@@ -128,8 +128,10 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE call_record; DROP TABLE result; DROP TABLE person; DROP TABLE event_year; "+
-			"DROP TABLE event; DROP TABLE api_key; DROP TABLE account; DROP TABLE settings;",
+		"DROP TABLE banned_phones; DROP TABLE banned_emails; DROP TABLE call_record; "+
+			"DROP TABLE result; DROP TABLE person; DROP TABLE event_year; "+
+			"DROP TABLE event; DROP TABLE api_key; DROP TABLE account; "+
+			"DROP TABLE settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -296,6 +298,22 @@ func (s *SQLite) createTables() error {
 				"count INT DEFAULT 0, " +
 				"CONSTRAINT account_time UNIQUE (account_id, time)," +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
+				");",
+		},
+		// BANNED PHONES TABLE
+		{
+			name: "CreateBannedPhones",
+			query: "CREATE TABLE IF NOT EXISTS banned_phones(" +
+				"banned_phone VARCHAR(20), " +
+				"CONSTRAINT unique_banned_phone UNIQUE (banned_phone)" +
+				");",
+		},
+		// BANNED EMAILS TABLE
+		{
+			name: "CreateBannedEmails",
+			query: "CREATE TABLE IF NOT EXISTS banned_emails(" +
+				"banned_email VARCHAR(200), " +
+				"CONSTRAINT unique_banned_email UNIQUE (banned_email)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -566,6 +584,35 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "Update DNF entries.",
 				query: "UPDATE result SET seconds=1000000 WHERE result_type=30 OR result_type=3;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 11 && newVersion >= 11 {
+		log.Debug("Updating to database version 11.")
+		queries := []myQuery{
+			{
+				name: "CreateBannedPhones",
+				query: "CREATE TABLE IF NOT EXISTS banned_phones(" +
+					"banned_phone VARCHAR(200), " +
+					"UNIQUE(banned_phone)" +
+					");",
+			},
+			{
+				name: "CreateBannedEmails",
+				query: "CREATE TABLE IF NOT EXISTS banned_emails(" +
+					"banned_email VARCHAR(200), " +
+					"UNIQUE(banned_email)" +
+					");",
 			},
 		}
 		for _, q := range queries {
