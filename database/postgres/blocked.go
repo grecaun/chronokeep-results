@@ -91,17 +91,13 @@ func (p *Postgres) UnblockPhone(phone string) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Exec(
+	_, err = db.Exec(
 		ctx,
 		"DELETE FROM banned_phones WHERE banned_phone=$1;",
 		phone,
 	)
 	if err != nil {
 		return fmt.Errorf("error unblocking phone number: %v", err)
-	}
-	num := res.RowsAffected()
-	if num < 1 {
-		return fmt.Errorf("phone number not found")
 	}
 	return nil
 }
@@ -191,17 +187,13 @@ func (p *Postgres) UnblockEmail(email string) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Exec(
+	_, err = db.Exec(
 		ctx,
 		"DELETE FROM banned_emails WHERE banned_email=$1;",
 		email,
 	)
 	if err != nil {
 		return fmt.Errorf("error unblocking email: %v", err)
-	}
-	num := res.RowsAffected()
-	if num < 1 {
-		return fmt.Errorf("email not found")
 	}
 	return nil
 }

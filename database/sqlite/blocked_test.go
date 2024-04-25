@@ -222,6 +222,14 @@ func TestUnblockPhone(t *testing.T) {
 	if found {
 		t.Errorf("Found number that should have been unblocked.")
 	}
+	err = db.UnblockPhone(blockedPhones[0])
+	if err != nil {
+		t.Errorf("Unexpected error when unblocking blocked phone: %v", err)
+	}
+	nums, _ = db.GetBlockedPhones()
+	if len(nums) != 1 {
+		t.Errorf("Expected to find %v blocked numbers, found %v.", 1, len(nums))
+	}
 }
 
 func TestAddBlockedEmail(t *testing.T) {
@@ -423,5 +431,13 @@ func TestUnblockEmail(t *testing.T) {
 	}
 	if found {
 		t.Errorf("Found number that should have been unblocked.")
+	}
+	err = db.UnblockEmail(blockedEmails[0])
+	if err != nil {
+		t.Errorf("Unexpected error when unblocking blocked email: %v", err)
+	}
+	nums, _ = db.GetBlockedEmails()
+	if len(nums) != 1 {
+		t.Errorf("Expected to find %v blocked numbers, found %v.", 1, len(nums))
 	}
 }

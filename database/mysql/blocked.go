@@ -110,12 +110,9 @@ func (m *MySQL) UnblockPhone(phone string) error {
 	if err != nil {
 		return fmt.Errorf("error unblocking phone number: %v", err)
 	}
-	num, err := res.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error determining number of rows on unblock phone: %v", err)
-	}
-	if num < 1 {
-		return fmt.Errorf("phone number not found")
 	}
 	return nil
 }
@@ -224,12 +221,9 @@ func (m *MySQL) UnblockEmail(email string) error {
 	if err != nil {
 		return fmt.Errorf("error unblocking email: %v", err)
 	}
-	num, err := res.RowsAffected()
+	_, err = res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error determining number of rows on unblock email: %v", err)
-	}
-	if num < 1 {
-		return fmt.Errorf("email not found")
 	}
 	return nil
 }
