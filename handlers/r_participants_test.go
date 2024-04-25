@@ -1333,3 +1333,7 @@ func TestRDeleteParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }
+
+func TestRUpdateParticipants(t *testing.T) {
+
+}

@@ -132,3 +132,7 @@ func (h Handler) RDeleteParticipants(c echo.Context) error {
 		Count: int(count),
 	})
 }
+
+func (h Handler) RUpdateParticipant(c echo.Context) error {
+	return nil
+}

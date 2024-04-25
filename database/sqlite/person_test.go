@@ -489,3 +489,61 @@ func TestNoDatabasePerson(t *testing.T) {
 		t.Fatalf("Expected error deleting people")
 	}
 }
+
+func TestUpdatePerson(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up tests. %v", err)
+	}
+	defer finalize(t)
+	setupPeopleTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	person, _ := db.AddPerson(eventYear.Identifier, people[0])
+	assert.NotNil(t, person)
+	id := person.Identifier
+	// test update
+	temp := people[0]
+	oldBib := temp.Bib
+	temp.Bib = "-200"
+	temp.Age = 4
+	temp.Chip = "nottheoldchip"
+	temp.AgeGroup = "Youngling"
+	temp.First = "Update!"
+	temp.Last = "Test"
+	temp.Distance = "12 Mile Fun"
+	temp.Gender = "U"
+	temp.Anonymous = !people[0].Anonymous
+	person, err = db.UpdatePerson(eventYear.Identifier, oldBib, temp)
+	if assert.NoError(t, err) {
+		assert.True(t, temp.Equals(person))
+		assert.Equal(t, temp.Age, person.Age)
+		assert.Equal(t, temp.AgeGroup, person.AgeGroup)
+		assert.Equal(t, temp.Bib, person.Bib)
+		assert.Equal(t, temp.Distance, person.Distance)
+		assert.Equal(t, temp.First, person.First)
+		assert.Equal(t, temp.Gender, person.Gender)
+		assert.Equal(t, temp.Last, person.Last)
+		assert.Equal(t, id, person.Identifier)
+		assert.Equal(t, temp.Chip, person.Chip)
+		assert.Equal(t, temp.Anonymous, person.Anonymous)
+	}
+	// test invalid update
+	temp = people[1]
+	oldBib = temp.Bib
+	temp.Bib = "newbib"
+	person, err = db.UpdatePerson(eventYear.Identifier, oldBib, temp)
+	assert.Error(t, err)
+	assert.Nil(t, person)
+}

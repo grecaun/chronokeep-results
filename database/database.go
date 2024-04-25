@@ -79,6 +79,7 @@ type Database interface {
 	AddPerson(eventYearID int64, person types.Person) (*types.Person, error)
 	AddPeople(eventYearID int64, people []types.Person) ([]types.Person, error)
 	DeletePeople(eventYearID int64, bibs []string) (int64, error)
+	UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error)
 	// Email and Phone blocking functions
 	AddBlockedPhone(phone string) error
 	AddBlockedPhones(phones []string) error

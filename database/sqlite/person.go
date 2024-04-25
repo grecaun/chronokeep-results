@@ -336,3 +336,81 @@ func (s *SQLite) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	}
 	return count, nil
 }
+
+func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	_, err = tx.ExecContext(
+		ctx,
+		"UPDATE person SET "+
+			"bib=$1, "+
+			"first=$2, "+
+			"last=$3, "+
+			"age=$4, "+
+			"gender=$5, "+
+			"age_group=$6, "+
+			"distance=$7, "+
+			"chip=$8, "+
+			"anonymous=$9 "+
+			"WHERE event_year_id=$10 AND bib=$11;",
+		person.Bib,
+		person.First,
+		person.Last,
+		person.Age,
+		person.Gender,
+		person.AgeGroup,
+		person.Distance,
+		person.Chip,
+		person.AnonyInt(),
+		eventYearID,
+		oldBib,
+	)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("error adding person to database: %v", err)
+	}
+	res, err := tx.QueryContext(
+		ctx,
+		"SELECT person_id FROM person WHERE event_year_id=$1 AND bib=$2;",
+		eventYearID,
+		person.Bib,
+	)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("error retrieving person_id: %v", err)
+	}
+	defer res.Close()
+	output := types.Person{
+		Bib:       person.Bib,
+		First:     person.First,
+		Last:      person.Last,
+		Age:       person.Age,
+		Gender:    person.Gender,
+		AgeGroup:  person.AgeGroup,
+		Distance:  person.Distance,
+		Chip:      person.Chip,
+		Anonymous: person.Anonymous,
+	}
+	if res.Next() {
+		res.Scan(
+			&output.Identifier,
+		)
+	} else {
+		tx.Rollback()
+		return nil, fmt.Errorf("person not found after add: %v", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("error committing transaction: %v", err)
+	}
+	return &output, nil
+}

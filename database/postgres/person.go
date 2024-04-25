@@ -280,3 +280,62 @@ func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) (int64, error)
 	}
 	return count, nil
 }
+
+func (p *Postgres) UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	output := types.Person{
+		Bib:       person.Bib,
+		First:     person.First,
+		Last:      person.Last,
+		Age:       person.Age,
+		Gender:    person.Gender,
+		AgeGroup:  person.AgeGroup,
+		Distance:  person.Distance,
+		Chip:      person.Chip,
+		Anonymous: person.Anonymous,
+	}
+	err = tx.QueryRow(
+		ctx,
+		"UPDATE person SET "+
+			"bib=$1, "+
+			"first=$2, "+
+			"last=$3, "+
+			"age=$4, "+
+			"gender=$5, "+
+			"age_group=$6, "+
+			"distance=$7, "+
+			"chip=$8, "+
+			"anonymous=$9 "+
+			"WHERE event_year_id=$10 AND bib=$11 RETURNING (person_id);",
+		person.Bib,
+		person.First,
+		person.Last,
+		person.Age,
+		person.Gender,
+		person.AgeGroup,
+		person.Distance,
+		person.Chip,
+		person.AnonyInt(),
+		eventYearID,
+		oldBib,
+	).Scan(&output.Identifier)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, fmt.Errorf("error adding person to database: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, fmt.Errorf("error committing transaction: %v", err)
+	}
+	return &output, nil
+}

@@ -77,4 +77,5 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/r/participants", h.RGetParticipants)
 	group.POST("/r/participants/add", h.RAddParticipants)
 	group.DELETE("/r/participants/delete", h.RDeleteParticipants)
+	group.POST("r/participants/update", h.RUpdateParticipant)
 }
