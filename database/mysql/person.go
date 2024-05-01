@@ -114,9 +114,10 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 			"age_group, "+
 			"distance, "+
 			"chip, "+
-			"anonymous"+
+			"anonymous, "+
+			"sms_enabled"+
 			")"+
-			" VALUES (?,?,?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
@@ -136,6 +137,7 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
+		person.SMSEnabled
 	)
 	if err != nil {
 		tx.Rollback()

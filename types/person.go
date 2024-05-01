@@ -16,6 +16,7 @@ type Person struct {
 	Distance   string `json:"distance" validate:"required"`
 	Chip       string `json:"chip"`
 	Anonymous  bool   `json:"anonymous"`
+	SMSEnabled bool   `json:"-"`
 }
 
 // Validate Ensures valid data in the struct.
