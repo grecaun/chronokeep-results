@@ -137,7 +137,7 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
-		person.SMSEnabled
+		person.SMSEnabled,
 	)
 	if err != nil {
 		tx.Rollback()

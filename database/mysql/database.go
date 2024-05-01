@@ -599,12 +599,22 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
-	if oldversion < 12 && newVersion >= 12 {
+	if oldVersion < 12 && newVersion >= 12 {
 		log.Debug("Updating to database version 12.")
 		queries := []myQuery{
 			{
-				name: "AddSMSEnabled",
-				querie: "ALTER TABLE person ADD COLUMN sms_enabled SMALLINT NOT NULL DEFAULT 0;"
+				name:  "AddSMSEnabled",
+				query: "ALTER TABLE person ADD COLUMN sms_enabled SMALLINT NOT NULL DEFAULT 0;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
 			}
 		}
 	}
