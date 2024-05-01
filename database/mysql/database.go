@@ -599,6 +599,15 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
+	if oldversion < 12 && newVersion >= 12 {
+		log.Debug("Updating to database version 12.")
+		queries := []myQuery{
+			{
+				name: "AddSMSEnabled",
+				querie: "ALTER TABLE person ADD COLUMN sms_enabled SMALLINT NOT NULL DEFAULT 0;"
+			}
+		}
+	}
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=? WHERE name='version';",
