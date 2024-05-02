@@ -16,7 +16,8 @@ func (s *SQLite) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
 		slug,
 		year,
 		bib,
@@ -28,6 +29,7 @@ func (s *SQLite) GetPerson(slug, year, bib string) (*types.Person, error) {
 	if res.Next() {
 		var outPerson types.Person
 		var anonymous int
+		var sms int
 		err = res.Scan(
 			&outPerson.Identifier,
 			&outPerson.Bib,
@@ -39,8 +41,11 @@ func (s *SQLite) GetPerson(slug, year, bib string) (*types.Person, error) {
 			&outPerson.Distance,
 			&outPerson.Chip,
 			&anonymous,
+			&outPerson.AlternateId,
+			&sms,
 		)
 		outPerson.Anonymous = anonymous != 0
+		outPerson.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -58,7 +63,8 @@ func (s *SQLite) GetPeople(slug, year string) ([]types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
 		slug,
 		year,
 	)
@@ -70,6 +76,7 @@ func (s *SQLite) GetPeople(slug, year string) ([]types.Person, error) {
 	for res.Next() {
 		var person types.Person
 		var anonymous int
+		var sms int
 		err := res.Scan(
 			&person.Identifier,
 			&person.Bib,
@@ -81,8 +88,11 @@ func (s *SQLite) GetPeople(slug, year string) ([]types.Person, error) {
 			&person.Distance,
 			&person.Chip,
 			&anonymous,
+			&person.AlternateId,
+			&sms,
 		)
 		person.Anonymous = anonymous != 0
+		person.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -114,9 +124,11 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 			"age_group, "+
 			"distance, "+
 			"chip, "+
-			"anonymous"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
-			"ON CONFLICT (event_year_id, bib) DO UPDATE SET "+
+			"anonymous, "+
+			"alternate_id, "+
+			"sms_enabled"+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
 			"age=$5, "+
@@ -124,7 +136,9 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 			"age_group=$7, "+
 			"distance=$8, "+
 			"chip=$9, "+
-			"anonymous=$10"+
+			"anonymous=$10, "+
+			"alternate_id=$11, "+
+			"sms_enabled=$12 "+
 			";",
 		eventYearID,
 		person.Bib,
@@ -136,6 +150,8 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
+		person.AlternateId,
+		person.SMSInt(),
 	)
 	if err != nil {
 		tx.Rollback()
@@ -143,24 +159,26 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 	}
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id FROM person WHERE event_year_id=$1 AND bib=$2;",
+		"SELECT person_id FROM person WHERE event_year_id=$1 AND alternate_id=$2;",
 		eventYearID,
-		person.Bib,
+		person.AlternateId,
 	)
 	if err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("error retrieving person_id: %v", err)
 	}
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		AlternateId: person.AlternateId,
+		SMSEnabled:  person.SMSEnabled,
 	}
 	if res.Next() {
 		res.Scan(
@@ -201,9 +219,11 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 			"age_group, "+
 			"distance, "+
 			"chip, "+
-			"anonymous"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
-			"ON CONFLICT (event_year_id, bib) DO UPDATE SET "+
+			"anonymous, "+
+			"alternate_id, "+
+			"sms_enabled"+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
 			"age=$5, "+
@@ -211,7 +231,9 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 			"age_group=$7, "+
 			"distance=$8, "+
 			"chip=$9, "+
-			"anonymous=$10"+
+			"anonymous=$10, "+
+			"alternate_id=$11, "+
+			"sms_enabled=$12 "+
 			";",
 	)
 	if err != nil {
@@ -229,7 +251,9 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 			person.AgeGroup,
 			person.Distance,
 			person.Chip,
-			person.Anonymous,
+			person.AnonyInt(),
+			person.AlternateId,
+			person.SMSInt(),
 		)
 		if err != nil {
 			tx.Rollback()
@@ -237,10 +261,10 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 		}
 	}
 	// get a list of all the bibs and persons for the event year
-	bibMap := make(map[string]int64)
+	altMap := make(map[string]int64)
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id, bib FROM person WHERE event_year_id=$1;",
+		"SELECT person_id, alternate_id FROM person WHERE event_year_id=$1;",
 		eventYearID,
 	)
 	if err != nil {
@@ -248,30 +272,32 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 	}
 	for res.Next() {
 		var id int64
-		var bib string
+		var altId string
 		err = res.Scan(
 			&id,
-			&bib,
+			&altId,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving person ids: %v", err)
 		}
-		bibMap[bib] = id
+		altMap[altId] = id
 	}
 	output := make([]types.Person, 0)
 	for _, person := range people {
-		if id, ok := bibMap[person.Bib]; ok {
+		if id, ok := altMap[person.AlternateId]; ok {
 			output = append(output, types.Person{
-				Identifier: id,
-				Bib:        person.Bib,
-				First:      person.First,
-				Last:       person.Last,
-				Age:        person.Age,
-				Gender:     person.Gender,
-				AgeGroup:   person.AgeGroup,
-				Distance:   person.Distance,
-				Chip:       person.Chip,
-				Anonymous:  person.Anonymous,
+				Identifier:  id,
+				Bib:         person.Bib,
+				First:       person.First,
+				Last:        person.Last,
+				Age:         person.Age,
+				Gender:      person.Gender,
+				AgeGroup:    person.AgeGroup,
+				Distance:    person.Distance,
+				Chip:        person.Chip,
+				Anonymous:   person.Anonymous,
+				AlternateId: person.AlternateId,
+				SMSEnabled:  person.SMSEnabled,
 			})
 		} else {
 			tx.Rollback()
@@ -286,7 +312,7 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 	return output, nil
 }
 
-func (s *SQLite) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
+func (s *SQLite) DeletePeople(eventYearId int64, alternateIds []string) (int64, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return 0, err
@@ -298,15 +324,15 @@ func (s *SQLite) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var count int64
-	if len(bibs) > 0 {
+	if len(alternateIds) > 0 {
 		count = 0
-		for _, bib := range bibs {
+		for _, altId := range alternateIds {
 			count++
 			_, err = tx.ExecContext(
 				ctx,
-				"DELETE FROM person WHERE event_year_id=$1 AND bib=$2;",
+				"DELETE FROM person WHERE event_year_id=$1 AND alternate_id=$2;",
 				eventYearId,
-				bib,
+				altId,
 			)
 			if err != nil {
 				tx.Rollback()
@@ -337,7 +363,7 @@ func (s *SQLite) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	return count, nil
 }
 
-func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error) {
+func (s *SQLite) UpdatePerson(eventYearID int64, person types.Person) (*types.Person, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
@@ -359,8 +385,9 @@ func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Per
 			"age_group=$6, "+
 			"distance=$7, "+
 			"chip=$8, "+
-			"anonymous=$9 "+
-			"WHERE event_year_id=$10 AND bib=$11;",
+			"anonymous=$9, "+
+			"sms_enabled=$12 "+
+			"WHERE event_year_id=$10 AND alternate_id=$11;",
 		person.Bib,
 		person.First,
 		person.Last,
@@ -371,7 +398,8 @@ func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Per
 		person.Chip,
 		person.AnonyInt(),
 		eventYearID,
-		oldBib,
+		person.AlternateId,
+		person.SMSInt(),
 	)
 	if err != nil {
 		tx.Rollback()
@@ -379,9 +407,9 @@ func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Per
 	}
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id FROM person WHERE event_year_id=$1 AND bib=$2;",
+		"SELECT person_id FROM person WHERE event_year_id=$1 AND alternate_id=$2;",
 		eventYearID,
-		person.Bib,
+		person.AlternateId,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -389,15 +417,17 @@ func (s *SQLite) UpdatePerson(eventYearID int64, oldBib string, person types.Per
 	}
 	defer res.Close()
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		AlternateId: person.AlternateId,
+		SMSEnabled:  person.SMSEnabled,
 	}
 	if res.Next() {
 		res.Scan(

@@ -264,6 +264,7 @@ func (m *MySQL) createTables() error {
 			name: "PersonTable",
 			query: "CREATE TABLE IF NOT EXISTS person(" +
 				"person_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"alternate_id VARCHAR(100) NOT NULL, " +
 				"event_year_id BIGINT NOT NULL, " +
 				"bib VARCHAR(100) NOT NULL, " +
 				"first VARCHAR(100) NOT NULL, " +
@@ -275,7 +276,7 @@ func (m *MySQL) createTables() error {
 				"chip VARCHAR(200) DEFAULT '', " +
 				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
 				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
-				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+				"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (person_id)" +
 				");",
@@ -603,8 +604,47 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 		log.Debug("Updating to database version 12.")
 		queries := []myQuery{
 			{
-				name:  "AddSMSEnabled",
-				query: "ALTER TABLE person ADD COLUMN sms_enabled SMALLINT NOT NULL DEFAULT 0;",
+				name: "CreateNewPerson",
+				query: "CREATE TABLE IF NOT EXISTS new_person(" +
+					"person_id BIGINT NOT NULL AUTO_INCREMENT, " +
+					"alternate_id VARCHAR(100) NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"age INT NOT NULL, " +
+					"gender VARCHAR(50) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"chip VARCHAR(200) DEFAULT '', " +
+					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+					"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+					"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (person_id)" +
+					");",
+			},
+			{
+				name: "InsertPersonData",
+				query: "INSERT INTO new_person(" +
+					"person_id, " +
+					"alternate_id, " +
+					"event_year_id, " +
+					"bib, " +
+					"first, " +
+					"last, " +
+					"age, " +
+					"gender, " +
+					"age_group, " +
+					"distance, " +
+					"chip, " +
+					"anonymous, " +
+					"sms_enabled" +
+					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, sms_enabled FROM person;",
+			},
+			{
+				name:  "RenameNewPersonDropOld",
+				query: "DROP TABLE person; ALTER TABLE new_person RENAME TO person;",
 			},
 		}
 		for _, q := range queries {

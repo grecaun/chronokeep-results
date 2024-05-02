@@ -252,6 +252,7 @@ func (s *SQLite) createTables() error {
 			name: "PersonTable",
 			query: "CREATE TABLE IF NOT EXISTS person(" +
 				"person_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"alternate_id VARCHAR(100) NOT NULL, " +
 				"event_year_id BIGINT NOT NULL, " +
 				"bib VARCHAR(100) NOT NULL, " +
 				"first VARCHAR(100) NOT NULL, " +
@@ -262,7 +263,8 @@ func (s *SQLite) createTables() error {
 				"distance VARCHAR(200) NOT NULL, " +
 				"chip VARCHAR(200) DEFAULT '', " +
 				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
-				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
+				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+				"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
@@ -613,6 +615,64 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"banned_email VARCHAR(200), " +
 					"UNIQUE(banned_email)" +
 					");",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 12 && oldVersion >= 12 {
+		log.Debug("Updating to database version 12.")
+		queries := []myQuery{
+			{
+				name: "CreateNewPerson",
+				query: "CREATE TABLE IF NOT EXISTS new_person(" +
+					"person_id BIGSERIAL NOT NULL, " +
+					"alternate_id VARCHAR(100) NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"age INT NOT NULL, " +
+					"gender VARCHAR(50) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"chip VARCHAR(200) DEFAULT '', " +
+					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+					"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+					"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (person_id)" +
+					");",
+			},
+			{
+				name: "InsertPersonData",
+				query: "INSERT INTO new_person(" +
+					"person_id, " +
+					"alternate_id, " +
+					"event_year_id, " +
+					"bib, " +
+					"first, " +
+					"last, " +
+					"age, " +
+					"gender, " +
+					"age_group, " +
+					"distance, " +
+					"chip, " +
+					"anonymous, " +
+					"sms_enabled" +
+					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, sms_enabled FROM person;",
+			},
+			{
+				name:  "RenameNewPersonDropOld",
+				query: "DROP TABLE person; ALTER TABLE new_person RENAME TO person;",
 			},
 		}
 		for _, q := range queries {

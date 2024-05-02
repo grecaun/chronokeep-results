@@ -124,7 +124,7 @@ func (h Handler) RDeleteParticipants(c echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
-	count, err := database.DeletePeople(multi.EventYear.Identifier, request.Bibs)
+	count, err := database.DeletePeople(multi.EventYear.Identifier, request.Identifiers)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Participants", err)
 	}

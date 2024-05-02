@@ -16,7 +16,8 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2 AND bib=$3",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2 AND bib=$3",
 		slug,
 		year,
 		bib,
@@ -28,6 +29,7 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 	if res.Next() {
 		var outPerson types.Person
 		var anonymous int
+		var sms int
 		err = res.Scan(
 			&outPerson.Identifier,
 			&outPerson.Bib,
@@ -39,8 +41,11 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 			&outPerson.Distance,
 			&outPerson.Chip,
 			&anonymous,
+			&outPerson.AlternateId,
+			&sms,
 		)
 		outPerson.Anonymous = anonymous != 0
+		outPerson.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -58,7 +63,8 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2;",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2;",
 		slug,
 		year,
 	)
@@ -70,6 +76,7 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 	for res.Next() {
 		var person types.Person
 		var anonymous int
+		var sms int
 		err := res.Scan(
 			&person.Identifier,
 			&person.Bib,
@@ -81,8 +88,11 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 			&person.Distance,
 			&person.Chip,
 			&anonymous,
+			&person.AlternateId,
+			&sms,
 		)
 		person.Anonymous = anonymous != 0
+		person.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -103,15 +113,17 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		AlternateId: person.AlternateId,
+		SMSEnabled:  person.SMSEnabled,
 	}
 	err = tx.QueryRow(
 		ctx,
@@ -125,9 +137,11 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 			"age_group, "+
 			"distance, "+
 			"chip, "+
-			"anonymous"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
-			"ON CONFLICT (event_year_id, bib) DO UPDATE SET "+
+			"anonymous, "+
+			"alternate_id, "+
+			"sms_enabled"+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
 			"age=$5, "+
@@ -135,7 +149,9 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 			"age_group=$7, "+
 			"distance=$8, "+
 			"chip=$9, "+
-			"anonymous=$10 "+
+			"anonymous=$10, "+
+			"alternate_id=$11, "+
+			"sms_enabled=$12 "+
 			"RETURNING (person_id);",
 		eventYearID,
 		person.Bib,
@@ -147,6 +163,8 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
+		person.AlternateId,
+		person.SMSInt(),
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)
@@ -186,9 +204,11 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 				"age_group, "+
 				"distance, "+
 				"chip, "+
-				"anonymous"+
-				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
-				"ON CONFLICT (event_year_id, bib) DO UPDATE SET "+
+				"anonymous, "+
+				"alternate_id, "+
+				"sms_enabled"+
+				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+				"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 				"first=$3, "+
 				"last=$4, "+
 				"age=$5, "+
@@ -196,7 +216,9 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 				"age_group=$7, "+
 				"distance=$8, "+
 				"chip=$9, "+
-				"anonymous=$10 "+
+				"anonymous=$10, "+
+				"alternate_id=$11, "+
+				"sms_enabled=$12 "+
 				"RETURNING (person_id);",
 			eventYearID,
 			person.Bib,
@@ -208,22 +230,26 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 			person.Distance,
 			person.Chip,
 			person.AnonyInt(),
+			person.AlternateId,
+			person.SMSInt(),
 		).Scan(&id)
 		if err != nil {
 			tx.Rollback(ctx)
 			return nil, fmt.Errorf("error adding person to database: %v", err)
 		}
 		output = append(output, types.Person{
-			Identifier: id,
-			Bib:        person.Bib,
-			First:      person.First,
-			Last:       person.Last,
-			Age:        person.Age,
-			Gender:     person.Gender,
-			AgeGroup:   person.AgeGroup,
-			Distance:   person.Distance,
-			Chip:       person.Chip,
-			Anonymous:  person.Anonymous,
+			Identifier:  id,
+			Bib:         person.Bib,
+			First:       person.First,
+			Last:        person.Last,
+			Age:         person.Age,
+			Gender:      person.Gender,
+			AgeGroup:    person.AgeGroup,
+			Distance:    person.Distance,
+			Chip:        person.Chip,
+			Anonymous:   person.Anonymous,
+			AlternateId: person.AlternateId,
+			SMSEnabled:  person.SMSEnabled,
 		})
 	}
 	err = tx.Commit(ctx)
@@ -234,7 +260,7 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 	return output, nil
 }
 
-func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
+func (p *Postgres) DeletePeople(eventYearId int64, alternateIds []string) (int64, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return 0, err
@@ -246,15 +272,15 @@ func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) (int64, error)
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
 	var count int64
-	if len(bibs) > 0 {
+	if len(alternateIds) > 0 {
 		count = 0
-		for _, bib := range bibs {
+		for _, altId := range alternateIds {
 			count++
 			_, err = tx.Exec(
 				ctx,
-				"DELETE FROM person WHERE event_year_id=$1 AND bib=$2;",
+				"DELETE FROM person WHERE event_year_id=$1 AND alternate_id=$2;",
 				eventYearId,
-				bib,
+				altId,
 			)
 			if err != nil {
 				tx.Rollback(ctx)
@@ -281,7 +307,7 @@ func (p *Postgres) DeletePeople(eventYearId int64, bibs []string) (int64, error)
 	return count, nil
 }
 
-func (p *Postgres) UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error) {
+func (p *Postgres) UpdatePerson(eventYearID int64, person types.Person) (*types.Person, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -293,15 +319,17 @@ func (p *Postgres) UpdatePerson(eventYearID int64, oldBib string, person types.P
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		AlternateId: person.AlternateId,
+		SMSEnabled:  person.SMSEnabled,
 	}
 	err = tx.QueryRow(
 		ctx,
@@ -314,8 +342,9 @@ func (p *Postgres) UpdatePerson(eventYearID int64, oldBib string, person types.P
 			"age_group=$6, "+
 			"distance=$7, "+
 			"chip=$8, "+
-			"anonymous=$9 "+
-			"WHERE event_year_id=$10 AND bib=$11 RETURNING (person_id);",
+			"anonymous=$9, "+
+			"sms_enabled=$12 "+
+			"WHERE event_year_id=$10 AND alternate_id=$11 RETURNING (person_id);",
 		person.Bib,
 		person.First,
 		person.Last,
@@ -326,7 +355,8 @@ func (p *Postgres) UpdatePerson(eventYearID int64, oldBib string, person types.P
 		person.Chip,
 		person.AnonyInt(),
 		eventYearID,
-		oldBib,
+		person.AlternateId,
+		person.SMSInt(),
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)

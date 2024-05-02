@@ -28,7 +28,7 @@ type AddParticipantsRequest struct {
 
 // DeleteParticipantsRequest Struct used for the request to delete participants for an event.
 type DeleteParticipantsRequest struct {
-	Slug string   `json:"slug"`
-	Year string   `json:"year"`
-	Bibs []string `json:"bibs"`
+	Slug        string   `json:"slug"`
+	Year        string   `json:"year"`
+	Identifiers []string `json:"identifiers"`
 }

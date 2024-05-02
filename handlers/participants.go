@@ -174,7 +174,7 @@ func (h Handler) DeleteParticipants(c echo.Context) error {
 	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
-	count, err := database.DeletePeople(mult.EventYear.Identifier, request.Bibs)
+	count, err := database.DeletePeople(mult.EventYear.Identifier, request.Identifiers)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Participants", err)
 	}

@@ -6,17 +6,18 @@ import (
 
 // Person Describes a person.
 type Person struct {
-	Identifier int64  `json:"-"`
-	Bib        string `json:"bib" validate:"required"`
-	First      string `json:"first"`
-	Last       string `json:"last"`
-	Age        int    `json:"age" validate:"gte=0,lte=130"`
-	Gender     string `json:"gender"`
-	AgeGroup   string `json:"age_group"`
-	Distance   string `json:"distance" validate:"required"`
-	Chip       string `json:"chip"`
-	Anonymous  bool   `json:"anonymous"`
-	SMSEnabled bool   `json:"-"`
+	Identifier  int64  `json:"-"`
+	AlternateId string `json:"id"`
+	Bib         string `json:"bib" validate:"required"`
+	First       string `json:"first"`
+	Last        string `json:"last"`
+	Age         int    `json:"age" validate:"gte=0,lte=130"`
+	Gender      string `json:"gender"`
+	AgeGroup    string `json:"age_group"`
+	Distance    string `json:"distance" validate:"required"`
+	Chip        string `json:"chip"`
+	Anonymous   bool   `json:"anonymous"`
+	SMSEnabled  bool   `json:"-"`
 }
 
 // Validate Ensures valid data in the struct.
@@ -38,6 +39,13 @@ func (one *Person) Equals(two *Person) bool {
 
 func (p *Person) AnonyInt() int {
 	if p.Anonymous {
+		return 1
+	}
+	return 0
+}
+
+func (p *Person) SMSInt() int {
+	if p.SMSEnabled {
 		return 1
 	}
 	return 0

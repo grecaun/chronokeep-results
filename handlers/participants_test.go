@@ -547,40 +547,44 @@ func TestDeleteParticipants(t *testing.T) {
 	}
 	people := []types.Person{
 		{
-			Bib:      "1024",
-			First:    "John",
-			Last:     "Smnit",
-			Age:      20,
-			Gender:   "Man",
-			AgeGroup: "20-29",
-			Distance: "1 Mile",
+			AlternateId: "1024",
+			Bib:         "1024",
+			First:       "John",
+			Last:        "Smnit",
+			Age:         20,
+			Gender:      "Man",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
 		},
 		{
-			Bib:      "2034",
-			First:    "Jason",
-			Last:     "Jonson",
-			Age:      34,
-			Gender:   "Man",
-			AgeGroup: "30-39",
-			Distance: "5 Mile",
+			AlternateId: "2034",
+			Bib:         "2034",
+			First:       "Jason",
+			Last:        "Jonson",
+			Age:         34,
+			Gender:      "Man",
+			AgeGroup:    "30-39",
+			Distance:    "5 Mile",
 		},
 		{
-			Bib:      "3521",
-			First:    "Rose",
-			Last:     "McGowna",
-			Age:      16,
-			Gender:   "Woman",
-			AgeGroup: "0-19",
-			Distance: "1 Mile",
+			AlternateId: "3521",
+			Bib:         "3521",
+			First:       "Rose",
+			Last:        "McGowna",
+			Age:         16,
+			Gender:      "Woman",
+			AgeGroup:    "0-19",
+			Distance:    "1 Mile",
 		},
 		{
-			Bib:      "1364",
-			First:    "Lilly",
-			Last:     "Smith",
-			Age:      10,
-			Gender:   "Non-Binary",
-			AgeGroup: "0-19",
-			Distance: "1 Mile",
+			AlternateId: "1364",
+			Bib:         "1364",
+			First:       "Lilly",
+			Last:        "Smith",
+			Age:         10,
+			Gender:      "Non-Binary",
+			AgeGroup:    "0-19",
+			Distance:    "1 Mile",
 		},
 	}
 	p, err := database.AddPeople(year.Identifier, people)
@@ -729,14 +733,14 @@ func TestDeleteParticipants(t *testing.T) {
 		t.Fatalf("Error adding people to database for test: %v", err)
 	}
 	assert.Equal(t, len(people), len(p))
-	bibs := make([]string, 0)
+	idents := make([]string, 0)
 	for _, person := range people {
-		bibs = append(bibs, person.Bib)
+		idents = append(idents, person.AlternateId)
 	}
 	body, err = json.Marshal(types.DeleteParticipantsRequest{
-		Slug: variables.events["event1"].Slug,
-		Year: year.Year,
-		Bibs: bibs[2:],
+		Slug:        variables.events["event1"].Slug,
+		Year:        year.Year,
+		Identifiers: idents[2:],
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -760,15 +764,15 @@ func TestDeleteParticipants(t *testing.T) {
 		t.Fatalf("Error adding people to database for test: %v", err)
 	}
 	assert.Equal(t, len(people), len(p))
-	bibs = make([]string, 0)
+	idents = make([]string, 0)
 	for _, person := range people {
-		bibs = append(bibs, person.Bib)
+		idents = append(idents, person.Bib)
 	}
-	bibs = append(bibs, "not-valid")
+	idents = append(idents, "not-valid")
 	body, err = json.Marshal(types.DeleteParticipantsRequest{
-		Slug: variables.events["event1"].Slug,
-		Year: year.Year,
-		Bibs: bibs[2:],
+		Slug:        variables.events["event1"].Slug,
+		Year:        year.Year,
+		Identifiers: idents[2:],
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)

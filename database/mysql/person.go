@@ -16,7 +16,8 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=? AND bib=?",
 		slug,
 		year,
 		bib,
@@ -28,6 +29,7 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 	if res.Next() {
 		var outPerson types.Person
 		var anonymous int
+		var sms int
 		err = res.Scan(
 			&outPerson.Identifier,
 			&outPerson.Bib,
@@ -39,8 +41,11 @@ func (m *MySQL) GetPerson(slug, year, bib string) (*types.Person, error) {
 			&outPerson.Distance,
 			&outPerson.Chip,
 			&anonymous,
+			&outPerson.AlternateId,
+			&sms,
 		)
 		outPerson.Anonymous = anonymous != 0
+		outPerson.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -58,7 +63,8 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=? AND year=?;",
 		slug,
 		year,
 	)
@@ -70,6 +76,7 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 	for res.Next() {
 		var person types.Person
 		var anonymous int
+		var sms int
 		err := res.Scan(
 			&person.Identifier,
 			&person.Bib,
@@ -81,8 +88,11 @@ func (m *MySQL) GetPeople(slug, year string) ([]types.Person, error) {
 			&person.Distance,
 			&person.Chip,
 			&anonymous,
+			&person.AlternateId,
+			&sms,
 		)
 		person.Anonymous = anonymous != 0
+		person.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -115,18 +125,21 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 			"distance, "+
 			"chip, "+
 			"anonymous, "+
+			"alternate_id, "+
 			"sms_enabled"+
 			")"+
-			" VALUES (?,?,?,?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
 			"age=VALUES(age), "+
 			"gender=VALUES(gender), "+
 			"age_group=VALUES(age_group), "+
-			"distance=VALUES(distance),"+
-			"chip=VALUES(chip),"+
-			"anonymous=VALUES(anonymous);",
+			"distance=VALUES(distance), "+
+			"chip=VALUES(chip), "+
+			"anonymous=VALUES(anonymous), "+
+			"alternate_id=VALUES(alternate_id), "+
+			"sms_enabled=VALUES(sms_enabled);",
 		eventYearID,
 		person.Bib,
 		person.First,
@@ -137,7 +150,8 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
-		person.SMSEnabled,
+		person.AlternateId,
+		person.SMSInt(),
 	)
 	if err != nil {
 		tx.Rollback()
@@ -145,9 +159,9 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 	}
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id FROM person WHERE event_year_id=? AND bib=?;",
+		"SELECT person_id FROM person WHERE event_year_id=? AND alternate_id=?;",
 		eventYearID,
-		person.Bib,
+		person.AlternateId,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -155,15 +169,17 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 	}
 	defer res.Close()
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		AlternateId: person.AlternateId,
+		SMSEnabled:  person.SMSEnabled,
 	}
 	if res.Next() {
 		res.Scan(
@@ -202,11 +218,13 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 			"age, "+
 			"gender, "+
 			"age_group, "+
-			"distance,"+
-			"chip,"+
-			"anonymous"+
+			"distance, "+
+			"chip, "+
+			"anonymous, "+
+			"alternate_id, "+
+			"sms_enabled"+
 			")"+
-			" VALUES (?,?,?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
@@ -215,7 +233,9 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 			"age_group=VALUES(age_group), "+
 			"distance=VALUES(distance),"+
 			"chip=VALUES(chip),"+
-			"anonymous=VALUES(anonymous);",
+			"anonymous=VALUES(anonymous), "+
+			"alternate_id=VALUES(alternate_id), "+
+			"sms_enabled=VALUES(sms_enabled);",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error preparing statement for adding people: %v", err)
@@ -233,6 +253,8 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 			person.Distance,
 			person.Chip,
 			person.AnonyInt(),
+			person.AlternateId,
+			person.SMSInt(),
 		)
 		if err != nil {
 			tx.Rollback()
@@ -240,10 +262,10 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 		}
 	}
 	// get a list of all the bibs and persons for the event year
-	bibMap := make(map[string]int64)
+	altMap := make(map[string]int64)
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id, bib FROM person WHERE event_year_id=?;",
+		"SELECT person_id, alternate_id FROM person WHERE event_year_id=?;",
 		eventYearID,
 	)
 	if err != nil {
@@ -252,30 +274,32 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 	defer res.Close()
 	for res.Next() {
 		var id int64
-		var bib string
+		var altId string
 		err = res.Scan(
 			&id,
-			&bib,
+			&altId,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving person ids: %v", err)
 		}
-		bibMap[bib] = id
+		altMap[altId] = id
 	}
 	output := make([]types.Person, 0)
 	for _, person := range people {
-		if id, ok := bibMap[person.Bib]; ok {
+		if id, ok := altMap[person.AlternateId]; ok {
 			output = append(output, types.Person{
-				Identifier: id,
-				Bib:        person.Bib,
-				First:      person.First,
-				Last:       person.Last,
-				Age:        person.Age,
-				Gender:     person.Gender,
-				AgeGroup:   person.AgeGroup,
-				Distance:   person.Distance,
-				Chip:       person.Chip,
-				Anonymous:  person.Anonymous,
+				Identifier:  id,
+				Bib:         person.Bib,
+				First:       person.First,
+				Last:        person.Last,
+				Age:         person.Age,
+				Gender:      person.Gender,
+				AgeGroup:    person.AgeGroup,
+				Distance:    person.Distance,
+				Chip:        person.Chip,
+				Anonymous:   person.Anonymous,
+				SMSEnabled:  person.SMSEnabled,
+				AlternateId: person.AlternateId,
 			})
 		} else {
 			tx.Rollback()
@@ -290,7 +314,7 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 	return output, nil
 }
 
-func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
+func (m *MySQL) DeletePeople(eventYearId int64, alternateIds []string) (int64, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return 0, err
@@ -302,15 +326,15 @@ func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var count int64
-	if len(bibs) > 0 {
+	if len(alternateIds) > 0 {
 		count = 0
-		for _, bib := range bibs {
+		for _, altId := range alternateIds {
 			count++
 			_, err = tx.ExecContext(
 				ctx,
-				"DELETE FROM person WHERE event_year_id=? AND bib=?;",
+				"DELETE FROM person WHERE event_year_id=? AND alternate_id=?;",
 				eventYearId,
-				bib,
+				altId,
 			)
 			if err != nil {
 				tx.Rollback()
@@ -341,7 +365,7 @@ func (m *MySQL) DeletePeople(eventYearId int64, bibs []string) (int64, error) {
 	return count, nil
 }
 
-func (m *MySQL) UpdatePerson(eventYearID int64, oldBib string, person types.Person) (*types.Person, error) {
+func (m *MySQL) UpdatePerson(eventYearID int64, person types.Person) (*types.Person, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -363,8 +387,9 @@ func (m *MySQL) UpdatePerson(eventYearID int64, oldBib string, person types.Pers
 			"age_group=?, "+
 			"distance=?, "+
 			"chip=?, "+
-			"anonymous=? "+
-			"WHERE event_year_id=? AND bib=?;",
+			"anonymous=?, "+
+			"sms_enabled=? "+
+			"WHERE event_year_id=? AND alternate_id=?;",
 		person.Bib,
 		person.First,
 		person.Last,
@@ -374,8 +399,9 @@ func (m *MySQL) UpdatePerson(eventYearID int64, oldBib string, person types.Pers
 		person.Distance,
 		person.Chip,
 		person.AnonyInt(),
+		person.SMSInt(),
 		eventYearID,
-		oldBib,
+		person.AlternateId,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -383,9 +409,9 @@ func (m *MySQL) UpdatePerson(eventYearID int64, oldBib string, person types.Pers
 	}
 	res, err := tx.QueryContext(
 		ctx,
-		"SELECT person_id FROM person WHERE event_year_id=? AND bib=?;",
+		"SELECT person_id FROM person WHERE event_year_id=? AND alternate_id=?;",
 		eventYearID,
-		person.Bib,
+		person.AlternateId,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -393,15 +419,17 @@ func (m *MySQL) UpdatePerson(eventYearID int64, oldBib string, person types.Pers
 	}
 	defer res.Close()
 	output := types.Person{
-		Bib:       person.Bib,
-		First:     person.First,
-		Last:      person.Last,
-		Age:       person.Age,
-		Gender:    person.Gender,
-		AgeGroup:  person.AgeGroup,
-		Distance:  person.Distance,
-		Chip:      person.Chip,
-		Anonymous: person.Anonymous,
+		Bib:         person.Bib,
+		First:       person.First,
+		Last:        person.Last,
+		Age:         person.Age,
+		Gender:      person.Gender,
+		AgeGroup:    person.AgeGroup,
+		Distance:    person.Distance,
+		Chip:        person.Chip,
+		Anonymous:   person.Anonymous,
+		SMSEnabled:  person.SMSEnabled,
+		AlternateId: person.AlternateId,
 	}
 	if res.Next() {
 		res.Scan(
