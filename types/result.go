@@ -7,7 +7,7 @@ import (
 // Result is a structure holding information about a specific time
 // result for a specific event.
 type Result struct {
-	AlternateId      string `json:"person_id" validate:"required"`
+	PersonId         string `json:"person_id" validate:"required"`
 	Bib              string `json:"bib" validate:"required"`
 	First            string `json:"first"`
 	Last             string `json:"last"`

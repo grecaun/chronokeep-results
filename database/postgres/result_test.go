@@ -24,7 +24,7 @@ func setupResultTests() {
 	}
 	results = []types.Result{
 		{
-			AlternateId:   "100",
+			PersonId:      "100",
 			Bib:           "100",
 			First:         "John",
 			Last:          "Smith",
@@ -45,7 +45,7 @@ func setupResultTests() {
 			Anonymous:     true,
 		},
 		{
-			AlternateId:   "106",
+			PersonId:      "106",
 			Bib:           "106",
 			First:         "Rose",
 			Last:          "Johnson",
@@ -66,7 +66,7 @@ func setupResultTests() {
 			Anonymous:     false,
 		},
 		{
-			AlternateId:   "209",
+			PersonId:      "209",
 			Bib:           "209",
 			First:         "Tony",
 			Last:          "Starke",
@@ -85,7 +85,7 @@ func setupResultTests() {
 			Finish:        true,
 		},
 		{
-			AlternateId:   "287",
+			PersonId:      "287",
 			Bib:           "287",
 			First:         "Jamie",
 			Last:          "Fischer",
@@ -104,7 +104,7 @@ func setupResultTests() {
 			Finish:        false,
 		},
 		{
-			AlternateId:   "287",
+			PersonId:      "287",
 			Bib:           "287",
 			First:         "Jamie",
 			Last:          "Fischer",
@@ -132,7 +132,7 @@ func setupPageResultTests() {
 	for i := 0; i < 200; i++ {
 		tmpStr = strconv.Itoa(i)
 		results = append(results, types.Result{
-			AlternateId:   tmpStr,
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",
@@ -154,7 +154,7 @@ func setupPageResultTests() {
 	for i := 200; i < 300; i++ {
 		tmpStr = strconv.Itoa(i)
 		results = append(results, types.Result{
-			AlternateId:   tmpStr,
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",
@@ -176,7 +176,7 @@ func setupPageResultTests() {
 	for i := 300; i < 400; i++ {
 		tmpStr = strconv.Itoa(i)
 		results = append(results, types.Result{
-			AlternateId:   tmpStr,
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",
@@ -198,7 +198,7 @@ func setupPageResultTests() {
 	for i := 0; i < 200; i++ {
 		tmpStr = strconv.Itoa(i)
 		results = append(results, types.Result{
-			AlternateId:   tmpStr,
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",

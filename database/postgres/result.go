@@ -239,7 +239,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 			&result.Type,
 			&result.Chip,
 			&anonymous,
-			&result.AlternateId,
+			&result.PersonId,
 		)
 		result.Anonymous = anonymous != 0
 		if err != nil {
@@ -395,7 +395,7 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.Distance,
 			result.Chip,
 			result.AnonyInt(),
-			result.AlternateId,
+			result.PersonId,
 		).Scan(&id)
 		if err != nil {
 			tx.Rollback(ctx)
