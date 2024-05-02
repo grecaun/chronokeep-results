@@ -491,7 +491,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 3 && newVersion >= 3 {
-		log.Debug("Updating to database version 3.")
+		log.Info("Updating to database version 3.")
 		queries := []myQuery{
 			{
 				name:  "RenameResult",
@@ -569,7 +569,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 4 && newVersion >= 4 {
-		log.Debug("Updating to database version 4.")
+		log.Info("Updating to database version 4.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE event ADD COLUMN event_type VARCHAR(20) DEFAULT 'distance';",
@@ -580,7 +580,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 5 && newVersion >= 5 {
-		log.Debug("Updating to database version 5.")
+		log.Info("Updating to database version 5.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE api_key ADD COLUMN key_name VARCHAR(100) NOT NULL DEFAULT '';",
@@ -591,7 +591,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 6 && newVersion >= 6 {
-		log.Debug("Updating to database version 6.")
+		log.Info("Updating to database version 6.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(5);",
@@ -602,7 +602,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 7 && newVersion >= 7 {
-		log.Debug("Updating to database version 7.")
+		log.Info("Updating to database version 7.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person "+
@@ -615,7 +615,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 8 && newVersion >= 8 {
-		log.Debug("Updating to database version 8.")
+		log.Info("Updating to database version 8.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE person ALTER COLUMN gender TYPE VARCHAR(50);",
@@ -626,7 +626,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 9 && newVersion >= 9 {
-		log.Debug("Updating to database version 9.")
+		log.Info("Updating to database version 9.")
 		_, err := tx.Exec(
 			ctx,
 			"ALTER TABLE event ALTER COLUMN slug TYPE VARCHAR(50);",
@@ -637,7 +637,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 10 && newVersion >= 10 {
-		log.Debug("Updating to database version 10.")
+		log.Info("Updating to database version 10.")
 		queries := []myQuery{
 			{
 				name:  "Update DNF entries.",
@@ -656,7 +656,7 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 11 && newVersion >= 11 {
-		log.Debug("Updating to database version 11.")
+		log.Info("Updating to database version 11.")
 		queries := []myQuery{
 			{
 				name: "CreateBannedPhones",
@@ -684,8 +684,8 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
-	if oldVersion < 12 && oldVersion >= 12 {
-		log.Debug("Updating to database version 12.")
+	if oldVersion < 12 && newVersion >= 12 {
+		log.Info("Updating to database version 12.")
 		queries := []myQuery{
 			{
 				name: "CreateNewPerson",
@@ -703,9 +703,31 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 					"chip VARCHAR(200) DEFAULT '', " +
 					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
 					"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
-					"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
+					"CONSTRAINT one_person_alt UNIQUE (event_year_id, alternate_id), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 					"PRIMARY KEY (person_id)" +
+					");",
+			},
+			{
+				name: "ResultTable",
+				query: "CREATE TABLE IF NOT EXISTS new_result(" +
+					"person_id BIGINT NOT NULL, " +
+					"seconds INT DEFAULT 0, " +
+					"milliseconds INT DEFAULT 0, " +
+					"chip_seconds INT DEFAULT 0, " +
+					"chip_milliseconds INT DEFAULT 0, " +
+					"segment VARCHAR(500), " +
+					"location VARCHAR(500), " +
+					"occurence INT DEFAULT -1, " +
+					"ranking INT DEFAULT -1, " +
+					"age_ranking INT DEFAULT -1, " +
+					"gender_ranking INT DEFAULT -1, " +
+					"finish BOOL DEFAULT TRUE, " +
+					"result_type INT DEFAULT 0, " +
+					"result_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
+					"result_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
+					"CONSTRAINT one_occurrence_res_alt UNIQUE (person_id, location, occurence)," +
+					"FOREIGN KEY (person_id) REFERENCES new_person(person_id)" +
 					");",
 			},
 			{
@@ -722,13 +744,24 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 					"age_group, " +
 					"distance, " +
 					"chip, " +
-					"anonymous, " +
-					"sms_enabled" +
-					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, sms_enabled FROM person;",
+					"anonymous" +
+					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person;",
 			},
 			{
-				name:  "RenameNewPersonDropOld",
-				query: "DROP TABLE person; ALTER TABLE new_person RENAME TO person;",
+				name:  "InsertPersonData",
+				query: "INSERT INTO new_result SELECT * FROM result;",
+			},
+			{
+				name:  "DropOld",
+				query: "DROP TABLE result, person;",
+			},
+			{
+				name:  "RenamePerson",
+				query: "ALTER TABLE new_person RENAME TO person;",
+			},
+			{
+				name:  "RenameResult",
+				query: "ALTER TABLE new_result RENAME TO result;",
 			},
 		}
 		for _, q := range queries {

@@ -432,7 +432,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 	}
 	// SQLite starts at version 5.  6 will be the first update version.
 	if oldVersion < 6 && newVersion >= 6 {
-		log.Debug("Updating to database version 6.")
+		log.Info("Updating to database version 6.")
 		_, err := tx.ExecContext(
 			ctx,
 			"CREATE TABLE IF NOT EXISTS person_new("+
@@ -471,7 +471,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 7 && newVersion >= 7 {
-		log.Debug("Updating to database version 7.")
+		log.Info("Updating to database version 7.")
 		_, err := tx.ExecContext(
 			ctx,
 			"ALTER TABLE person "+
@@ -485,7 +485,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 8 && newVersion >= 8 {
-		log.Debug("Updating to database version 8.")
+		log.Info("Updating to database version 8.")
 		queries := []myQuery{
 			{
 				name:  "RenamePerson",
@@ -532,7 +532,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 9 && newVersion >= 9 {
-		log.Debug("Updating to database version 9.")
+		log.Info("Updating to database version 9.")
 		queries := []myQuery{
 			{
 				name:  "RenameEvent",
@@ -581,7 +581,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 10 && newVersion >= 10 {
-		log.Debug("Updating to database version 10.")
+		log.Info("Updating to database version 10.")
 		queries := []myQuery{
 			{
 				name:  "Update DNF entries.",
@@ -600,7 +600,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 		}
 	}
 	if oldVersion < 11 && newVersion >= 11 {
-		log.Debug("Updating to database version 11.")
+		log.Info("Updating to database version 11.")
 		queries := []myQuery{
 			{
 				name: "CreateBannedPhones",
@@ -628,8 +628,8 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			}
 		}
 	}
-	if oldVersion < 12 && oldVersion >= 12 {
-		log.Debug("Updating to database version 12.")
+	if oldVersion < 12 && newVersion >= 12 {
+		log.Info("Updating to database version 12.")
 		queries := []myQuery{
 			{
 				name: "CreateNewPerson",
@@ -666,9 +666,8 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"age_group, " +
 					"distance, " +
 					"chip, " +
-					"anonymous, " +
-					"sms_enabled" +
-					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, sms_enabled FROM person;",
+					"anonymous" +
+					") SELECT person_id, bib, event_year_id, bib, first, last, age, gender, age_group, distance, chip, anonymous FROM person;",
 			},
 			{
 				name:  "RenameNewPersonDropOld",
