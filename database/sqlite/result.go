@@ -237,7 +237,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 			&result.Type,
 			&result.Chip,
 			&anonymous,
-			&result.AlternateId,
+			&result.PersonId,
 		)
 		result.Anonymous = anonymous != 0
 		if err != nil {
@@ -475,7 +475,7 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 			result.Distance,
 			result.Chip,
 			result.AnonyInt(),
-			result.AlternateId,
+			result.PersonId,
 		)
 		if err != nil {
 			tx.Rollback()

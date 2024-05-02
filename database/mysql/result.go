@@ -237,7 +237,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 			&result.Type,
 			&result.Chip,
 			&anonymous,
-			&result.AlternateId,
+			&result.PersonId,
 		)
 		result.Anonymous = anonymous != 0
 		if err != nil {
@@ -477,7 +477,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.Distance,
 			result.Chip,
 			result.AnonyInt(),
-			result.AlternateId,
+			result.PersonId,
 		)
 		if err != nil {
 			tx.Rollback()
