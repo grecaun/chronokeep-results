@@ -13,6 +13,19 @@ type GetParticipantsResponse struct {
 	Requests
 */
 
+// UpdateParticipantRequest Struct used to update a participant's information.
+type UpdateParticipantRequest struct {
+	Slug        string `json:"slug"`
+	Year        string `json:"year"`
+	Participant Person `json:"participant"`
+}
+
+type GetParticipantRequest struct {
+	Slug       string `json:"slug"`
+	Year       string `json:"year"`
+	Identifier string `json:"person_id"`
+}
+
 // GetParticipantsRequest Struct used for the request to get participants for an event.
 type GetParticipantsRequest struct {
 	Slug string `json:"slug"`
