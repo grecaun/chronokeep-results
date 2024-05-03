@@ -98,7 +98,7 @@ func createTokens(email string) (*string, *string, error) {
 	return &token, &refresh, nil
 }
 
-func CreateCertificate(name string, event string, time string, date string) ([]byte, error) {
+func CreateCertificate(name string, event string, timeString string, date string) ([]byte, error) {
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 	var buf []byte
@@ -112,9 +112,10 @@ func CreateCertificate(name string, event string, time string, date string) ([]b
 					if err != nil {
 						return err
 					}
-					return page.SetDocumentContent(frameTree.Frame.ID, GetCertificateHTML(name, event, time, date)).Do(ctx)
+					return page.SetDocumentContent(frameTree.Frame.ID, GetCertificateHTML(name, event, timeString, date)).Do(ctx)
 				},
 			),
+			chromedp.Sleep(100 * time.Millisecond),
 			chromedp.FullScreenshot(&buf, 90),
 		}); err != nil {
 		return nil, err
@@ -126,13 +127,13 @@ func GetCertificateHTML(name string, event string, time string, date string) str
 	return fmt.Sprintf(
 		"<html>"+
 			"<head></head>"+
-			"<body style='width:800;height:565;'>"+
-			"<div style='background-image:url(\"https://www.chronokeep.com/chronokeep.com/certificate-template2.png\");background-size:cover;width:800px;height:565px;position:relative;'>"+
+			"<body style='width:800;height:565;padding:0px;background-image:url(\"https://www.chronokeep.com/certificate-template2.png\");background-size:cover;'>"+
+			"<div style='margin:0px;width:800px;height:565px;position:relative;'>"+
 			"<div style='width:100%%;margin:0;position:absolute;top:50%%;-ms-transform:translateY(-50%%);transform:translateY(-50%%);'>"+
 			"<div style='font-size:60px;text-align:center;font-weight:bold;'>%s</div>"+
 			"<div style='font-size:30px;text-align:center;margin-left:100px;width:600px;'>finished the %s with a time of</div>"+
 			"<div style='font-size:60px;text-align:center;font-weight:bold;'>%s</div>"+
-			"<div  style='font-size:30px;text-align:center;'>on this day of %s</div>"+
+			"<div style='font-size:30px;text-align:center;'>on this day of %s</div>"+
 			"</div>"+
 			"</div>"+
 			"</body>"+
