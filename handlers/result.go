@@ -308,10 +308,11 @@ func (h Handler) GetBibResults(c echo.Context) error {
 		return getAPIError(c, http.StatusNotFound, "Person Not Found", nil)
 	}
 	return c.JSON(http.StatusOK, types.GetBibResultsResponse{
-		Event:     *mult.Event,
-		EventYear: *mult.EventYear,
-		Results:   results,
-		Person:    person,
+		Event:          *mult.Event,
+		EventYear:      *mult.EventYear,
+		Results:        results,
+		Person:         person,
+		SingleDistance: *mult.DistanceCount == 1,
 	})
 }
 

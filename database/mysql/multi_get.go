@@ -136,6 +136,7 @@ func (m *MySQL) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var res *sql.Rows
+	var countRes *sql.Rows
 	if year == "" {
 		res, err = db.QueryContext(
 			ctx,
@@ -147,6 +148,20 @@ func (m *MySQL) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 				" WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=?",
 			slug,
 		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting account and event from database: %v", err)
+		}
+		countRes, err = db.QueryContext(
+			ctx,
+			"SELECT COUNT(DISTINCT distance) AS dist_count FROM event NATURAL JOIN event_year y INNER JOIN "+
+				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
+				"NATURAL JOIN person "+
+				" WHERE event_deleted=FALSE AND year_deleted=FALSE and slug=?",
+			slug,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting distance count from database: %v", err)
+		}
 	} else {
 		res, err = db.QueryContext(
 			ctx,
@@ -157,14 +172,36 @@ func (m *MySQL) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			slug,
 			year,
 		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting account and event from database: %v", err)
+		}
+		countRes, err = db.QueryContext(
+			ctx,
+			"SELECT COUNT(DISTINCT distance) AS dist_count "+
+				"FROM person NATURAL JOIN event_year "+
+				"NATURAL JOIN event "+
+				" WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
+			slug,
+			year,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting distance count from database: %v", err)
+		}
 	}
-	if err != nil {
-		return nil, fmt.Errorf("error getting account and event from database: %v", err)
+	var distCount = 0
+	if countRes.Next() {
+		err := countRes.Scan(
+			&distCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting distance count from database: %v", err)
+		}
 	}
 	if res.Next() {
 		outVal := types.MultiGet{
-			Event:     &types.Event{},
-			EventYear: &types.EventYear{},
+			Event:         &types.Event{},
+			EventYear:     &types.EventYear{},
+			DistanceCount: &distCount,
 		}
 		err := res.Scan(
 			&outVal.Event.AccountIdentifier,

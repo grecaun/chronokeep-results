@@ -20,10 +20,11 @@ type AddResultsResponse struct {
 
 // GetBibResultsResponse Struct used for the response of a GetBibResults request.
 type GetBibResultsResponse struct {
-	Event     Event     `json:"event"`
-	EventYear EventYear `json:"year"`
-	Results   []Result  `json:"results"`
-	Person    *Person   `json:"person"`
+	Event          Event     `json:"event"`
+	EventYear      EventYear `json:"year"`
+	Results        []Result  `json:"results"`
+	Person         *Person   `json:"person"`
+	SingleDistance bool      `json:"single_distance"`
 }
 
 /*
