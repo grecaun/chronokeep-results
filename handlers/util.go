@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"chronokeep/results/types"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/chromedp/chromedp"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -93,4 +95,19 @@ func createTokens(email string) (*string, *string, error) {
 		return nil, nil, err
 	}
 	return &token, &refresh, nil
+}
+
+func CreateCertificate(name string, event string, time string, date string) ([]byte, error) {
+	allocatorContext, allocatorCancel := chromedp.NewRemoteAllocator(context.Background(), "http://127.0.0.1:9222/")
+	ctx, cancel := chromedp.NewContext(allocatorContext)
+	defer allocatorCancel()
+	defer cancel()
+	var buf []byte
+	if err := chromedp.Run(ctx, chromedp.Tasks{
+		chromedp.Navigate(fmt.Sprintf("https://test.chronokeep.com/certificate/%s/%s/%s/%s", name, event, time, date)),
+		chromedp.FullScreenshot(&buf, 90),
+	}); err != nil {
+		return nil, err
+	}
+	return buf, nil
 }
