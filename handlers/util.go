@@ -16,6 +16,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const CERTIFICATE_DOWNLOAD_SLEEP_MILLISECONDS = 150
+
 // APIError holds information on an error from the API
 type APIError struct {
 	Message string `json:"message,omitempty"`
@@ -115,7 +117,7 @@ func CreateCertificate(name string, event string, timeString string, date string
 					return page.SetDocumentContent(frameTree.Frame.ID, GetCertificateHTML(name, event, timeString, date)).Do(ctx)
 				},
 			),
-			chromedp.Sleep(100 * time.Millisecond),
+			chromedp.Sleep(CERTIFICATE_DOWNLOAD_SLEEP_MILLISECONDS * time.Millisecond),
 			chromedp.FullScreenshot(&buf, 90),
 		}); err != nil {
 		return nil, err
