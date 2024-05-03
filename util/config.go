@@ -67,6 +67,11 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New("REFRESH_KEY not set or under 20 characters")
 	}
 
+	certificate_url := os.Getenv("CERTIFICATE_TEMPLATE_URL")
+	if certificate_url == "" || len(certificate_url) < 10 {
+		return nil, errors.New("CERTIFICATE_TEMPLATE_URL not set or under 10 characters")
+	}
+
 	admin_email := os.Getenv("ADMIN_EMAIL")
 	admin_name := os.Getenv("ADMIN_NAME")
 	admin_pass := os.Getenv("ADMIN_PASS")
@@ -90,6 +95,7 @@ func GetConfig() (*Config, error) {
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
 		Domain:         domain,
+		CertificateURL: certificate_url,
 	}, nil
 }
 
@@ -111,4 +117,5 @@ type Config struct {
 	AdminName      string
 	AdminPass      string
 	Domain         string
+	CertificateURL string
 }

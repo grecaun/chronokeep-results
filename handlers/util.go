@@ -127,7 +127,7 @@ func GetCertificateHTML(name string, event string, time string, date string) str
 	return fmt.Sprintf(
 		"<html>"+
 			"<head></head>"+
-			"<body style='width:800;height:565;padding:0px;background-image:url(\"https://www.chronokeep.com/certificate-template2.png\");background-size:cover;'>"+
+			"<body style='width:800;height:565;padding:0px;background-image:url(\"%s\");background-size:cover;'>"+
 			"<div style='margin:0px;width:800px;height:565px;position:relative;'>"+
 			"<div style='width:100%%;margin:0;position:absolute;top:50%%;-ms-transform:translateY(-50%%);transform:translateY(-50%%);'>"+
 			"<div style='font-size:60px;text-align:center;font-weight:bold;'>%s</div>"+
@@ -138,6 +138,7 @@ func GetCertificateHTML(name string, event string, time string, date string) str
 			"</div>"+
 			"</body>"+
 			"</html>",
+		config.CertificateURL,
 		name,
 		event,
 		time,
