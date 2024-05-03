@@ -3,6 +3,7 @@ module chronokeep/results
 go 1.20
 
 require (
+	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -18,7 +19,6 @@ require (
 )
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
