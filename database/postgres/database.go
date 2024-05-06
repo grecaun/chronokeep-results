@@ -763,6 +763,10 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 				name:  "RenameResult",
 				query: "ALTER TABLE new_result RENAME TO result;",
 			},
+			{
+				name:  "UpdatePersonIdSequence",
+				query: "SELECT setval(pg_get_serial_sequence('person', 'person_id'), (SELECT MAX(person_id) FROM person)+1);",
+			},
 		}
 		for _, q := range queries {
 			_, err := tx.Exec(
