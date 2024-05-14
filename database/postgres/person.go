@@ -16,7 +16,7 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, anonymous, alternate_id "+
 			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2 AND bib=$3",
 		slug,
 		year,
@@ -28,8 +28,7 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 	defer res.Close()
 	if res.Next() {
 		var outPerson types.Person
-		var anonymous int
-		var sms int
+		var anonymous uint64
 		err = res.Scan(
 			&outPerson.Identifier,
 			&outPerson.Bib,
@@ -39,13 +38,10 @@ func (p *Postgres) GetPerson(slug, year, bib string) (*types.Person, error) {
 			&outPerson.Gender,
 			&outPerson.AgeGroup,
 			&outPerson.Distance,
-			&outPerson.Chip,
 			&anonymous,
 			&outPerson.AlternateId,
-			&sms,
 		)
 		outPerson.Anonymous = anonymous != 0
-		outPerson.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -63,7 +59,7 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT person_id, bib, first, last, age, gender, age_group, distance, chip, anonymous, alternate_id, sms_enabled "+
+		"SELECT person_id, bib, first, last, age, gender, age_group, distance, anonymous, alternate_id "+
 			"FROM person NATURAL JOIN event_year NATURAL JOIN event WHERE slug=$1 AND year=$2;",
 		slug,
 		year,
@@ -76,7 +72,6 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 	for res.Next() {
 		var person types.Person
 		var anonymous int
-		var sms int
 		err := res.Scan(
 			&person.Identifier,
 			&person.Bib,
@@ -86,13 +81,10 @@ func (p *Postgres) GetPeople(slug, year string) ([]types.Person, error) {
 			&person.Gender,
 			&person.AgeGroup,
 			&person.Distance,
-			&person.Chip,
 			&anonymous,
 			&person.AlternateId,
-			&sms,
 		)
 		person.Anonymous = anonymous != 0
-		person.SMSEnabled = sms != 0
 		if err != nil {
 			return nil, fmt.Errorf("error getting person: %v", err)
 		}
@@ -120,10 +112,8 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 		Gender:      person.Gender,
 		AgeGroup:    person.AgeGroup,
 		Distance:    person.Distance,
-		Chip:        person.Chip,
 		Anonymous:   person.Anonymous,
 		AlternateId: person.AlternateId,
-		SMSEnabled:  person.SMSEnabled,
 	}
 	err = tx.QueryRow(
 		ctx,
@@ -136,11 +126,9 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 			"gender, "+
 			"age_group, "+
 			"distance, "+
-			"chip, "+
 			"anonymous, "+
-			"alternate_id, "+
-			"sms_enabled"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+			"alternate_id"+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
 			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
@@ -148,10 +136,8 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 			"gender=$6, "+
 			"age_group=$7, "+
 			"distance=$8, "+
-			"chip=$9, "+
-			"anonymous=$10, "+
-			"alternate_id=$11, "+
-			"sms_enabled=$12 "+
+			"anonymous=$9, "+
+			"alternate_id=$10 "+
 			"RETURNING (person_id);",
 		eventYearID,
 		person.Bib,
@@ -161,10 +147,8 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 		person.Gender,
 		person.AgeGroup,
 		person.Distance,
-		person.Chip,
 		person.AnonyInt(),
 		person.AlternateId,
-		person.SMSInt(),
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)
@@ -203,11 +187,9 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 				"gender, "+
 				"age_group, "+
 				"distance, "+
-				"chip, "+
 				"anonymous, "+
-				"alternate_id, "+
-				"sms_enabled"+
-				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) "+
+				"alternate_id"+
+				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
 				"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 				"first=$3, "+
 				"last=$4, "+
@@ -215,10 +197,8 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 				"gender=$6, "+
 				"age_group=$7, "+
 				"distance=$8, "+
-				"chip=$9, "+
-				"anonymous=$10, "+
-				"alternate_id=$11, "+
-				"sms_enabled=$12 "+
+				"anonymous=$9, "+
+				"alternate_id=$10 "+
 				"RETURNING (person_id);",
 			eventYearID,
 			person.Bib,
@@ -228,10 +208,8 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 			person.Gender,
 			person.AgeGroup,
 			person.Distance,
-			person.Chip,
 			person.AnonyInt(),
 			person.AlternateId,
-			person.SMSInt(),
 		).Scan(&id)
 		if err != nil {
 			tx.Rollback(ctx)
@@ -246,10 +224,8 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 			Gender:      person.Gender,
 			AgeGroup:    person.AgeGroup,
 			Distance:    person.Distance,
-			Chip:        person.Chip,
 			Anonymous:   person.Anonymous,
 			AlternateId: person.AlternateId,
-			SMSEnabled:  person.SMSEnabled,
 		})
 	}
 	err = tx.Commit(ctx)
@@ -326,10 +302,8 @@ func (p *Postgres) UpdatePerson(eventYearID int64, person types.Person) (*types.
 		Gender:      person.Gender,
 		AgeGroup:    person.AgeGroup,
 		Distance:    person.Distance,
-		Chip:        person.Chip,
 		Anonymous:   person.Anonymous,
 		AlternateId: person.AlternateId,
-		SMSEnabled:  person.SMSEnabled,
 	}
 	err = tx.QueryRow(
 		ctx,
@@ -341,10 +315,8 @@ func (p *Postgres) UpdatePerson(eventYearID int64, person types.Person) (*types.
 			"gender=$5, "+
 			"age_group=$6, "+
 			"distance=$7, "+
-			"chip=$8, "+
-			"anonymous=$9, "+
-			"sms_enabled=$12 "+
-			"WHERE event_year_id=$10 AND alternate_id=$11 RETURNING (person_id);",
+			"anonymous=$8 "+
+			"WHERE event_year_id=$9 AND alternate_id=$10 RETURNING (person_id);",
 		person.Bib,
 		person.First,
 		person.Last,
@@ -352,11 +324,9 @@ func (p *Postgres) UpdatePerson(eventYearID int64, person types.Person) (*types.
 		person.Gender,
 		person.AgeGroup,
 		person.Distance,
-		person.Chip,
 		person.AnonyInt(),
 		eventYearID,
 		person.AlternateId,
-		person.SMSInt(),
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)

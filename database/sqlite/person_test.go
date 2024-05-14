@@ -25,7 +25,7 @@ func setupPeopleTests() {
 	}
 	people = []types.Person{
 		{
-			AlternateId: "100",
+			AlternateId: "1001",
 			Bib:         "100",
 			First:       "John",
 			Last:        "Smith",
@@ -33,12 +33,10 @@ func setupPeopleTests() {
 			Gender:      "M",
 			AgeGroup:    "20-29",
 			Distance:    "1 Mile",
-			Chip:        "1003",
 			Anonymous:   true,
-			SMSEnabled:  false,
 		},
 		{
-			AlternateId: "106",
+			AlternateId: "1061",
 			Bib:         "106",
 			First:       "Rose",
 			Last:        "Johnson",
@@ -46,9 +44,7 @@ func setupPeopleTests() {
 			Gender:      "F",
 			AgeGroup:    "50-59",
 			Distance:    "1 Mile",
-			Chip:        "1002",
 			Anonymous:   false,
-			SMSEnabled:  false,
 		},
 		{
 			AlternateId: "10",
@@ -59,7 +55,6 @@ func setupPeopleTests() {
 			Gender:      "M",
 			AgeGroup:    "40-49",
 			Distance:    "1 Mile",
-			SMSEnabled:  false,
 		},
 		{
 			AlternateId: "285",
@@ -70,7 +65,6 @@ func setupPeopleTests() {
 			Gender:      "NB",
 			AgeGroup:    "30-39",
 			Distance:    "5 Mile",
-			SMSEnabled:  true,
 		},
 		{
 			AlternateId: "132",
@@ -81,7 +75,6 @@ func setupPeopleTests() {
 			Gender:      "F",
 			AgeGroup:    "30-39",
 			Distance:    "5 Mile",
-			SMSEnabled:  false,
 		},
 	}
 }
@@ -136,10 +129,10 @@ func TestGetPerson(t *testing.T) {
 			t.Errorf("Gender doesn't match: %v+ %v+", *person, p)
 		} else if person.Distance != p.Distance {
 			t.Errorf("Distance doesn't match: %v+ %v+", *person, p)
-		} else if person.Chip != p.Chip {
-			t.Errorf("Chip doesn't match: %v+ %v+", *person, p)
 		} else if person.Anonymous != p.Anonymous {
 			t.Errorf("Anonymous doesn't match: %v+ %v+", *person, p)
+		} else if person.AlternateId != p.AlternateId {
+			t.Errorf("AlternateId doesn't match: %v+ %v+", *person, p)
 		}
 	}
 }
@@ -172,10 +165,10 @@ func TestGetPeople(t *testing.T) {
 	iPeople, err = db.GetPeople(event.Slug, eventYear.Year)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(people), len(iPeople))
-		for _, outer := range iPeople {
+		for _, outer := range people {
 			found := false
 			for _, inner := range iPeople {
-				if outer.Bib == inner.Bib {
+				if outer.AlternateId == inner.AlternateId {
 					assert.True(t, outer.Equals(&inner))
 					assert.Equal(t, outer.Age, inner.Age)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
@@ -184,10 +177,8 @@ func TestGetPeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
-					assert.Equal(t, outer.Chip, inner.Chip)
 					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
-					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
 					found = true
 				}
 			}
@@ -226,10 +217,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, people[0].First, person.First)
 		assert.Equal(t, people[0].Gender, person.Gender)
 		assert.Equal(t, people[0].Last, person.Last)
-		assert.Equal(t, people[0].Chip, person.Chip)
 		assert.Equal(t, people[0].Anonymous, person.Anonymous)
 		assert.Equal(t, people[0].AlternateId, person.AlternateId)
-		assert.Equal(t, people[0].SMSEnabled, person.SMSEnabled)
 	}
 	id := person.Identifier
 	person, err = db.GetPerson(event.Slug, eventYear.Year, people[0].Bib)
@@ -243,10 +232,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, people[0].Gender, person.Gender)
 		assert.Equal(t, people[0].Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
-		assert.Equal(t, people[0].Chip, person.Chip)
 		assert.Equal(t, people[0].Anonymous, person.Anonymous)
 		assert.Equal(t, people[0].AlternateId, person.AlternateId)
-		assert.Equal(t, people[0].SMSEnabled, person.SMSEnabled)
 	}
 	// test the update function
 	temp := people[0]
@@ -267,10 +254,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, temp.Gender, person.Gender)
 		assert.Equal(t, temp.Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
-		assert.Equal(t, temp.Chip, person.Chip)
 		assert.Equal(t, temp.Anonymous, person.Anonymous)
 		assert.Equal(t, temp.AlternateId, person.AlternateId)
-		assert.Equal(t, temp.SMSEnabled, person.SMSEnabled)
 	}
 	temp = people[1]
 	temp.Age = 4
@@ -279,7 +264,6 @@ func TestAddPerson(t *testing.T) {
 	temp.Last = "Test"
 	temp.Distance = "12 Mile Fun"
 	temp.Gender = "NB"
-	temp.Chip = "upd"
 	temp.Anonymous = true
 	person, err = db.AddPerson(eventYear.Identifier, temp)
 	if assert.NoError(t, err) && assert.NotNil(t, person) {
@@ -291,10 +275,8 @@ func TestAddPerson(t *testing.T) {
 		assert.Equal(t, temp.First, person.First)
 		assert.Equal(t, temp.Gender, person.Gender)
 		assert.Equal(t, temp.Last, person.Last)
-		assert.Equal(t, temp.Chip, person.Chip)
 		assert.Equal(t, temp.Anonymous, person.Anonymous)
 		assert.Equal(t, temp.AlternateId, person.AlternateId)
-		assert.Equal(t, temp.SMSEnabled, person.SMSEnabled)
 	}
 }
 
@@ -328,7 +310,7 @@ func TestAddPeople(t *testing.T) {
 		for _, outer := range people {
 			found := false
 			for _, inner := range p {
-				if outer.Bib == inner.Bib {
+				if outer.AlternateId == inner.AlternateId {
 					assert.True(t, outer.Equals(&inner))
 					assert.Equal(t, outer.Age, inner.Age)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
@@ -337,10 +319,8 @@ func TestAddPeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
-					assert.Equal(t, outer.Chip, inner.Chip)
 					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
-					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
 					found = true
 				}
 			}
@@ -363,9 +343,7 @@ func TestAddPeople(t *testing.T) {
 			Last:        "Test",
 			Distance:    "12 Mile Fun",
 			Gender:      "U",
-			Chip:        "upd" + temp.Bib,
 			Anonymous:   true,
-			SMSEnabled:  true,
 		})
 	}
 	p, err = db.AddPeople(eventYear.Identifier, upd)
@@ -374,7 +352,7 @@ func TestAddPeople(t *testing.T) {
 		for _, outer := range people {
 			found := false
 			for _, inner := range p {
-				if outer.Bib == inner.Bib {
+				if outer.AlternateId == inner.AlternateId {
 					assert.Equal(t, 4, inner.Age)
 					assert.Equal(t, "Youngling", inner.AgeGroup)
 					assert.Equal(t, outer.Bib, inner.Bib)
@@ -382,10 +360,8 @@ func TestAddPeople(t *testing.T) {
 					assert.Equal(t, "Update!", inner.First)
 					assert.Equal(t, "U", inner.Gender)
 					assert.Equal(t, "Test", inner.Last)
-					assert.Equal(t, "upd"+outer.Bib, inner.Chip)
 					assert.Equal(t, true, inner.Anonymous)
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
-					assert.Equal(t, true, inner.SMSEnabled)
 					found = true
 				}
 			}
@@ -438,8 +414,8 @@ func TestDeletePeople(t *testing.T) {
 		assert.Equal(t, len(people), len(p))
 	}
 	toDelete := []string{
-		people[0].Bib,
-		people[1].Bib,
+		people[0].AlternateId,
+		people[1].AlternateId,
 	}
 	count, err = db.DeletePeople(eventYear.Identifier, toDelete)
 	assert.NoError(t, err)
@@ -450,7 +426,7 @@ func TestDeletePeople(t *testing.T) {
 		for _, outer := range people[2:] {
 			found := false
 			for _, inner := range p {
-				if outer.Bib == inner.Bib {
+				if outer.AlternateId == inner.AlternateId {
 					assert.Equal(t, outer.Age, inner.Age)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
 					assert.Equal(t, outer.Bib, inner.Bib)
@@ -458,10 +434,8 @@ func TestDeletePeople(t *testing.T) {
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
 					assert.Equal(t, outer.Last, inner.Last)
-					assert.Equal(t, outer.Chip, inner.Chip)
 					assert.Equal(t, outer.Anonymous, inner.Anonymous)
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
-					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
 					found = true
 				}
 			}
@@ -545,7 +519,6 @@ func TestUpdatePerson(t *testing.T) {
 	temp := people[0]
 	temp.Bib = "-200"
 	temp.Age = 4
-	temp.Chip = "nottheoldchip"
 	temp.AgeGroup = "Youngling"
 	temp.First = "Update!"
 	temp.Last = "Test"
@@ -563,10 +536,8 @@ func TestUpdatePerson(t *testing.T) {
 		assert.Equal(t, temp.Gender, person.Gender)
 		assert.Equal(t, temp.Last, person.Last)
 		assert.Equal(t, id, person.Identifier)
-		assert.Equal(t, temp.Chip, person.Chip)
 		assert.Equal(t, temp.Anonymous, person.Anonymous)
 		assert.Equal(t, temp.AlternateId, person.AlternateId)
-		assert.Equal(t, temp.SMSEnabled, person.SMSEnabled)
 	}
 	// test invalid update
 	temp = people[1]

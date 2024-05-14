@@ -32,7 +32,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? AND bib=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				bib,
@@ -44,7 +44,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? AND bib=? ORDER BY seconds ASC;",
 				eventYearID,
 				bib,
@@ -57,7 +57,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 						"WHERE finish=TRUE AND event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 					eventYearID,
 					distance,
@@ -69,7 +69,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 						"WHERE finish=TRUE AND event_year_id=? AND distance=? ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -81,7 +81,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 					eventYearID,
 					distance,
@@ -93,7 +93,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -105,7 +105,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -121,7 +121,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -138,7 +138,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				limit,
@@ -149,7 +149,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -160,7 +160,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				limit,
@@ -171,7 +171,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=? ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -182,7 +182,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -197,7 +197,7 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, chip, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -235,7 +235,6 @@ func (s *SQLite) getResultsInternal(eventYearID int64, bib *string, rtype Result
 			&result.GenderRanking,
 			&result.Finish,
 			&result.Type,
-			&result.Chip,
 			&anonymous,
 			&result.PersonId,
 		)
@@ -385,10 +384,9 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 			"gender, "+
 			"age_group, "+
 			"distance, "+
-			"chip, "+
 			"anonymous, "+
 			"alternate_id"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) "+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) "+
 			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
@@ -396,8 +394,7 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 			"gender=$6, "+
 			"age_group=$7, "+
 			"distance=$8, "+
-			"chip=$9, "+
-			"anonymous=$10"+
+			"anonymous=$9"+
 			";",
 	)
 	if err != nil {
@@ -473,7 +470,6 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 			result.Gender,
 			result.AgeGroup,
 			result.Distance,
-			result.Chip,
 			result.AnonyInt(),
 			result.PersonId,
 		)

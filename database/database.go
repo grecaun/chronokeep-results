@@ -10,7 +10,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 12
+	CurrentVersion        = 13
 	MaxLoginAttempts      = 4
 )
 
@@ -80,6 +80,11 @@ type Database interface {
 	AddPeople(eventYearID int64, people []types.Person) ([]types.Person, error)
 	DeletePeople(eventYearID int64, alternateIds []string) (int64, error)
 	UpdatePerson(eventYearID int64, person types.Person) (*types.Person, error)
+	// Registration Functions
+	AddParticipants(eventYearID int64, participant []types.Participant) ([]types.Participant, error)
+	GetParticipants(eventYearID int64) ([]types.Participant, error)
+	DeleteParticipants(eventYearID int64, alternateIds []string) (int64, error)
+	UpdateParticipant(eventYearID int64, participant types.Participant) (*types.Participant, error)
 	// Email and Phone blocking functions
 	AddBlockedPhone(phone string) error
 	AddBlockedPhones(phones []string) error

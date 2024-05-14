@@ -234,6 +234,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",
@@ -255,6 +256,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for i := 300; i < 500; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "Jane" + tmpStr,
 			Last:          "Smithson",
@@ -276,6 +278,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
+			PersonId:      tmpStr,
 			Bib:           tmpStr,
 			First:         "John" + tmpStr,
 			Last:          "Smith",
@@ -300,6 +303,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2020"].Identifier, []types.Result{
 		{
+			PersonId:      "100",
 			Bib:           "100",
 			First:         "John",
 			Last:          "Smith",
@@ -318,6 +322,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        true,
 		},
 		{
+			PersonId:      "106",
 			Bib:           "106",
 			First:         "Rose",
 			Last:          "Johnson",
@@ -336,6 +341,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        true,
 		},
 		{
+			PersonId:      "209",
 			Bib:           "209",
 			First:         "Tony",
 			Last:          "Starke",
@@ -354,6 +360,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        true,
 		},
 		{
+			PersonId:      "287",
 			Bib:           "287",
 			First:         "Jamie",
 			Last:          "Fischer",
@@ -372,6 +379,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Finish:        false,
 		},
 		{
+			PersonId:      "287",
 			Bib:           "287",
 			First:         "Jamie",
 			Last:          "Fischer",
@@ -396,6 +404,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for _, eventYear := range output.eventYears["event2"] {
 		_, err = database.AddResults(eventYear.Identifier, []types.Result{
 			{
+				PersonId:      "1001",
 				Bib:           "100",
 				First:         "John",
 				Last:          "Smith",
@@ -414,6 +423,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				Finish:        true,
 			},
 			{
+				PersonId:      "1006",
 				Bib:           "106",
 				First:         "Rose",
 				Last:          "Johnson",
@@ -432,6 +442,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				Finish:        true,
 			},
 			{
+				PersonId:      "2009",
 				Bib:           "209",
 				First:         "Tony",
 				Last:          "Starke",
@@ -450,6 +461,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				Finish:        true,
 			},
 			{
+				PersonId:      "287",
 				Bib:           "287",
 				First:         "Jamie",
 				Last:          "Fischer",
@@ -468,6 +480,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				Finish:        false,
 			},
 			{
+				PersonId:      "287",
 				Bib:           "287",
 				First:         "Jamie",
 				Last:          "Fischer",
@@ -501,6 +514,9 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
+		// sleep here for a small period of time so the program has time to close the database and we don't default to
+		// an error on the os.Remove call
+		time.Sleep(200 * time.Millisecond)
 		err := os.Remove(config.DBName)
 		if err != nil {
 			t.Fatalf("Error deleting database: %v", err)

@@ -41,7 +41,6 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 1,
 			Finish:        false,
-			Chip:          "10003",
 			Anonymous:     true,
 		},
 		{
@@ -62,7 +61,6 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 1,
 			Finish:        true,
-			Chip:          "1000004",
 			Anonymous:     false,
 		},
 		{
@@ -306,9 +304,6 @@ func TestAddResults(t *testing.T) {
 	if res[0].Finish != results[0].Finish {
 		t.Errorf("Expected to find result with finish %v, found %v.", results[0].Finish, res[0].Finish)
 	}
-	if res[0].Chip != results[0].Chip {
-		t.Errorf("Expected to find result with chip %v, found %v.", results[0].Chip, res[0].Chip)
-	}
 	if res[0].Anonymous != results[0].Anonymous {
 		t.Errorf("Expected to find result with anonymous %v, found %v.", results[0].Anonymous, res[0].Anonymous)
 	}
@@ -375,9 +370,6 @@ func TestAddResults(t *testing.T) {
 	}
 	if res[0].Finish != results[1].Finish {
 		t.Errorf("Expected to find result with finish %v, found %v.", results[1].Finish, res[0].Finish)
-	}
-	if res[0].Chip != results[1].Chip {
-		t.Errorf("Expected to find result with chip %v, found %v.", results[1].Chip, res[0].Chip)
 	}
 	if res[0].Anonymous != results[1].Anonymous {
 		t.Errorf("Expected to find result with anonymous %v, found %v.", results[1].Anonymous, res[0].Anonymous)

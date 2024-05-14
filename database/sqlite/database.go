@@ -128,7 +128,7 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE banned_phones; DROP TABLE banned_emails; DROP TABLE call_record; "+
+		"DROP TABLE participant; DROP TABLE chips; DROP TABLE banned_phones; DROP TABLE banned_emails; DROP TABLE call_record; "+
 			"DROP TABLE result; DROP TABLE person; DROP TABLE event_year; "+
 			"DROP TABLE event; DROP TABLE api_key; DROP TABLE account; "+
 			"DROP TABLE settings;",
@@ -261,9 +261,7 @@ func (s *SQLite) createTables() error {
 				"gender VARCHAR(50) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
-				"chip VARCHAR(200) DEFAULT '', " +
 				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
-				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
 				"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
@@ -316,6 +314,40 @@ func (s *SQLite) createTables() error {
 			query: "CREATE TABLE IF NOT EXISTS banned_emails(" +
 				"banned_email VARCHAR(200), " +
 				"CONSTRAINT unique_banned_email UNIQUE (banned_email)" +
+				");",
+		},
+		// PARTICIPANTS TABLE
+		{
+			name: "CreateParticipantTable",
+			query: "CREATE TABLE IF NOT EXISTS participant(" +
+				"participant_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"alternate_id VARCHAR(100) NOT NULL, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"bib VARCHAR(100) NOT NULL, " +
+				"first VARCHAR(100) NOT NULL, " +
+				"last VARCHAR(100) NOT NULL, " +
+				"birthdate VARCHAR(15) NOT NULL, " +
+				"gender VARCHAR(50) NOT NULL, " +
+				"age_group VARCHAR(200), " +
+				"distance VARCHAR(200) NOT NULL, " +
+				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+				"apparel VARCHAR(150) NOT NULL DEFAULT '', " +
+				"mobile VARCHAR(15) NOT NULL DEFAULT '', " +
+				"CONSTRAINT one_participant UNIQUE (event_year_id, alternate_id), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+				");",
+		},
+		// BIBCHIP TABLE
+		{
+			name: "CreateChipTable",
+			query: "CREATE TABLE IF NOT EXISTS chips(" +
+				"chip_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"bib VARCHAR(100) NOT NULL, " +
+				"chip VARCHAR(100) NOT NULL, " +
+				"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -672,6 +704,57 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "RenameNewPersonDropOld",
 				query: "DROP TABLE person; ALTER TABLE new_person RENAME TO person;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 13 && newVersion >= 13 {
+		log.Info("Updating to database version 13.")
+		queries := []myQuery{
+			{
+				name:  "DropPersonColumns",
+				query: "ALTER TABLE person DROP COLUMN chip; ALTER TABLE person DROP COLUMN sms_enabled;",
+			},
+			{
+				name: "CreateParticipantTable",
+				query: "CREATE TABLE IF NOT EXISTS participant(" +
+					"participant_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"alternate_id VARCHAR(100) NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"birthdate VARCHAR(15) NOT NULL, " +
+					"gender VARCHAR(50) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+					"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+					"apparel VARCHAR(150) NOT NULL DEFAULT '', " +
+					"mobile VARCHAR(15) NOT NULL DEFAULT '', " +
+					"CONSTRAINT one_participant UNIQUE (event_year_id, alternate_id), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
+			},
+			{
+				name: "CreateChipTable",
+				query: "CREATE TABLE IF NOT EXISTS chips(" +
+					"chip_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"chip VARCHAR(100) NOT NULL, " +
+					"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
 			},
 		}
 		for _, q := range queries {

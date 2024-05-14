@@ -27,7 +27,6 @@ type Result struct {
 	GenderRanking    int    `json:"gender_ranking"`
 	Finish           bool   `json:"finish"`
 	Type             int    `json:"type"`
-	Chip             string `json:"chip"`
 	Anonymous        bool   `json:"anonymous"`
 }
 
@@ -56,7 +55,6 @@ func (one *Result) Equals(two *Result) bool {
 		one.GenderRanking == two.GenderRanking &&
 		one.Finish == two.Finish &&
 		one.Type == two.Type &&
-		one.Chip == two.Chip &&
 		one.Anonymous == two.Anonymous
 }
 
@@ -68,7 +66,6 @@ func (one *Result) SamePerson(two *Result) bool {
 		one.Gender == two.Gender &&
 		one.AgeGroup == two.AgeGroup &&
 		one.Distance == two.Distance &&
-		one.Chip == two.Chip &&
 		one.Anonymous == two.Anonymous
 }
 

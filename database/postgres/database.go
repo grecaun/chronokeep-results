@@ -140,7 +140,7 @@ func (p *Postgres) dropTables() error {
 	defer cancelfunc()
 	_, err = db.Exec(
 		ctx,
-		"DROP TABLE banned_phones, banned_emails, call_record, result, person, event_year, event, api_key, account, settings;",
+		"DROP TABLE participant, chips, banned_phones, banned_emails, call_record, result, person, event_year, event, api_key, account, settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -273,9 +273,7 @@ func (p *Postgres) createTables() error {
 				"gender VARCHAR(50) NOT NULL, " +
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
-				"chip VARCHAR(200) DEFAULT '', " +
 				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
-				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
 				"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (person_id)" +
@@ -329,6 +327,42 @@ func (p *Postgres) createTables() error {
 			query: "CREATE TABLE IF NOT EXISTS banned_emails(" +
 				"banned_email VARCHAR(200), " +
 				"CONSTRAINT unique_banned_email UNIQUE(banned_email)" +
+				");",
+		},
+		// PARTICIPANTS TABLE
+		{
+			name: "CreateParticipantTable",
+			query: "CREATE TABLE IF NOT EXISTS participant(" +
+				"participant_id BIGSERIAL NOT NULL, " +
+				"alternate_id VARCHAR(100) NOT NULL, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"bib VARCHAR(100) NOT NULL, " +
+				"first VARCHAR(100) NOT NULL, " +
+				"last VARCHAR(100) NOT NULL, " +
+				"birthdate VARCHAR(15) NOT NULL, " +
+				"gender VARCHAR(50) NOT NULL, " +
+				"age_group VARCHAR(200), " +
+				"distance VARCHAR(200) NOT NULL, " +
+				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+				"apparel VARCHAR(150) NOT NULL DEFAULT '', " +
+				"mobile VARCHAR(15) NOT NULL DEFAULT '', " +
+				"CONSTRAINT one_participant UNIQUE (event_year_id, alternate_id), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+				"PRIMARY KEY (participant_id)" +
+				");",
+		},
+		// BIBCHIP TABLE
+		{
+			name: "CreateChipTable",
+			query: "CREATE TABLE IF NOT EXISTS chips(" +
+				"chip_id BIGSERIAL NOT NULL, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"bib VARCHAR(100) NOT NULL, " +
+				"chip VARCHAR(100) NOT NULL, " +
+				"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+				"PRIMARY KEY (chip_id)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -766,6 +800,59 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "UpdatePersonIdSequence",
 				query: "SELECT setval(pg_get_serial_sequence('person', 'person_id'), (SELECT MAX(person_id) FROM person)+1);",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.Exec(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback(ctx)
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 13 && newVersion >= 13 {
+		log.Info("Updating to database version 13.")
+		queries := []myQuery{
+			{
+				name:  "DropPersonColumns",
+				query: "ALTER TABLE person DROP COLUMN chip; ALTER TABLE person DROP COLUMN sms_enabled;",
+			},
+			{
+				name: "CreateParticipantTable",
+				query: "CREATE TABLE IF NOT EXISTS participant(" +
+					"participant_id BIGSERIAL NOT NULL, " +
+					"alternate_id VARCHAR(100) NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"birthdate VARCHAR(15) NOT NULL, " +
+					"gender VARCHAR(50) NOT NULL, " +
+					"age_group VARCHAR(200), " +
+					"distance VARCHAR(200) NOT NULL, " +
+					"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+					"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
+					"apparel VARCHAR(150) NOT NULL DEFAULT '', " +
+					"mobile VARCHAR(15) NOT NULL DEFAULT '', " +
+					"CONSTRAINT one_participant UNIQUE (event_year_id, alternate_id), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (participant_id)" +
+					");",
+			},
+			{
+				name: "CreateChipTable",
+				query: "CREATE TABLE IF NOT EXISTS chips(" +
+					"chip_id BIGSERIAL NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"chip VARCHAR(100) NOT NULL, " +
+					"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (chip_id)" +
+					");",
 			},
 		}
 		for _, q := range queries {
