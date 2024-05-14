@@ -340,7 +340,7 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/event", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1399,5 +1399,346 @@ func TestRDeleteParticipants(t *testing.T) {
 }
 
 func TestRUpdateParticipants(t *testing.T) {
-
+	// POST, /r/participants/update
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	// Test empty auth header
+	t.Log("Testing empty auth header.")
+	request := httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid auth header
+	t.Log("Testing invalid auth header.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid token
+	t.Log("Testing invalid token.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown email
+	t.Log("Testing unknown email in token.")
+	token, _, err := createTokens("unknown@test.com")
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test expired token
+	t.Log("Testing expired token.")
+	token, refresh, err := createExpiredTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account := variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test not logged in
+	t.Log("Testing not logged in.")
+	token, _, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test locked account
+	lockAccount(t, variables.accounts[0].Email, e, h)
+	t.Log("Testing locked account.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// Test empty request
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	t.Log("Testing empty request.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test bad request
+	t.Log("Testing bad request.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("////")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test invalid content type
+	t.Log("Testing invalid content type.")
+	body, err := json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event1"].Slug,
+		Year: variables.eventYears["event1"]["2021"].Year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// Test valid request - self
+	t.Log("Testing valid request -- self.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: variables.eventYears["event2"]["2021"].Year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 4, len(p))
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 0, len(resp.Participants))
+		}
+	}
+	// Test valid request - admin for other
+	t.Log("Testing valid request -- admin for other.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: variables.eventYears["event2"]["2020"].Year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	p, err = database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 4, len(p))
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 0, len(resp.Participants))
+		}
+	}
+	// Test invalid request - non-admin for other
+	t.Log("Testing invalid request -- non-admin for other.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event1"].Slug,
+		Year: variables.eventYears["event1"]["2020"].Year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown event name
+	t.Log("Testing unknown event name.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: "unknown",
+		Year: "2020",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test known slug, unknown year
+	t.Log("Testing unknown event year.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event1"].Slug,
+		Year: "2000",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test token for wrong account //->//
+	t.Log("Test token with embeded email not belonging to account it is attached to.")
+	account = variables.accounts[0]
+	account.Token = "totally-not-valid-token"
+	account.RefreshToken = "not-a-valid-refresh-token"
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RDeleteParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 }
