@@ -140,7 +140,20 @@ func (p *Postgres) dropTables() error {
 	defer cancelfunc()
 	_, err = db.Exec(
 		ctx,
-		"DROP TABLE participant, chips, banned_phones, banned_emails, call_record, result, person, event_year, event, api_key, account, settings;",
+		"DROP TABLE "+
+			"segments, "+
+			"participant, "+
+			"chips, "+
+			"banned_phones, "+
+			"banned_emails, "+
+			"call_record, "+
+			"result, "+
+			"person, "+
+			"event_year, "+
+			"event, "+
+			"api_key, "+
+			"account, "+
+			"settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -363,6 +376,24 @@ func (p *Postgres) createTables() error {
 				"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (chip_id)" +
+				");",
+		},
+		// SEGMENTS TABLE
+		{
+			name: "CreateSegmentTable",
+			query: "CREATE TABLE IF NOT EXISTS segments(" +
+				"segment_id BIGSERIAL NOT NULL, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"location_name VARCHAR NOT NULL, " +
+				"distance_name VARCHAR NOT NULL, " +
+				"segment_name VARCHAR NOT NULL, " +
+				"segment_distance DECIMAL(10,2) NOT NULL, " +
+				"segment_distance_unit VARCHAR(12) NOT NULL, " +
+				"segment_gps VARCHAR NOT NULL DEFAULT '', " +
+				"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
+				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+				"PRIMARY KEY (segment_id)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -852,6 +883,23 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 					"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 					"PRIMARY KEY (chip_id)" +
+					");",
+			},
+			{
+				name: "CreateSegmentTable",
+				query: "CREATE TABLE IF NOT EXISTS segments(" +
+					"segment_id BIGSERIAL NOT NULL, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"location_name VARCHAR NOT NULL, " +
+					"distance_name VARCHAR NOT NULL, " +
+					"segment_name VARCHAR NOT NULL, " +
+					"segment_distance DECIMAL(10,2) NOT NULL, " +
+					"segment_distance_unit VARCHAR(12) NOT NULL, " +
+					"segment_gps VARCHAR NOT NULL DEFAULT '', " +
+					"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
+					"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (segment_id)" +
 					");",
 			},
 		}

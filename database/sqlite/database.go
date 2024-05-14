@@ -128,9 +128,18 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE participant; DROP TABLE chips; DROP TABLE banned_phones; DROP TABLE banned_emails; DROP TABLE call_record; "+
-			"DROP TABLE result; DROP TABLE person; DROP TABLE event_year; "+
-			"DROP TABLE event; DROP TABLE api_key; DROP TABLE account; "+
+		"DROP TABLE segments;"+
+			"DROP TABLE participant;"+
+			"DROP TABLE chips;"+
+			"DROP TABLE banned_phones;"+
+			"DROP TABLE banned_emails;"+
+			"DROP TABLE call_record; "+
+			"DROP TABLE result;"+
+			"DROP TABLE person;"+
+			"DROP TABLE event_year; "+
+			"DROP TABLE event;"+
+			"DROP TABLE api_key;"+
+			"DROP TABLE account; "+
 			"DROP TABLE settings;",
 	)
 	if err != nil {
@@ -347,6 +356,23 @@ func (s *SQLite) createTables() error {
 				"bib VARCHAR(100) NOT NULL, " +
 				"chip VARCHAR(100) NOT NULL, " +
 				"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+				");",
+		},
+		// SEGMENTS TABLE
+		{
+			name: "CreateSegmentTable",
+			query: "CREATE TABLE IF NOT EXISTS segments(" +
+				"segment_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"location_name VARCHAR NOT NULL, " +
+				"distance_name VARCHAR NOT NULL, " +
+				"segment_name VARCHAR NOT NULL, " +
+				"segment_distance DECIMAL(10,2) NOT NULL, " +
+				"segment_distance_unit VARCHAR(12) NOT NULL, " +
+				"segment_gps VARCHAR NOT NULL DEFAULT '', " +
+				"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
+				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
@@ -753,6 +779,22 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"bib VARCHAR(100) NOT NULL, " +
 					"chip VARCHAR(100) NOT NULL, " +
 					"CONSTRAINT unique_combo UNIQUE (event_year_id, chip), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
+			},
+			{
+				name: "CreateSegmentTable",
+				query: "CREATE TABLE IF NOT EXISTS segments(" +
+					"segment_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"location_name VARCHAR NOT NULL, " +
+					"distance_name VARCHAR NOT NULL, " +
+					"segment_name VARCHAR NOT NULL, " +
+					"segment_distance DECIMAL(10,2) NOT NULL, " +
+					"segment_distance_unit VARCHAR(12) NOT NULL, " +
+					"segment_gps VARCHAR NOT NULL DEFAULT '', " +
+					"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
+					"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 					");",
 			},

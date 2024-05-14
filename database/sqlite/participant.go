@@ -180,12 +180,12 @@ func (s *SQLite) DeleteParticipants(eventYearID int64, alternateIds []string) (i
 	if err != nil {
 		return 0, err
 	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancelfunc()
 	var count int64
 	if len(alternateIds) > 0 {
 		count = 0
