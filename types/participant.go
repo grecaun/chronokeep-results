@@ -1,6 +1,9 @@
 package types
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -23,6 +26,18 @@ type Participant struct {
 
 // Validate Ensures valid data in the struct.
 func (p *Participant) Validate(validate *validator.Validate) error {
+	us_layout := "1/2/2006"
+	iso_layout := "2006/1/2"
+	t, err := time.Parse(us_layout, p.Birthdate)
+	if err != nil {
+		t, err := time.Parse(iso_layout, p.Birthdate)
+		if err != nil || t.After(time.Now()) {
+			return fmt.Errorf("invalid birthdate")
+		}
+	}
+	if t.After(time.Now()) {
+		return fmt.Errorf("invalid birthdate")
+	}
 	return validate.Struct(p)
 }
 

@@ -366,52 +366,68 @@ func TestRAddParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
 	}
-	people := []types.Person{
+	parts := []types.Participant{
 		{
 			AlternateId: "1024",
 			Bib:         "1024",
 			First:       "John",
 			Last:        "Smnit",
-			Age:         20,
+			Birthdate:   "1/1/2004",
 			Gender:      "M",
 			AgeGroup:    "20-29",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "2034",
 			Bib:         "2034",
 			First:       "Jason",
 			Last:        "Jonson",
-			Age:         34,
+			Birthdate:   "1/1/1990",
 			Gender:      "M",
 			AgeGroup:    "30-39",
 			Distance:    "5 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "3521",
 			Bib:         "3521",
 			First:       "Rose",
 			Last:        "McGowna",
-			Age:         16,
+			Birthdate:   "1/1/2008",
 			Gender:      "F",
 			AgeGroup:    "0-19",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "1364",
 			Bib:         "1364",
 			First:       "Lilly",
 			Last:        "Smith",
-			Age:         10,
+			Birthdate:   "1/1/2014",
 			Gender:      "F",
 			AgeGroup:    "0-19",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 	}
 	body, err := json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         year.Year,
-		Participants: people,
+		Participants: parts,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -578,7 +594,7 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         year.Year,
-		Participants: people,
+		Participants: parts,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -590,20 +606,26 @@ func TestRAddParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		part, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(people), len(part))
-			for _, outer := range people {
+			assert.Equal(t, len(parts), len(part))
+			for _, outer := range parts {
 				found := false
 				for _, inner := range part {
-					if outer.Bib == inner.Bib {
-						assert.Equal(t, outer.Age, inner.Age)
-						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+					if outer.AlternateId == inner.AlternateId {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
-						assert.Equal(t, outer.Distance, inner.Distance)
 						assert.Equal(t, outer.First, inner.First)
-						assert.Equal(t, outer.Gender, inner.Gender)
 						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
 						found = true
 					}
 				}
@@ -612,7 +634,7 @@ func TestRAddParticipants(t *testing.T) {
 		}
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(people), resp.Count)
+			assert.Equal(t, len(parts), resp.Count)
 		}
 	}
 	// Test valid request - admin for other
@@ -635,20 +657,26 @@ func TestRAddParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		part, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(people), len(part))
-			for _, outer := range people {
+			assert.Equal(t, len(parts), len(part))
+			for _, outer := range parts {
 				found := false
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.Equal(t, outer.Age, inner.Age)
-						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
-						assert.Equal(t, outer.Distance, inner.Distance)
 						assert.Equal(t, outer.First, inner.First)
-						assert.Equal(t, outer.Gender, inner.Gender)
 						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
 						found = true
 					}
 				}
@@ -657,7 +685,7 @@ func TestRAddParticipants(t *testing.T) {
 		}
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(people), resp.Count)
+			assert.Equal(t, len(parts), resp.Count)
 		}
 	}
 	// Test invalid request - non-admin for other
@@ -670,7 +698,7 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event1"].Slug,
 		Year:         year.Year,
-		Participants: people,
+		Participants: parts,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -710,7 +738,7 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         "unknown",
 		Year:         "2020",
-		Participants: people,
+		Participants: parts,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -739,7 +767,7 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event1"].Slug,
 		Year:         "2025",
-		Participants: people,
+		Participants: parts,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -757,15 +785,19 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
-		Participants: []types.Person{
+		Participants: []types.Participant{
 			{
-				Bib:      "10",
-				Age:      -20,
-				AgeGroup: "10-20",
-				First:    "John",
-				Last:     "Jacob",
-				Distance: "1 Mile",
-				Gender:   "m",
+				Bib:        "10",
+				First:      "John",
+				Last:       "Jacob",
+				Birthdate:  "1/1/3040",
+				Gender:     "m",
+				AgeGroup:   "10-20",
+				Distance:   "1 Mile",
+				Anonymous:  false,
+				SMSEnabled: false,
+				Mobile:     "",
+				Apparel:    "",
 			},
 		},
 	})
@@ -785,15 +817,19 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
-		Participants: []types.Person{
+		Participants: []types.Participant{
 			{
-				Bib:      "10",
-				Age:      20,
-				AgeGroup: "10-20",
-				First:    "John",
-				Last:     "Jacob",
-				Distance: "1 Mile",
-				Gender:   "G",
+				Bib:        "10",
+				Birthdate:  "1/1/2004",
+				AgeGroup:   "10-20",
+				First:      "John",
+				Last:       "Jacob",
+				Distance:   "1 Mile",
+				Gender:     "G",
+				Anonymous:  false,
+				SMSEnabled: false,
+				Mobile:     "",
+				Apparel:    "",
 			},
 		},
 	})
@@ -813,15 +849,19 @@ func TestRAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
-		Participants: []types.Person{
+		Participants: []types.Participant{
 			{
-				Bib:      "10",
-				Age:      20,
-				AgeGroup: "10-20",
-				First:    "John",
-				Last:     "Jacob",
-				Distance: "",
-				Gender:   "M",
+				Bib:        "10",
+				Birthdate:  "1/1/2004",
+				AgeGroup:   "10-20",
+				First:      "John",
+				Last:       "Jacob",
+				Distance:   "",
+				Gender:     "M",
+				Anonymous:  false,
+				SMSEnabled: false,
+				Mobile:     "",
+				Apparel:    "",
 			},
 		},
 	})
@@ -882,53 +922,69 @@ func TestRDeleteParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
 	}
-	people := []types.Person{
+	parts := []types.Participant{
 		{
 			AlternateId: "1024",
 			Bib:         "1024",
 			First:       "John",
 			Last:        "Smnit",
-			Age:         20,
+			Birthdate:   "1/1/2004",
 			Gender:      "M",
 			AgeGroup:    "20-29",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "2034",
 			Bib:         "2034",
 			First:       "Jason",
 			Last:        "Jonson",
-			Age:         34,
+			Birthdate:   "1/1/1990",
 			Gender:      "M",
 			AgeGroup:    "30-39",
 			Distance:    "5 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "3521",
 			Bib:         "3521",
 			First:       "Rose",
 			Last:        "McGowna",
-			Age:         16,
+			Birthdate:   "1/1/2008",
 			Gender:      "F",
 			AgeGroup:    "0-19",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 		{
 			AlternateId: "1364",
 			Bib:         "1364",
 			First:       "Lilly",
 			Last:        "Smith",
-			Age:         10,
+			Birthdate:   "1/1/2014",
 			Gender:      "F",
 			AgeGroup:    "0-19",
 			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		},
 	}
-	p, err := database.AddPeople(year.Identifier, people)
+	p, err := database.AddParticipants(year.Identifier, parts)
 	if err != nil {
-		t.Fatalf("Error adding people to database for test: %v", err)
+		t.Fatalf("Error adding participants to database for test: %v", err)
 	}
-	assert.Equal(t, len(people), len(p))
+	assert.Equal(t, len(parts), len(p))
 	body, err := json.Marshal(types.DeleteParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
@@ -1102,7 +1158,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		newP, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(newP))
 		}
@@ -1120,11 +1176,11 @@ func TestRDeleteParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	p, err = database.AddPeople(year.Identifier, people)
+	p, err = database.AddParticipants(year.Identifier, parts)
 	if err != nil {
-		t.Fatalf("Error adding people to database for test: %v", err)
+		t.Fatalf("Error adding participants to database for test: %v", err)
 	}
-	assert.Equal(t, len(people), len(p))
+	assert.Equal(t, len(parts), len(p))
 	body, err = json.Marshal(types.DeleteParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
 		Year: year.Year,
@@ -1139,7 +1195,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		newP, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(newP))
 		}
@@ -1185,13 +1241,13 @@ func TestRDeleteParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	p, err = database.AddPeople(year.Identifier, people)
+	p, err = database.AddParticipants(year.Identifier, parts)
 	if err != nil {
-		t.Fatalf("Error adding people to database for test: %v", err)
+		t.Fatalf("Error adding participants to database for test: %v", err)
 	}
-	assert.Equal(t, len(people), len(p))
+	assert.Equal(t, len(parts), len(p))
 	idents := make([]string, 0)
-	for _, person := range people {
+	for _, person := range parts {
 		idents = append(idents, person.AlternateId)
 	}
 	body, err = json.Marshal(types.DeleteParticipantsRequest{
@@ -1209,9 +1265,9 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		newP, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(people)-2, len(newP))
+			assert.Equal(t, len(parts)-2, len(newP))
 		}
 	}
 	// Test invalid bibs
@@ -1227,11 +1283,11 @@ func TestRDeleteParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	p, err = database.AddPeople(year.Identifier, people)
+	p, err = database.AddParticipants(year.Identifier, parts)
 	if err != nil {
-		t.Fatalf("Error adding people to database for test: %v", err)
+		t.Fatalf("Error adding participants to database for test: %v", err)
 	}
-	assert.Equal(t, len(people), len(p))
+	assert.Equal(t, len(parts), len(p))
 	idents = []string{
 		"invalid1",
 		"invalid2",
@@ -1251,9 +1307,9 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetPeople(variables.events["event2"].Slug, year.Year)
+		newP, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(people), len(newP))
+			assert.Equal(t, len(parts), len(newP))
 		}
 	}
 	// Test unknown event slug

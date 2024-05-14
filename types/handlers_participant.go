@@ -6,7 +6,12 @@ package types
 
 // GetParticipantsResponse Struct used for the response of a Get Participants request.
 type GetParticipantsResponse struct {
-	Participants []Person `json:"participants"`
+	Participants []Participant `json:"participants"`
+}
+
+// UpdateParticipantResponse Struct used for the response of an Update Participants request.
+type UpdateParticipantResponse struct {
+	Participant Participant `json:"participant"`
 }
 
 /*
@@ -15,9 +20,9 @@ type GetParticipantsResponse struct {
 
 // UpdateParticipantRequest Struct used to update a participant's information.
 type UpdateParticipantRequest struct {
-	Slug        string `json:"slug"`
-	Year        string `json:"year"`
-	Participant Person `json:"participant"`
+	Slug        string      `json:"slug"`
+	Year        string      `json:"year"`
+	Participant Participant `json:"participant"`
 }
 
 type GetParticipantRequest struct {
@@ -34,9 +39,9 @@ type GetParticipantsRequest struct {
 
 // AddParticipantsRequest Struct used for the request to add/update participants for an event.
 type AddParticipantsRequest struct {
-	Slug         string   `json:"slug"`
-	Year         string   `json:"year"`
-	Participants []Person `json:"participants"`
+	Slug         string        `json:"slug"`
+	Year         string        `json:"year"`
+	Participants []Participant `json:"participants"`
 }
 
 // DeleteParticipantsRequest Struct used for the request to delete participants for an event.

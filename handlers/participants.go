@@ -51,7 +51,7 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
-	participants, err := database.GetPeople(request.Slug, request.Year)
+	participants, err := database.GetParticipants(mult.EventYear.Identifier)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}
@@ -108,7 +108,7 @@ func (h Handler) AddParticipants(c echo.Context) error {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
 	// validate participants
-	var partToAdd []types.Person
+	var partToAdd []types.Participant
 	for _, part := range request.Participants {
 		// Validate all results, only add the results that pass validation.
 		if err := part.Validate(h.validate); err == nil {
@@ -118,7 +118,7 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	if len(partToAdd) < 1 {
 		return getAPIError(c, http.StatusBadRequest, "No Valid Participants", nil)
 	}
-	participants, err := database.AddPeople(mult.EventYear.Identifier, partToAdd)
+	participants, err := database.AddParticipants(mult.EventYear.Identifier, partToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
@@ -174,7 +174,7 @@ func (h Handler) DeleteParticipants(c echo.Context) error {
 	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
-	count, err := database.DeletePeople(mult.EventYear.Identifier, request.Identifiers)
+	count, err := database.DeleteParticipants(mult.EventYear.Identifier, request.Identifiers)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Participants", err)
 	}

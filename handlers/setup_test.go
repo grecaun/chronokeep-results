@@ -231,6 +231,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	// add results
 	t.Log("Adding results.")
 	res := make([]types.Result, 0)
+	parts := make([]types.Participant, 0)
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
@@ -251,6 +252,20 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        true,
+		})
+		parts = append(parts, types.Participant{
+			AlternateId: tmpStr,
+			Bib:         tmpStr,
+			First:       "John" + tmpStr,
+			Last:        "Smith",
+			Birthdate:   "1/1/2000",
+			Gender:      "Man",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
 		})
 	}
 	for i := 300; i < 500; i++ {
@@ -274,6 +289,20 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			GenderRanking: i + 1,
 			Finish:        true,
 		})
+		parts = append(parts, types.Participant{
+			AlternateId: tmpStr,
+			Bib:         tmpStr,
+			First:       "Jane" + tmpStr,
+			Last:        "Smithson",
+			Birthdate:   "1/1/1997",
+			Gender:      "Woman",
+			AgeGroup:    "20-29",
+			Distance:    "2 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		})
 	}
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
@@ -296,10 +325,28 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			GenderRanking: i + 1,
 			Finish:        false,
 		})
+		parts = append(parts, types.Participant{
+			AlternateId: tmpStr,
+			Bib:         tmpStr,
+			First:       "John" + tmpStr,
+			Last:        "Smith",
+			Birthdate:   "1/1/2000",
+			Gender:      "Man",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		})
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2021"].Identifier, res)
 	if err != nil {
 		t.Fatalf("Unexpected error adding 500 results to database: %v", err)
+	}
+	_, err = database.AddParticipants(output.eventYears["event1"]["2021"].Identifier, parts)
+	if err != nil {
+		t.Fatalf("Unexpected error adding 500 participants to database: %v", err)
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2020"].Identifier, []types.Result{
 		{
@@ -401,6 +448,67 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	if err != nil {
 		t.Fatalf("Unexpected error adding small number of results to database: %v", err)
 	}
+	_, err = database.AddParticipants(output.eventYears["event1"]["2020"].Identifier, []types.Participant{
+		{
+			AlternateId: "100",
+			Bib:         "100",
+			First:       "John",
+			Last:        "Smith",
+			Birthdate:   "1/1/2000",
+			Gender:      "Non-Binary",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "106",
+			Bib:         "106",
+			First:       "Rose",
+			Last:        "Johnson",
+			Birthdate:   "1/1/1969",
+			Gender:      "Woman",
+			AgeGroup:    "50-59",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "209",
+			Bib:         "209",
+			First:       "Tony",
+			Last:        "Starke",
+			Birthdate:   "1/1/1979",
+			Gender:      "Man",
+			AgeGroup:    "40-49",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "287",
+			Bib:         "287",
+			First:       "Jamie",
+			Last:        "Fischer",
+			Birthdate:   "1/1/1989",
+			Gender:      "Woman",
+			AgeGroup:    "30-39",
+			Distance:    "2 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error adding small number of participants to database: %v", err)
+	}
 	for _, eventYear := range output.eventYears["event2"] {
 		_, err = database.AddResults(eventYear.Identifier, []types.Result{
 			{
@@ -501,6 +609,67 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		})
 		if err != nil {
 			t.Fatalf("Unexpected error adding small number of results to database: %v", err)
+		}
+		_, err = database.AddParticipants(eventYear.Identifier, []types.Participant{
+			{
+				AlternateId: "100",
+				Bib:         "100",
+				First:       "John",
+				Last:        "Smith",
+				Birthdate:   "1/1/2024",
+				Gender:      "Man",
+				AgeGroup:    "20-29",
+				Distance:    "1 Mile",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
+			},
+			{
+				AlternateId: "106",
+				Bib:         "106",
+				First:       "Rose",
+				Last:        "Johnson",
+				Birthdate:   "1/1/1969",
+				Gender:      "Woman",
+				AgeGroup:    "50-59",
+				Distance:    "1 Mile",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
+			},
+			{
+				AlternateId: "209",
+				Bib:         "209",
+				First:       "Tony",
+				Last:        "Starke",
+				Birthdate:   "1/1/1979",
+				Gender:      "Man",
+				AgeGroup:    "40-49",
+				Distance:    "1 Mile",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
+			},
+			{
+				AlternateId: "287",
+				Bib:         "287",
+				First:       "Jamie",
+				Last:        "Fischer",
+				Birthdate:   "1/1/1989",
+				Gender:      "Woman",
+				AgeGroup:    "30-39",
+				Distance:    "2 Mile",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
+			},
+		})
+		if err != nil {
+			t.Fatalf("Unexpected error adding small number of participants to database: %v", err)
 		}
 	}
 	for eventKey, eventYears := range output.eventYears {
