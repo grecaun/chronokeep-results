@@ -232,6 +232,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	t.Log("Adding results.")
 	res := make([]types.Result, 0)
 	parts := make([]types.Participant, 0)
+	bibChips := make([]types.BibChip, 0)
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
 		res = append(res, types.Result{
@@ -266,6 +267,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+		})
+		bibChips = append(bibChips, types.BibChip{
+			Bib:  tmpStr,
+			Chip: "chip" + tmpStr,
 		})
 	}
 	for i := 300; i < 500; i++ {
@@ -303,6 +308,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Mobile:      "",
 			Apparel:     "",
 		})
+		bibChips = append(bibChips, types.BibChip{
+			Bib:  tmpStr,
+			Chip: "chip" + tmpStr,
+		})
 	}
 	for i := 0; i < 300; i++ {
 		tmpStr := strconv.Itoa(i)
@@ -339,6 +348,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Mobile:      "",
 			Apparel:     "",
 		})
+		bibChips = append(bibChips, types.BibChip{
+			Bib:  tmpStr,
+			Chip: "chip" + tmpStr,
+		})
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2021"].Identifier, res)
 	if err != nil {
@@ -347,6 +360,10 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	_, err = database.AddParticipants(output.eventYears["event1"]["2021"].Identifier, parts)
 	if err != nil {
 		t.Fatalf("Unexpected error adding 500 participants to database: %v", err)
+	}
+	_, err = database.AddBibChips(output.eventYears["event1"]["2021"].Identifier, bibChips)
+	if err != nil {
+		t.Fatalf("Unexpected error adding 500 bibchips to database: %v", err)
 	}
 	_, err = database.AddResults(output.eventYears["event1"]["2020"].Identifier, []types.Result{
 		{
@@ -509,6 +526,27 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	if err != nil {
 		t.Fatalf("Unexpected error adding small number of participants to database: %v", err)
 	}
+	_, err = database.AddBibChips(output.eventYears["event1"]["2020"].Identifier, []types.BibChip{
+		{
+			Chip: "chip100",
+			Bib:  "100",
+		},
+		{
+			Chip: "chip106",
+			Bib:  "106",
+		},
+		{
+			Chip: "chip209",
+			Bib:  "209",
+		},
+		{
+			Chip: "chip287",
+			Bib:  "287",
+		},
+	})
+	if err != nil {
+		t.Fatalf("Unexpected error adding small number of bibchips to database: %v", err)
+	}
 	for _, eventYear := range output.eventYears["event2"] {
 		_, err = database.AddResults(eventYear.Identifier, []types.Result{
 			{
@@ -670,6 +708,27 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		})
 		if err != nil {
 			t.Fatalf("Unexpected error adding small number of participants to database: %v", err)
+		}
+		_, err = database.AddBibChips(eventYear.Identifier, []types.BibChip{
+			{
+				Chip: "chip100",
+				Bib:  "100",
+			},
+			{
+				Chip: "chip106",
+				Bib:  "106",
+			},
+			{
+				Chip: "chip209",
+				Bib:  "209",
+			},
+			{
+				Chip: "chip287",
+				Bib:  "287",
+			},
+		})
+		if err != nil {
+			t.Fatalf("Unexpected error adding small number of bibchips to database: %v", err)
 		}
 	}
 	for eventKey, eventYears := range output.eventYears {

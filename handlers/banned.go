@@ -58,7 +58,6 @@ func (h Handler) RemoveBannedPhone(c echo.Context) error {
 	if c.Request().Method != echo.POST {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
-	// No need for keys for any of these calls
 	var request types.ModifyBannedPhoneRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

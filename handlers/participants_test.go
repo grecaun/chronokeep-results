@@ -14,7 +14,7 @@ import (
 )
 
 func TestGetParticipants(t *testing.T) {
-	// POST, /participants
+	// GET, /participants
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -28,7 +28,7 @@ func TestGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request := httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -37,7 +37,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -47,7 +47,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -57,7 +57,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test restricted event, wrong account key
 	t.Log("Testing restricted event, wrong account key.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
 	response = httptest.NewRecorder()
@@ -73,7 +73,7 @@ func TestGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -87,7 +87,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete"])
 	response = httptest.NewRecorder()
@@ -97,7 +97,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -107,7 +107,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -117,7 +117,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader("{}"))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader("{}"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -127,7 +127,7 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -144,7 +144,7 @@ func TestGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -165,7 +165,7 @@ func TestGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -182,7 +182,7 @@ func TestGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
 	response = httptest.NewRecorder()
@@ -476,17 +476,18 @@ func TestAddParticipants(t *testing.T) {
 		Year: year.Year,
 		Participants: []types.Participant{
 			{
-				Bib:        "10",
-				Birthdate:  "1/1/3050",
-				AgeGroup:   "10-20",
-				First:      "John",
-				Last:       "Jacob",
-				Distance:   "1 Mile",
-				Gender:     "Man",
-				Anonymous:  false,
-				SMSEnabled: false,
-				Mobile:     "",
-				Apparel:    "",
+				AlternateId: "1011111",
+				Bib:         "10",
+				Birthdate:   "1/1/3050",
+				AgeGroup:    "10-20",
+				First:       "John",
+				Last:        "Jacob",
+				Distance:    "1 Mile",
+				Gender:      "Man",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
 			},
 		},
 	})
@@ -508,17 +509,18 @@ func TestAddParticipants(t *testing.T) {
 		Year: year.Year,
 		Participants: []types.Participant{
 			{
-				Bib:        "10",
-				Birthdate:  "1/1/2004",
-				AgeGroup:   "10-20",
-				First:      "John",
-				Last:       "Jacob",
-				Distance:   "1 Mile",
-				Gender:     "G",
-				Anonymous:  false,
-				SMSEnabled: false,
-				Mobile:     "",
-				Apparel:    "",
+				AlternateId: "1011111",
+				Bib:         "10",
+				Birthdate:   "1/1/2004",
+				AgeGroup:    "10-20",
+				First:       "John",
+				Last:        "Jacob",
+				Distance:    "1 Mile",
+				Gender:      "G",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
 			},
 		},
 	})
@@ -540,17 +542,18 @@ func TestAddParticipants(t *testing.T) {
 		Year: year.Year,
 		Participants: []types.Participant{
 			{
-				Bib:        "10",
-				Birthdate:  "1/1/2004",
-				AgeGroup:   "10-20",
-				First:      "John",
-				Last:       "Jacob",
-				Distance:   "",
-				Gender:     "Man",
-				Anonymous:  false,
-				SMSEnabled: false,
-				Mobile:     "",
-				Apparel:    "",
+				AlternateId: "1011111",
+				Bib:         "10",
+				Birthdate:   "1/1/2004",
+				AgeGroup:    "10-20",
+				First:       "John",
+				Last:        "Jacob",
+				Distance:    "",
+				Gender:      "Man",
+				Anonymous:   false,
+				SMSEnabled:  false,
+				Mobile:      "",
+				Apparel:     "",
 			},
 		},
 	})
