@@ -32,16 +32,19 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/results/add", h.AddResults)
 	group.DELETE("/results/delete", h.DeleteResults)
 	// Participants handlers
-	group.POST("/participants", h.GetParticipants)
+	group.GET("/participants", h.GetParticipants)
 	group.POST("/participants/add", h.AddParticipants)
 	group.DELETE("/participants/delete", h.DeleteParticipants)
+	// BibChip handlers
+	group.GET("/bibchips", h.GetBibChips)
+	group.POST("/bibchips/add", h.AddBibChips)
+	group.DELETE("/bibchips/delete", h.DeleteBibChips)
 	// Account Login
 	group.POST("/account/login", h.Login)
 	group.POST("/account/refresh", h.Refresh)
 	// Blocked/banned emails/phone numbers
 	group.POST("/blocked/phones/add", h.AddBannedPhone)
 	group.GET("/blocked/phones/get", h.GetBannedPhones)
-	group.POST("/blocked/phones/unblock", h.RemoveBannedPhone)
 	group.POST("/blocked/emails/add", h.AddBannedEmail)
 	group.GET("/blocked/emails/get", h.GetBannedEmails)
 	group.POST("/blocked/emails/unblock", h.RemoveBannedEmail)
@@ -80,4 +83,6 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/r/participants/add", h.RAddParticipants)
 	group.DELETE("/r/participants/delete", h.RDeleteParticipants)
 	group.POST("r/participants/update", h.RUpdateParticipant)
+	// Unblock phone should be restricted to admins only
+	group.POST("/blocked/phones/unblock", h.RemoveBannedPhone)
 }

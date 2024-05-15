@@ -239,12 +239,128 @@ func TestGetBannedPhones(t *testing.T) {
 
 func TestRemoveBannedPhone(t *testing.T) {
 	// POST
-	_, finalize := setupTests(t)
+	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
 	h := Handler{}
 	h.Setup()
+	// Test empty auth header
+	t.Log("Testing empty auth header.")
+	request := httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid auth header
+	t.Log("Testing invalid auth header.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid token
+	t.Log("Testing invalid token.")
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown email
+	t.Log("Testing unknown email in token.")
+	token, _, err := createTokens("unknown@test.com")
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test expired token
+	t.Log("Testing expired token.")
+	token, refresh, err := createExpiredTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account := variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test not logged in
+	t.Log("Testing not logged in.")
+	token, _, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test locked account
+	lockAccount(t, variables.accounts[0].Email, e, h)
+	t.Log("Testing locked account.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
 	// Test bad request
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
 	body, err := json.Marshal(types.ModifyBannedPhoneRequest{
 		Phone: "3525551478",
 	})
@@ -252,10 +368,11 @@ func TestRemoveBannedPhone(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing bad request.")
-	request := httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	response := httptest.NewRecorder()
-	c := e.NewContext(request, response)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
@@ -263,6 +380,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	t.Log("Testing wrong method.")
 	request = httptest.NewRequest(http.MethodGet, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -272,6 +390,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	t.Log("Testing empty request.")
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader("{}"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -281,6 +400,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	t.Log("Testing wrong content type.")
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -296,6 +416,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	}
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -311,6 +432,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	}
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -331,6 +453,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	}
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -350,6 +473,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	}
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {
@@ -369,6 +493,7 @@ func TestRemoveBannedPhone(t *testing.T) {
 	}
 	request = httptest.NewRequest(http.MethodPost, "/blocked/phones/unblock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RemoveBannedPhone(c)) {

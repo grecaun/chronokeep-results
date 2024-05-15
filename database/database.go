@@ -85,6 +85,10 @@ type Database interface {
 	GetParticipants(eventYearID int64) ([]types.Participant, error)
 	DeleteParticipants(eventYearID int64, alternateIds []string) (int64, error)
 	UpdateParticipant(eventYearID int64, participant types.Participant) (*types.Participant, error)
+	// BibChip Functions
+	GetBibChips(eventYearID int64) ([]types.BibChip, error)
+	AddBibChips(eventYearID int64, bibChips []types.BibChip) ([]types.BibChip, error)
+	DeleteBibChips(eventYearID int64) (int64, error)
 	// Email and Phone blocking functions
 	AddBlockedPhone(phone string) error
 	AddBlockedPhones(phones []string) error

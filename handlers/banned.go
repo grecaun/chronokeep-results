@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"chronokeep/results/types"
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -41,6 +42,19 @@ func (h Handler) GetBannedPhones(c echo.Context) error {
 }
 
 func (h Handler) RemoveBannedPhone(c echo.Context) error {
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	if account.Type != "admin" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not admin"))
+	}
 	if c.Request().Method != echo.POST {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
@@ -49,7 +63,7 @@ func (h Handler) RemoveBannedPhone(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	err := h.validate.Struct(request)
+	err = h.validate.Struct(request)
 	if len(request.Phone) < 10 || err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Phone Field", nil)
 	}
