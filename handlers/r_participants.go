@@ -42,6 +42,8 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}
 	return c.JSON(http.StatusOK, types.GetParticipantsResponse{
+		Event:        *multi.Event,
+		Year:         *multi.EventYear,
 		Participants: participants,
 	})
 }

@@ -201,6 +201,17 @@ func TestRGetParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -233,6 +244,17 @@ func TestRGetParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}

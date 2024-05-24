@@ -6,6 +6,8 @@ package types
 
 // GetParticipantsResponse Struct used for the response of a Get Participants request.
 type GetParticipantsResponse struct {
+	Event        Event         `json:"event"`
+	Year         EventYear     `json:"year"`
 	Participants []Participant `json:"participants"`
 }
 

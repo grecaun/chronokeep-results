@@ -31,7 +31,8 @@ func (e *Event) Equals(other *Event) bool {
 		e.Website == other.Website &&
 		e.Image == other.Website &&
 		e.ContactEmail == other.ContactEmail &&
-		e.AccessRestricted == other.AccessRestricted
+		e.AccessRestricted == other.AccessRestricted &&
+		e.Type == other.Type
 }
 
 // Validate Ensures valid information in the structure.
