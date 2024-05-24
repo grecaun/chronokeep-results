@@ -11,7 +11,7 @@ import (
 type Participant struct {
 	Identifier  int64  `json:"-"`
 	AlternateId string `json:"id"`
-	Bib         string `json:"bib" validate:"required"`
+	Bib         string `json:"bib"`
 	First       string `json:"first"`
 	Last        string `json:"last"`
 	Birthdate   string `json:"birthdate"`
