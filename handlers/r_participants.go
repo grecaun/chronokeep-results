@@ -49,7 +49,7 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 }
 
 func (h Handler) RAddParticipants(c echo.Context) error {
-	var request types.AddParticipantsRequest
+	var request types.AddParticipantRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
@@ -79,21 +79,22 @@ func (h Handler) RAddParticipants(c echo.Context) error {
 	}
 	// validate participants
 	var partToAdd []types.Participant
-	for _, part := range request.Participants {
-		// Validate all results, only add the results that pass validation.
-		if err := part.Validate(h.validate); err == nil {
-			partToAdd = append(partToAdd, part)
-		}
+	// Validate, only add if it passes validation.
+	if err := request.Participant.Validate(h.validate); err == nil {
+		partToAdd = append(partToAdd, request.Participant)
 	}
 	if len(partToAdd) < 1 {
-		return getAPIError(c, http.StatusBadRequest, "No Valid Participants", nil)
+		return getAPIError(c, http.StatusBadRequest, "Invalid", nil)
 	}
 	participants, err := database.AddParticipants(multi.EventYear.Identifier, partToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
-	return c.JSON(http.StatusOK, types.AddResultsResponse{
-		Count: len(participants),
+	if len(participants) > 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Multiple Participants Added", nil)
+	}
+	return c.JSON(http.StatusOK, types.UpdateParticipantResponse{
+		Participant: participants[0],
 	})
 }
 

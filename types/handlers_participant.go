@@ -46,6 +46,13 @@ type AddParticipantsRequest struct {
 	Participants []Participant `json:"participants"`
 }
 
+// AddParticipantRequest Struct used for the request to add/update participants for an event.
+type AddParticipantRequest struct {
+	Slug        string      `json:"slug"`
+	Year        string      `json:"year"`
+	Participant Participant `json:"participant"`
+}
+
 // DeleteParticipantsRequest Struct used for the request to delete participants for an event.
 type DeleteParticipantsRequest struct {
 	Slug        string   `json:"slug"`
