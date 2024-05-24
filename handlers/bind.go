@@ -32,11 +32,11 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/results/add", h.AddResults)
 	group.DELETE("/results/delete", h.DeleteResults)
 	// Participants handlers
-	group.GET("/participants", h.GetParticipants)
+	group.POST("/participants", h.GetParticipants)
 	group.POST("/participants/add", h.AddParticipants)
 	group.DELETE("/participants/delete", h.DeleteParticipants)
 	// BibChip handlers
-	group.GET("/bibchips", h.GetBibChips)
+	group.POST("/bibchips", h.GetBibChips)
 	group.POST("/bibchips/add", h.AddBibChips)
 	group.DELETE("/bibchips/delete", h.DeleteBibChips)
 	// Account Login
