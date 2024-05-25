@@ -21,7 +21,7 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	if len(request.Slug) < 1 || len(request.Year) < 1 {
+	if len(request.Slug) < 1 {
 		return getAPIError(c, http.StatusBadRequest, "Bad Request", errors.New("no slug/year specified"))
 	}
 	// Get Key
@@ -40,7 +40,11 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	mult, err := database.GetEventAndYear(request.Slug, year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Year", err)
 	}

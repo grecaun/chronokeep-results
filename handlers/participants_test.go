@@ -21,9 +21,10 @@ func TestGetParticipants(t *testing.T) {
 	h := Handler{}
 	// Test no key
 	t.Log("Testing no key given.")
+	year := variables.eventYears["event2"]["2020"].Year
 	body, err := json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2020"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -66,9 +67,10 @@ func TestGetParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test unrestricted event, wrong account key
+	year = variables.eventYears["event1"]["2021"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event1"].Slug,
-		Year: variables.eventYears["event1"]["2021"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -148,9 +150,41 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test valid request
 	t.Log("Testing valid request.")
+	year = variables.eventYears["event2"]["2020"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2020"].Year,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2020"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.Year.Live)
+			assert.Equal(t, 4, len(resp.Participants))
+		}
+	}
+	// Test valid request - no year
+	t.Log("Testing valid request.")
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event2"].Slug,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -180,9 +214,10 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test invalid event
 	t.Log("Testing invalid event.")
+	year = variables.eventYears["event2"]["2020"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: "not-a-real-event",
-		Year: variables.eventYears["event2"]["2020"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -197,9 +232,10 @@ func TestGetParticipants(t *testing.T) {
 	}
 	// Test valid event invalid year
 	t.Log("Testing valid event, invalid year.")
+	year = "invalid-year"
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
-		Year: "invalid-year",
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)

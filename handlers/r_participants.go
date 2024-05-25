@@ -24,10 +24,14 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 	if account.Locked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
-	if len(request.Slug) < 1 || len(request.Year) < 1 {
+	year := ""
+	if request.Year != nil {
+		year = *request.Year
+	}
+	if len(request.Slug) < 1 {
 		return getAPIError(c, http.StatusBadRequest, "Bad Request", errors.New("no slug/year specified"))
 	}
-	multi, err := database.GetAccountEventAndYear(request.Slug, request.Year)
+	multi, err := database.GetAccountEventAndYear(request.Slug, year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event/Year", nil)
 	}

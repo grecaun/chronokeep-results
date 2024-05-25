@@ -157,9 +157,10 @@ func TestRGetParticipants(t *testing.T) {
 	}
 	// Test invalid content type
 	t.Log("Testing invalid content type.")
+	year := variables.eventYears["event1"]["2021"].Year
 	body, err := json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event1"].Slug,
-		Year: variables.eventYears["event1"]["2021"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -185,9 +186,52 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	year = variables.eventYears["event2"]["2021"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2021"].Year,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
+			assert.Equal(t, 4, len(resp.Participants))
+		}
+	}
+	// Test valid request - self & no year
+	t.Log("Testing valid request -- self.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event2"].Slug,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -228,9 +272,10 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	year = variables.eventYears["event2"]["2021"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2021"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -271,9 +316,10 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	year = variables.eventYears["event1"]["2020"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event1"].Slug,
-		Year: variables.eventYears["event1"]["2020"].Year,
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -299,9 +345,10 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	year = "2020"
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: "unknown",
-		Year: "2020",
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -327,9 +374,10 @@ func TestRGetParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	year = "2000"
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event1"].Slug,
-		Year: "2000",
+		Year: &year,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -1441,19 +1489,86 @@ func TestRDeleteParticipants(t *testing.T) {
 	}
 }
 
-func TestRUpdateParticipants(t *testing.T) {
+func TestRUpdateParticipant(t *testing.T) {
 	// POST, /r/participants/update
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
 	h := Handler{}
+	h.Setup()
+	parts := []types.Participant{
+		{
+			AlternateId: "1024",
+			Bib:         "1024",
+			First:       "John",
+			Last:        "Smnit",
+			Birthdate:   "1/1/2004",
+			Gender:      "Man",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "2034",
+			Bib:         "2034",
+			First:       "Jason",
+			Last:        "Jonson",
+			Birthdate:   "1/1/1990",
+			Gender:      "Man",
+			AgeGroup:    "30-39",
+			Distance:    "5 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "3521",
+			Bib:         "3521",
+			First:       "Rose",
+			Last:        "McGowna",
+			Birthdate:   "1/1/2008",
+			Gender:      "Woman",
+			AgeGroup:    "0-19",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+		{
+			AlternateId: "1364",
+			Bib:         "1364",
+			First:       "Lilly",
+			Last:        "Smith",
+			Birthdate:   "1/1/2014",
+			Gender:      "Woman",
+			AgeGroup:    "0-19",
+			Distance:    "1 Mile",
+			Anonymous:   false,
+			SMSEnabled:  false,
+			Mobile:      "",
+			Apparel:     "",
+		},
+	}
+	_, err := database.AddParticipants(variables.eventYears["event2"]["2020"].Identifier, parts)
+	if err != nil {
+		t.Fatalf("Error adding participants to database: %v", err)
+	}
+	_, err = database.AddParticipants(variables.eventYears["event2"]["2021"].Identifier, parts)
+	if err != nil {
+		t.Fatalf("Error adding participants to database: %v", err)
+	}
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
 	request := httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test invalid auth header
@@ -1463,7 +1578,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test invalid token
@@ -1473,7 +1588,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test unknown email
@@ -1487,7 +1602,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test expired token
@@ -1508,7 +1623,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test not logged in
@@ -1522,7 +1637,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test locked account
@@ -1544,7 +1659,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	account.Locked = true
@@ -1570,7 +1685,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 	// Test bad request
@@ -1580,12 +1695,12 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 	// Test invalid content type
 	t.Log("Testing invalid content type.")
-	body, err := json.Marshal(types.GetParticipantsRequest{
+	body, err := json.Marshal(types.UpdateParticipantRequest{
 		Slug: variables.events["event1"].Slug,
 		Year: variables.eventYears["event1"]["2021"].Year,
 	})
@@ -1597,7 +1712,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 	// Test valid request - self
@@ -1613,28 +1728,70 @@ func TestRUpdateParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	body, err = json.Marshal(types.GetParticipantsRequest{
-		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2021"].Year,
+	updated := parts[0]
+	updated.Bib = "newbib"
+	updated.AgeGroup = "testagegroup"
+	updated.Anonymous = !updated.Anonymous
+	updated.SMSEnabled = !updated.SMSEnabled
+	updated.Apparel = "newapparel"
+	updated.Birthdate = "new bd"
+	updated.Distance = "testdist"
+	updated.First = "uTom"
+	updated.Last = "uSmith"
+	updated.Gender = "Unkn"
+	updated.Mobile = "notanum"
+	body, err = json.Marshal(types.UpdateParticipantRequest{
+		Slug:        variables.events["event2"].Slug,
+		Year:        variables.eventYears["event2"]["2020"].Year,
+		Participant: updated,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
-	}
-	p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier)
-	if assert.NoError(t, err) {
-		assert.Equal(t, 4, len(p))
 	}
 	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
+		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
-		var resp types.GetParticipantsResponse
+		var resp types.UpdateParticipantResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, len(resp.Participants))
+			assert.Equal(t, updated.AgeGroup, resp.Participant.AgeGroup)
+			assert.Equal(t, updated.AlternateId, resp.Participant.AlternateId)
+			assert.Equal(t, updated.Anonymous, resp.Participant.Anonymous)
+			assert.Equal(t, updated.Apparel, resp.Participant.Apparel)
+			assert.Equal(t, updated.Bib, resp.Participant.Bib)
+			assert.Equal(t, updated.Birthdate, resp.Participant.Birthdate)
+			assert.Equal(t, updated.Distance, resp.Participant.Distance)
+			assert.Equal(t, updated.First, resp.Participant.First)
+			assert.Equal(t, updated.Gender, resp.Participant.Gender)
+			assert.Equal(t, updated.Last, resp.Participant.Last)
+			assert.Equal(t, updated.Mobile, resp.Participant.Mobile)
+			assert.Equal(t, updated.SMSEnabled, resp.Participant.SMSEnabled)
 		}
+		found := false
+		for _, outer := range p {
+			if updated.AlternateId == outer.AlternateId {
+				assert.Equal(t, updated.AgeGroup, outer.AgeGroup)
+				assert.Equal(t, updated.AlternateId, outer.AlternateId)
+				assert.Equal(t, updated.Anonymous, outer.Anonymous)
+				assert.Equal(t, updated.Apparel, outer.Apparel)
+				assert.Equal(t, updated.Bib, outer.Bib)
+				assert.Equal(t, updated.Birthdate, outer.Birthdate)
+				assert.Equal(t, updated.Distance, outer.Distance)
+				assert.Equal(t, updated.First, outer.First)
+				assert.Equal(t, updated.Gender, outer.Gender)
+				assert.Equal(t, updated.Last, outer.Last)
+				assert.Equal(t, updated.Mobile, outer.Mobile)
+				assert.Equal(t, updated.SMSEnabled, outer.SMSEnabled)
+				found = true
+				break
+			}
+		}
+		assert.True(t, found)
 	}
 	// Test valid request - admin for other
 	t.Log("Testing valid request -- admin for other.")
@@ -1649,28 +1806,58 @@ func TestRUpdateParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	body, err = json.Marshal(types.GetParticipantsRequest{
-		Slug: variables.events["event2"].Slug,
-		Year: variables.eventYears["event2"]["2020"].Year,
+	body, err = json.Marshal(types.UpdateParticipantRequest{
+		Slug:        variables.events["event2"].Slug,
+		Year:        variables.eventYears["event2"]["2021"].Year,
+		Participant: updated,
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
-	}
-	p, err = database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
-	if assert.NoError(t, err) {
-		assert.Equal(t, 4, len(p))
 	}
 	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier)
+		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
-		var resp types.GetParticipantsResponse
+		var resp types.UpdateParticipantResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, len(resp.Participants))
+			assert.Equal(t, updated.AgeGroup, resp.Participant.AgeGroup)
+			assert.Equal(t, updated.AlternateId, resp.Participant.AlternateId)
+			assert.Equal(t, updated.Anonymous, resp.Participant.Anonymous)
+			assert.Equal(t, updated.Apparel, resp.Participant.Apparel)
+			assert.Equal(t, updated.Bib, resp.Participant.Bib)
+			assert.Equal(t, updated.Birthdate, resp.Participant.Birthdate)
+			assert.Equal(t, updated.Distance, resp.Participant.Distance)
+			assert.Equal(t, updated.First, resp.Participant.First)
+			assert.Equal(t, updated.Gender, resp.Participant.Gender)
+			assert.Equal(t, updated.Last, resp.Participant.Last)
+			assert.Equal(t, updated.Mobile, resp.Participant.Mobile)
+			assert.Equal(t, updated.SMSEnabled, resp.Participant.SMSEnabled)
 		}
+		found := false
+		for _, outer := range p {
+			if updated.AlternateId == outer.AlternateId {
+				assert.Equal(t, updated.AgeGroup, outer.AgeGroup)
+				assert.Equal(t, updated.AlternateId, outer.AlternateId)
+				assert.Equal(t, updated.Anonymous, outer.Anonymous)
+				assert.Equal(t, updated.Apparel, outer.Apparel)
+				assert.Equal(t, updated.Bib, outer.Bib)
+				assert.Equal(t, updated.Birthdate, outer.Birthdate)
+				assert.Equal(t, updated.Distance, outer.Distance)
+				assert.Equal(t, updated.First, outer.First)
+				assert.Equal(t, updated.Gender, outer.Gender)
+				assert.Equal(t, updated.Last, outer.Last)
+				assert.Equal(t, updated.Mobile, outer.Mobile)
+				assert.Equal(t, updated.SMSEnabled, outer.SMSEnabled)
+				found = true
+				break
+			}
+		}
+		assert.True(t, found)
 	}
 	// Test invalid request - non-admin for other
 	t.Log("Testing invalid request -- non-admin for other.")
@@ -1685,7 +1872,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	body, err = json.Marshal(types.GetParticipantsRequest{
+	body, err = json.Marshal(types.UpdateParticipantRequest{
 		Slug: variables.events["event1"].Slug,
 		Year: variables.eventYears["event1"]["2020"].Year,
 	})
@@ -1697,7 +1884,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test unknown event name
@@ -1713,9 +1900,9 @@ func TestRUpdateParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	body, err = json.Marshal(types.GetParticipantsRequest{
+	body, err = json.Marshal(types.UpdateParticipantRequest{
 		Slug: "unknown",
-		Year: "2020",
+		Year: "unknown",
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request into json object: %v", err)
@@ -1725,7 +1912,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
 	// Test known slug, unknown year
@@ -1741,7 +1928,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	body, err = json.Marshal(types.GetParticipantsRequest{
+	body, err = json.Marshal(types.UpdateParticipantRequest{
 		Slug: variables.events["event1"].Slug,
 		Year: "2000",
 	})
@@ -1753,7 +1940,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
 	// Test token for wrong account //->//
@@ -1781,7 +1968,7 @@ func TestRUpdateParticipants(t *testing.T) {
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
-	if assert.NoError(t, h.RDeleteParticipants(c)) {
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 }
