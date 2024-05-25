@@ -3,6 +3,7 @@ package handlers
 import (
 	"chronokeep/results/types"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -85,6 +86,10 @@ func (h Handler) RAddParticipants(c echo.Context) error {
 	}
 	if len(partToAdd) < 1 {
 		return getAPIError(c, http.StatusBadRequest, "Invalid", nil)
+	}
+	// create random alternate id if none is set
+	if len(partToAdd[0].AlternateId) < 1 {
+		partToAdd[0].AlternateId = fmt.Sprintf("new%s%s", partToAdd[0].First, partToAdd[0].Last)
 	}
 	participants, err := database.AddParticipants(multi.EventYear.Identifier, partToAdd)
 	if err != nil {
