@@ -628,14 +628,47 @@ func TestRAddParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(parts), len(part))
-
-		}
-		var resp types.AddResultsResponse
-		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(parts), resp.Count)
+			part, err := database.GetParticipants(year.Identifier)
+			if assert.NoError(t, err) {
+				outer := parts[0]
+				found := false
+				var resp types.UpdateParticipantResponse
+				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+					assert.True(t, outer.Equals(&resp.Participant))
+					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
+					assert.Equal(t, outer.Bib, resp.Participant.Bib)
+					assert.Equal(t, outer.First, resp.Participant.First)
+					assert.Equal(t, outer.Last, resp.Participant.Last)
+					assert.Equal(t, outer.Birthdate, resp.Participant.Birthdate)
+					assert.Equal(t, outer.Gender, resp.Participant.Gender)
+					assert.Equal(t, outer.AgeGroup, resp.Participant.AgeGroup)
+					assert.Equal(t, outer.Distance, resp.Participant.Distance)
+					assert.Equal(t, outer.Anonymous, resp.Participant.Anonymous)
+					assert.Equal(t, outer.SMSEnabled, resp.Participant.SMSEnabled)
+					assert.Equal(t, outer.Mobile, resp.Participant.Mobile)
+					assert.Equal(t, outer.Apparel, resp.Participant.Apparel)
+				}
+				for _, inner := range part {
+					if outer.Bib == inner.Bib {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
 		}
 	}
 	// Test valid request - admin for other
@@ -651,6 +684,11 @@ func TestRAddParticipants(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
+	body, _ = json.Marshal(types.AddParticipantRequest{
+		Slug:        variables.events["event2"].Slug,
+		Year:        year.Year,
+		Participant: parts[1],
+	})
 	request = httptest.NewRequest(http.MethodPost, "/r/participants/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
@@ -660,9 +698,24 @@ func TestRAddParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		part, err := database.GetParticipants(year.Identifier)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(parts), len(part))
-			outer := parts[0]
+			outer := parts[1]
 			found := false
+			var resp types.UpdateParticipantResponse
+			if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+				assert.True(t, outer.Equals(&resp.Participant))
+				assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
+				assert.Equal(t, outer.Bib, resp.Participant.Bib)
+				assert.Equal(t, outer.First, resp.Participant.First)
+				assert.Equal(t, outer.Last, resp.Participant.Last)
+				assert.Equal(t, outer.Birthdate, resp.Participant.Birthdate)
+				assert.Equal(t, outer.Gender, resp.Participant.Gender)
+				assert.Equal(t, outer.AgeGroup, resp.Participant.AgeGroup)
+				assert.Equal(t, outer.Distance, resp.Participant.Distance)
+				assert.Equal(t, outer.Anonymous, resp.Participant.Anonymous)
+				assert.Equal(t, outer.SMSEnabled, resp.Participant.SMSEnabled)
+				assert.Equal(t, outer.Mobile, resp.Participant.Mobile)
+				assert.Equal(t, outer.Apparel, resp.Participant.Apparel)
+			}
 			for _, inner := range part {
 				if outer.Bib == inner.Bib {
 					assert.True(t, outer.Equals(&inner))
@@ -682,10 +735,6 @@ func TestRAddParticipants(t *testing.T) {
 				}
 			}
 			assert.True(t, found)
-		}
-		var resp types.AddResultsResponse
-		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(parts), resp.Count)
 		}
 	}
 	// Test invalid request - non-admin for other
