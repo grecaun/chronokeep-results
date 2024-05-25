@@ -59,6 +59,8 @@ func (a *Account) Validate(validate *validator.Validate) error {
 		valid = true
 	case "paid":
 		valid = true
+	case "registration":
+		valid = true
 	}
 	if !valid {
 		return errors.New("invalid account type specified")
