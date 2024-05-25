@@ -3370,3 +3370,11 @@ func TestDelete(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 }
+
+func TestLinkAccounts(t *testing.T) {
+
+}
+
+func TestUnlinkAccounts(t *testing.T) {
+
+}

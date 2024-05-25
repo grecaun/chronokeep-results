@@ -63,6 +63,8 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.PUT("/account/email", h.ChangeEmail)
 	group.POST("/account/unlock", h.Unlock)
 	group.DELETE("/account/delete", h.DeleteAccount)
+	group.PUT("/account/link", h.LinkAccounts)
+	group.PUT("/account/unlink", h.UnlinkAccounts)
 	// Key handlers
 	group.POST("/key", h.GetKeys)
 	group.POST("/key/add", h.AddKey)

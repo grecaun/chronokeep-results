@@ -6,9 +6,10 @@ package types
 
 // GetAccountResponse Struct used for the response of the Get Account Request.
 type GetAccountResponse struct {
-	Account Account `json:"account"`
-	Keys    []Key   `json:"keys"`
-	Events  []Event `json:"events"`
+	Account        Account   `json:"account"`
+	Keys           []Key     `json:"keys"`
+	Events         []Event   `json:"events"`
+	LinkedAccounts []Account `json:"linked"`
 }
 
 // GetAllAccountsResponse Struct used to get all of the accounts.

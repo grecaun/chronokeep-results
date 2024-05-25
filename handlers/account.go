@@ -64,10 +64,15 @@ func (h Handler) GetAccount(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
+	linked, err := database.GetLinkedAccounts(email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
 	return c.JSON(http.StatusOK, types.GetAccountResponse{
-		Account: *account,
-		Keys:    keys,
-		Events:  events,
+		Account:        *account,
+		Keys:           keys,
+		Events:         events,
+		LinkedAccounts: linked,
 	})
 }
 
@@ -450,6 +455,60 @@ func (h Handler) Unlock(c echo.Context) error {
 	err = database.UnlockAccount(*toUnlock)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Server Error", err)
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (h Handler) LinkAccounts(c echo.Context) error {
+	var request types.DeleteAccountRequest
+	err := c.Bind(&request)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request", nil)
+	}
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// check if the user is trying to use a locked account
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	// only allow admin/paid accounts to link accounts
+	if account.Type != "admin" && account.Type != "paid" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
+	}
+	subAccount, err := database.GetAccount(request.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", errors.New("sub account not found"))
+	}
+	err = database.LinkAccounts(*account, *subAccount)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
+	}
+	return c.NoContent(http.StatusOK)
+}
+
+func (h Handler) UnlinkAccounts(c echo.Context) error {
+	var request types.DeleteAccountRequest
+	err := c.Bind(&request)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request", nil)
+	}
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	// check if the user is trying to use a locked account
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	subAccount, err := database.GetAccount(request.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", errors.New("sub account not found"))
+	}
+	err = database.UnlinkAccounts(*account, *subAccount)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
 	return c.NoContent(http.StatusOK)
 }
