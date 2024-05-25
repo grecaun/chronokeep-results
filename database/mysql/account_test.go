@@ -6,10 +6,13 @@ import (
 	"chronokeep/results/types"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
 	accounts      []types.Account
+	subAccounts   []types.Account
 	testPassword1 string = "password"
 	testPassword2 string = "newpassword"
 )
@@ -57,6 +60,28 @@ func setupAccountTests() {
 				Name:     "Ricky Reagan",
 				Email:    "rreagan@test.com",
 				Type:     "free",
+				Password: testHashPassword(testPassword1),
+			},
+		}
+	}
+	if len(subAccounts) < 1 {
+		subAccounts = []types.Account{
+			{
+				Name:     "Registration1",
+				Email:    "registration1@test.com",
+				Type:     "registration",
+				Password: testHashPassword(testPassword1),
+			},
+			{
+				Name:     "Registration2",
+				Email:    "registration2@test.com",
+				Type:     "registration",
+				Password: testHashPassword(testPassword1),
+			},
+			{
+				Name:     "Registration3",
+				Email:    "registration3@test.com",
+				Type:     "registration",
 				Password: testHashPassword(testPassword1),
 			},
 		}
@@ -917,5 +942,210 @@ func TestNoDatabaseAccount(t *testing.T) {
 	_, err = db.getAccountInternal(nil, nil, nil)
 	if err == nil {
 		t.Fatalf("Expected error getting account internal with no values given.")
+	}
+}
+
+func TestGetLinkedAccounts(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	t.Log("Adding accounts")
+	setupAccountTests()
+	acc1, err := db.AddAccount(accounts[0])
+	assert.NoError(t, err)
+	acc2, err := db.AddAccount(accounts[1])
+	assert.NoError(t, err)
+	subAcc1, err := db.AddAccount(subAccounts[0])
+	assert.NoError(t, err)
+	subAcc2, err := db.AddAccount(subAccounts[1])
+	assert.NoError(t, err)
+	subAcc3, err := db.AddAccount(subAccounts[2])
+	assert.NoError(t, err)
+	// verify empty
+	a, err := db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test add valid
+	err = db.LinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+	// test add more
+	err = db.LinkAccounts(*acc1, *subAcc2)
+	assert.NoError(t, err)
+	err = db.LinkAccounts(*acc1, *subAcc3)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 3, len(a))
+	}
+	// verify empty
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test add to second
+	err = db.LinkAccounts(*acc2, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+}
+
+func TestLinkAccounts(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	t.Log("Adding accounts")
+	setupAccountTests()
+	acc1, err := db.AddAccount(accounts[0])
+	assert.NoError(t, err)
+	acc2, err := db.AddAccount(accounts[1])
+	assert.NoError(t, err)
+	subAcc1, err := db.AddAccount(subAccounts[0])
+	assert.NoError(t, err)
+	subAcc2, err := db.AddAccount(subAccounts[1])
+	assert.NoError(t, err)
+	subAcc3, err := db.AddAccount(subAccounts[2])
+	assert.NoError(t, err)
+	// verify empty
+	a, err := db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test add valid
+	err = db.LinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+	// test re-add
+	err = db.LinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+	// test add more
+	err = db.LinkAccounts(*acc1, *subAcc2)
+	assert.NoError(t, err)
+	err = db.LinkAccounts(*acc1, *subAcc3)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 3, len(a))
+	}
+	// test invalid add - invalid main account
+	err = db.LinkAccounts(*subAcc1, *subAcc2)
+	assert.Error(t, err)
+	// test invalid add - invalid sub account
+	err = db.LinkAccounts(*acc2, *acc1)
+	assert.Error(t, err)
+	// Verify we can't link the same account to itself
+	err = db.LinkAccounts(*acc2, *acc2)
+	assert.Error(t, err)
+	err = db.LinkAccounts(*subAcc1, *subAcc1)
+	assert.Error(t, err)
+	// verify empty
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test add to second
+	err = db.LinkAccounts(*acc2, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+}
+
+func TestUnlinkAccounts(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	t.Log("Adding accounts")
+	setupAccountTests()
+	acc1, err := db.AddAccount(accounts[0])
+	assert.NoError(t, err)
+	acc2, err := db.AddAccount(accounts[1])
+	assert.NoError(t, err)
+	subAcc1, err := db.AddAccount(subAccounts[0])
+	assert.NoError(t, err)
+	subAcc2, err := db.AddAccount(subAccounts[1])
+	assert.NoError(t, err)
+	subAcc3, err := db.AddAccount(subAccounts[2])
+	assert.NoError(t, err)
+	// verify empty
+	a, err := db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test add valid
+	err = db.LinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	err = db.LinkAccounts(*acc1, *subAcc2)
+	assert.NoError(t, err)
+	err = db.LinkAccounts(*acc1, *subAcc3)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 3, len(a))
+	}
+	// Test unlink
+	err = db.UnlinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(a))
+	}
+	// Test re-do of unlink
+	err = db.UnlinkAccounts(*acc1, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(a))
+	}
+	// Test re-do of unlink
+	err = db.UnlinkAccounts(*acc1, *subAcc2)
+	assert.NoError(t, err)
+	err = db.UnlinkAccounts(*acc1, *subAcc3)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// verify empty
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
+	}
+	// test incorrect main
+	err = db.UnlinkAccounts(*subAcc2, *subAcc2)
+	assert.NoError(t, err)
+	// test add to second
+	err = db.LinkAccounts(*acc2, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(a))
+	}
+	// test unlink second
+	err = db.UnlinkAccounts(*acc2, *subAcc1)
+	assert.NoError(t, err)
+	a, err = db.GetLinkedAccounts(acc2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(a))
 	}
 }

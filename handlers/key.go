@@ -68,6 +68,10 @@ func (h Handler) AddKey(c echo.Context) error {
 	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not admin / ownership error"))
 	}
+	// Registration accounts can't add keys.
+	if account.Type == "registration" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("registration accounts cannot add keys"))
+	}
 	// If email is set we add a key to that account, otherwise add it to the calling person's account.
 	accountid := account.Identifier
 	if request.Email != nil {
@@ -78,6 +82,9 @@ func (h Handler) AddKey(c echo.Context) error {
 		}
 		if keyAccount == nil {
 			return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+		}
+		if keyAccount.Type == "registration" {
+			return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("registration accounts cannot add keys"))
 		}
 		accountid = keyAccount.Identifier
 	}
@@ -163,6 +170,10 @@ func (h Handler) UpdateKey(c echo.Context) error {
 	// Deny access to non admins who do not own the key
 	if account.Type != "admin" && account.Email != keyAccount.Email {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not an admin / ownership error"))
+	}
+	// Registration accounts can't add/update keys.
+	if keyAccount.Type == "registration" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("registration accounts cannot update keys"))
 	}
 	err = database.UpdateKey(request.Key.ToKey())
 	if err != nil {

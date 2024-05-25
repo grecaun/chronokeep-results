@@ -206,9 +206,9 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
-			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.Year.Year)
-			assert.True(t, variables.eventYears["event2"]["2020"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.Year.Live)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}

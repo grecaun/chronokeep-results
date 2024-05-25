@@ -23,6 +23,9 @@ type Database interface {
 	GetAccountByKey(key string) (*types.Account, error)
 	GetAccountByID(id int64) (*types.Account, error)
 	GetAccounts() ([]types.Account, error)
+	GetLinkedAccounts(email string) ([]types.Account, error)
+	LinkAccounts(main types.Account, sub types.Account) error
+	UnlinkAccounts(main types.Account, sub types.Account) error
 	AddAccount(account types.Account) (*types.Account, error)
 	DeleteAccount(id int64) error
 	ResurrectAccount(email string) error

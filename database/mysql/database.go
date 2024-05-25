@@ -141,6 +141,7 @@ func (m *MySQL) dropTables() error {
 	_, err = db.ExecContext(
 		ctx,
 		"DROP TABLE "+
+			"linked_accounts, "+
 			"segments, "+
 			"participant, "+
 			"chips, "+
@@ -394,6 +395,16 @@ func (m *MySQL) createTables() error {
 				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (segment_id)" +
+				");",
+		},
+		{
+			name: "CreateLinkedAccountsTable",
+			query: "CREATE TABLE IF NOT EXISTS linked_accounts(" +
+				"main_account_id BIGINT NOT NULL, " +
+				"sub_account_id BIGINT NOT NULL, " +
+				"CONSTRAINT unique_link UNIQUE (main_account_id, sub_account_id), " +
+				"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
+				"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
 				");",
 		},
 	}
@@ -816,6 +827,31 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 					"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 					"PRIMARY KEY (segment_id)" +
+					");",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 14 && newVersion >= 14 {
+		log.Info("Updating to database version 14.")
+		queries := []myQuery{
+			{
+				name: "CreateLinkedAccountsTable",
+				query: "CREATE TABLE IF NOT EXISTS linked_accounts(" +
+					"main_account_id BIGINT NOT NULL, " +
+					"sub_account_id BIGINT NOT NULL, " +
+					"CONSTRAINT unique_link UNIQUE (main_account_id, sub_account_id), " +
+					"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
+					"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
 					");",
 			},
 		}

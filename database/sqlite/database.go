@@ -128,7 +128,8 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE segments;"+
+		"DROP TABLE linked_accounts;"+
+			"DROP TABLE segments;"+
 			"DROP TABLE participant;"+
 			"DROP TABLE chips;"+
 			"DROP TABLE banned_phones;"+
@@ -374,6 +375,16 @@ func (s *SQLite) createTables() error {
 				"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
 				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+				");",
+		},
+		{
+			name: "CreateLinkedAccountsTable",
+			query: "CREATE TABLE IF NOT EXISTS linked_accounts(" +
+				"main_account_id BIGINT NOT NULL, " +
+				"sub_account_id BIGINT NOT NULL, " +
+				"CONSTRAINT unique_link UNIQUE (main_account_id, sub_account_id), " +
+				"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
+				"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -796,6 +807,31 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
 					"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 14 && newVersion >= 14 {
+		log.Info("Updating to database version 14.")
+		queries := []myQuery{
+			{
+				name: "CreateLinkedAccountsTable",
+				query: "CREATE TABLE IF NOT EXISTS linked_accounts(" +
+					"main_account_id BIGINT NOT NULL, " +
+					"sub_account_id BIGINT NOT NULL, " +
+					"CONSTRAINT unique_link UNIQUE (main_account_id, sub_account_id), " +
+					"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
+					"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
 					");",
 			},
 		}

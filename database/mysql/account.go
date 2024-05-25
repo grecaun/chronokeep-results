@@ -71,6 +71,103 @@ func (m *MySQL) getAccountInternal(email, key *string, id *int64) (*types.Accoun
 	return &outAccount, nil
 }
 
+// GetLinkedAccounts Gets a list of linked accounts based on the email address provided.
+func (m *MySQL) GetLinkedAccounts(email string) ([]types.Account, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT a.account_id, a.account_name, a.account_email, a.account_type, a.account_password, a.account_locked, "+
+			"a.account_wrong_pass, a.account_token, a.account_refresh_token FROM account a JOIN linked_accounts l ON "+
+			"a.account_id = l.sub_account_id JOIN account b ON l.main_account_id=b.account_id WHERE b.account_email=? "+
+			"AND a.account_deleted=FALSE AND b.account_deleted=FALSE;",
+		email,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving account: %v", err)
+	}
+	defer res.Close()
+	var outAccounts []types.Account
+	for res.Next() {
+		var account types.Account
+		err := res.Scan(
+			&account.Identifier,
+			&account.Name,
+			&account.Email,
+			&account.Type,
+			&account.Password,
+			&account.Locked,
+			&account.WrongPassAttempts,
+			&account.Token,
+			&account.RefreshToken,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting account information: %v", err)
+		}
+		outAccounts = append(outAccounts, account)
+	}
+	return outAccounts, nil
+}
+
+// LinkAccounts Links one accoutn to another.
+func (m *MySQL) LinkAccounts(main types.Account, sub types.Account) error {
+	if sub.Type != "registration" {
+		return errors.New("cannot link a non-registration account to another account")
+	}
+	if main.Type == "registration" {
+		return errors.New("cannot link to a registration account")
+	}
+	db, err := m.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	_, err = tx.ExecContext(
+		ctx,
+		"INSERT IGNORE INTO linked_accounts(main_account_id, sub_account_id) VALUES (?,?);",
+		main.Identifier,
+		sub.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to link accounts: %v", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
+	}
+	return nil
+}
+
+// UnlinkAccounts Removed account links.
+func (m *MySQL) UnlinkAccounts(main types.Account, sub types.Account) error {
+	db, err := m.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	_, err = db.ExecContext(
+		ctx,
+		"DELETE FROM linked_accounts WHERE main_account_id=? AND sub_account_id=?;",
+		main.Identifier,
+		sub.Identifier,
+	)
+	if err != nil {
+		return fmt.Errorf("error removing account link: %v", err)
+	}
+	return nil
+}
+
 // GetAccount Gets an account based on the email address provided.
 func (m *MySQL) GetAccount(email string) (*types.Account, error) {
 	return m.getAccountInternal(&email, nil, nil)

@@ -574,6 +574,68 @@ func TestAddKey(t *testing.T) {
 			}
 		}
 	}
+	// test invalid request, admin for registration account
+	t.Log("Testing valid request -- admin for other.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	email := "registration@test.com"
+	body, err = json.Marshal(types.AddKeyRequest{
+		Email: &email,
+		Key: types.RequestKey{
+			Type:         "read",
+			AllowedHosts: "",
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/key/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddKey(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// test invalid request, self registration
+	t.Log("Testing invalid request -- self registration.")
+	token, refresh, err = createTokens(variables.accounts[3].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[3]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.AddKeyRequest{
+		Key: types.RequestKey{
+			Type:         "read",
+			AllowedHosts: "",
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/key/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddKey(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// test invalid request -- non-admin for other
 	t.Log("Testing valid request -- non-admin for other.")
 	token, refresh, err = createTokens(variables.accounts[1].Email)
@@ -618,7 +680,7 @@ func TestAddKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	email := "unknown@test.com"
+	email = "unknown@test.com"
 	body, err = json.Marshal(types.AddKeyRequest{
 		Email: &email,
 		Key: types.RequestKey{
