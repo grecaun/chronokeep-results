@@ -49,7 +49,7 @@ func lockAccount(t *testing.T, email string, e *echo.Echo, h Handler) {
 		if err != nil {
 			t.Fatalf("Error encoding request body into json object: %v", err)
 		}
-		request := httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+		request := httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		response := httptest.NewRecorder()
 		c := e.NewContext(request, response)
@@ -60,7 +60,7 @@ func lockAccount(t *testing.T, email string, e *echo.Echo, h Handler) {
 }
 
 func TestLogin(t *testing.T) {
-	// POST, /r/account/login (no auth header required)
+	// POST, /account/login (no auth header required)
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -74,7 +74,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request := httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -90,7 +90,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -106,7 +106,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -115,7 +115,7 @@ func TestLogin(t *testing.T) {
 	}
 	// Empty body
 	t.Log("Testing empty request body.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -124,7 +124,7 @@ func TestLogin(t *testing.T) {
 	}
 	// Invalid body.
 	t.Log("Testing invalid request body.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string("/////")))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string("/////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -148,7 +148,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -164,7 +164,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/login", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/login", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -182,14 +182,14 @@ func TestLogin(t *testing.T) {
 }
 
 func TestRefresh(t *testing.T) {
-	// POST, /r/account/refresh (no auth header required)
+	// POST, /account/refresh (no auth header required)
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
 	h := Handler{}
 	// Test invalid body
 	t.Log("Testing invalid body.")
-	request := httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string("////")))
+	request := httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -198,7 +198,7 @@ func TestRefresh(t *testing.T) {
 	}
 	// Test empty body
 	t.Log("Testing empty body.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -213,7 +213,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -232,7 +232,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -251,7 +251,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -270,7 +270,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -297,7 +297,7 @@ func TestRefresh(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	time.Sleep(time.Second * 5)
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -320,7 +320,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -354,7 +354,7 @@ func TestRefresh(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/refresh", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/refresh", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -364,14 +364,14 @@ func TestRefresh(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	// POST, /r/account/logout
+	// POST, /account/logout
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
 	h := Handler{}
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
 	if assert.NoError(t, h.Logout(c)) {
@@ -379,7 +379,7 @@ func TestLogout(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "invalid-authorization-header")
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -388,7 +388,7 @@ func TestLogout(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-authorization-header")
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -401,7 +401,7 @@ func TestLogout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -414,7 +414,7 @@ func TestLogout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -434,7 +434,7 @@ func TestLogout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating tokens on account for test: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -448,7 +448,7 @@ func TestLogout(t *testing.T) {
 	}
 	// Verify token no longer registered
 	t.Log("Verifying token de-registered from account after logout.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
@@ -475,7 +475,7 @@ func TestLogout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/logout", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/logout", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -641,6 +641,10 @@ func TestGetAccount(t *testing.T) {
 				assert.Equal(t, acc.Name, resp.Account.Name)
 				assert.Equal(t, acc.Type, resp.Account.Type)
 			}
+			events, err := database.GetAccountEvents(account.Email)
+			if assert.NoError(t, err) {
+				assert.Equal(t, len(events), len(resp.Events))
+			}
 		}
 	}
 	// Test email - admin, authorized
@@ -665,6 +669,10 @@ func TestGetAccount(t *testing.T) {
 			assert.Equal(t, variables.accounts[1].Name, resp.Account.Name)
 			assert.Equal(t, variables.accounts[1].Type, resp.Account.Type)
 		}
+		events, err := database.GetAccountEvents(variables.accounts[1].Email)
+		if assert.NoError(t, err) {
+			assert.Equal(t, len(events), len(resp.Events))
+		}
 	}
 	// Test email - admin, authorized - unknown email
 	t.Log("Testing email in body, admin, unknown email.")
@@ -682,6 +690,42 @@ func TestGetAccount(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetAccount(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test registration
+	t.Log("Testing valid request - registration.")
+	_ = database.LinkAccounts(variables.accounts[0], variables.accounts[4])
+	account = variables.accounts[4]
+	token, refresh, err = createTokens(account.Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating tokens for test: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/account", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetAccount(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetAccountResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			acc, err := database.GetAccount(account.Email)
+			if assert.NoError(t, err) {
+				assert.Equal(t, acc.Email, resp.Account.Email)
+				assert.Equal(t, acc.Locked, resp.Account.Locked)
+				assert.Equal(t, acc.Name, resp.Account.Name)
+				assert.Equal(t, acc.Type, resp.Account.Type)
+			}
+			events, err := database.GetAccountEvents(account.Email)
+			if assert.NoError(t, err) {
+				assert.Equal(t, len(events), len(resp.Events))
+			}
+		}
 	}
 	// Test email - not admin, unauthorized
 	t.Log("Testing email in body, not admin.")
@@ -741,14 +785,14 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestGetAccounts(t *testing.T) {
-	// GET, /r/account/all
+	// GET, /account/all
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
 	h := Handler{}
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -757,7 +801,7 @@ func TestGetAccounts(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -767,7 +811,7 @@ func TestGetAccounts(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -781,7 +825,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -795,7 +839,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -816,7 +860,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -838,7 +882,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -864,7 +908,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating tokens for test: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -885,7 +929,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -930,7 +974,7 @@ func TestGetAccounts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodGet, "/r/account/all", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodGet, "/account/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -941,7 +985,7 @@ func TestGetAccounts(t *testing.T) {
 }
 
 func TestAddAccount(t *testing.T) {
-	// POST, /r/account/add/add
+	// POST, /account/add/add
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -949,7 +993,7 @@ func TestAddAccount(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -958,7 +1002,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -968,7 +1012,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -982,7 +1026,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -996,7 +1040,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1017,7 +1061,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1054,7 +1098,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1095,7 +1139,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1105,7 +1149,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	// test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1115,7 +1159,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing invalid body.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1140,7 +1184,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1165,7 +1209,7 @@ func TestAddAccount(t *testing.T) {
 	}
 	// test email collision
 	t.Log("Test email collision.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1197,7 +1241,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1223,7 +1267,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1258,7 +1302,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1279,7 +1323,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1302,7 +1346,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1324,7 +1368,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1344,7 +1388,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1367,7 +1411,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1386,7 +1430,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1414,7 +1458,7 @@ func TestAddAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/add", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/add", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1425,7 +1469,7 @@ func TestAddAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	// PUT, /r/account/update
+	// PUT, /account/update
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -1433,7 +1477,7 @@ func TestUpdateAccount(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -1442,7 +1486,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1452,7 +1496,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1466,7 +1510,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1487,7 +1531,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1501,7 +1545,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1533,7 +1577,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1559,7 +1603,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1569,7 +1613,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1579,7 +1623,7 @@ func TestUpdateAccount(t *testing.T) {
 	}
 	// test wrong content type
 	t.Log("Testing wrong content type request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1601,7 +1645,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1649,7 +1693,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1686,7 +1730,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1719,7 +1763,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1752,7 +1796,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1774,7 +1818,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1796,7 +1840,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1816,7 +1860,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1844,7 +1888,7 @@ func TestUpdateAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/update", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1855,7 +1899,7 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestChangePassword(t *testing.T) {
-	// PUT, /r/account/password
+	// PUT, /account/password
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -1863,7 +1907,7 @@ func TestChangePassword(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -1872,7 +1916,7 @@ func TestChangePassword(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1882,7 +1926,7 @@ func TestChangePassword(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -1896,7 +1940,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1917,7 +1961,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1931,7 +1975,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1960,7 +2004,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -1997,7 +2041,7 @@ func TestChangePassword(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2007,7 +2051,7 @@ func TestChangePassword(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2017,7 +2061,7 @@ func TestChangePassword(t *testing.T) {
 	}
 	// test wrong content type
 	t.Log("Testing wrong content type request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2046,7 +2090,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2074,7 +2118,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2106,7 +2150,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body to json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2138,7 +2182,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body to json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2166,7 +2210,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body to json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2194,7 +2238,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2209,7 +2253,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding body to JSON: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2237,7 +2281,7 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/password", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/password", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2248,7 +2292,7 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestChangeEmail(t *testing.T) {
-	// PUT, /r/account/email
+	// PUT, /account/email
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -2256,7 +2300,7 @@ func TestChangeEmail(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -2265,7 +2309,7 @@ func TestChangeEmail(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -2275,7 +2319,7 @@ func TestChangeEmail(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -2289,7 +2333,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2310,7 +2354,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2324,7 +2368,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2354,7 +2398,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2389,7 +2433,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2415,7 +2459,7 @@ func TestChangeEmail(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2425,7 +2469,7 @@ func TestChangeEmail(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2443,7 +2487,7 @@ func TestChangeEmail(t *testing.T) {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
 	t.Log("Testing invalid content type.")
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2472,7 +2516,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2501,7 +2545,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2525,7 +2569,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2553,7 +2597,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2570,7 +2614,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2587,7 +2631,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2604,7 +2648,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2632,7 +2676,7 @@ func TestChangeEmail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPut, "/r/account/email", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPut, "/account/email", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2643,7 +2687,7 @@ func TestChangeEmail(t *testing.T) {
 }
 
 func TestUnlock(t *testing.T) {
-	// POST, /r/account/unlock
+	// POST, /account/unlock
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -2651,7 +2695,7 @@ func TestUnlock(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -2660,7 +2704,7 @@ func TestUnlock(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -2670,7 +2714,7 @@ func TestUnlock(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -2684,7 +2728,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2705,7 +2749,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2719,7 +2763,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2747,7 +2791,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2780,7 +2824,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2812,7 +2856,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2822,7 +2866,7 @@ func TestUnlock(t *testing.T) {
 	}
 	// test empty request
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2832,7 +2876,7 @@ func TestUnlock(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing invalid body.")
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2860,7 +2904,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2887,7 +2931,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2918,7 +2962,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2951,7 +2995,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/unlock", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/unlock", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2979,7 +3023,7 @@ func TestUnlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodPost, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -2990,7 +3034,7 @@ func TestUnlock(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	// DELETE, /r/account/delete
+	// DELETE, /account/delete
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -2998,7 +3042,7 @@ func TestDelete(t *testing.T) {
 	h.Setup()
 	// Test empty auth header
 	t.Log("Testing empty auth header.")
-	request := httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request := httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -3007,7 +3051,7 @@ func TestDelete(t *testing.T) {
 	}
 	// Test invalid auth header
 	t.Log("Testing invalid auth header.")
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -3017,7 +3061,7 @@ func TestDelete(t *testing.T) {
 	}
 	// Test invalid token
 	t.Log("Testing invalid token.")
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
 	response = httptest.NewRecorder()
@@ -3031,7 +3075,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3052,7 +3096,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3066,7 +3110,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3094,7 +3138,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3127,7 +3171,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3159,7 +3203,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3187,7 +3231,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3208,7 +3252,7 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	t.Log("Testing empty request.")
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3218,7 +3262,7 @@ func TestDelete(t *testing.T) {
 	}
 	// test bad request
 	t.Log("Testing invalid body.")
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string("////")))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string("////")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3245,7 +3289,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3272,7 +3316,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3303,7 +3347,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3334,7 +3378,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3361,7 +3405,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodDelete, "/r/account/delete", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodDelete, "/account/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
 	response = httptest.NewRecorder()
@@ -3372,9 +3416,699 @@ func TestDelete(t *testing.T) {
 }
 
 func TestLinkAccounts(t *testing.T) {
-
+	// PUT, /account/link
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
+	// Test empty auth header
+	t.Log("Testing empty auth header.")
+	request := httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid auth header
+	t.Log("Testing invalid auth header.")
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid token
+	t.Log("Testing invalid token.")
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown email
+	t.Log("Testing unknown email in token.")
+	token, _, err := createTokens("unknown@test.com")
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test expired token
+	t.Log("Testing expired token.")
+	token, refresh, err := createExpiredTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account := variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test not logged in
+	t.Log("Testing not logged in.")
+	token, _, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test locked account - non admin
+	lockAccount(t, variables.accounts[1].Email, e, h)
+	t.Log("Testing locked account - non admin.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err := json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// Test locked account - admin
+	lockAccount(t, variables.accounts[0].Email, e, h)
+	t.Log("Testing locked account - admin.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// test empty request
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	t.Log("Testing empty request.")
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test bad request
+	t.Log("Testing bad request.")
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string("////")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test invalid content type
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	t.Log("Testing invalid content type.")
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test non-admin / paid (TODO)
+	t.Log("Testing non-admin request.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// test registration
+	t.Log("Testing registration request.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[3]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[4].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// test admin
+	t.Log("Testing valid request.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.ModifyAccountResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.accounts[3].Name, resp.Account.Name)
+			assert.Equal(t, variables.accounts[3].Email, resp.Account.Email)
+			assert.Equal(t, variables.accounts[3].Type, resp.Account.Type)
+		}
+		acc, err := database.GetLinkedAccounts(account.Email)
+		if assert.NoError(t, err) {
+			assert.Equal(t, 1, len(acc))
+			assert.Equal(t, variables.accounts[3].Name, acc[0].Name)
+			assert.Equal(t, variables.accounts[3].Email, acc[0].Email)
+			assert.Equal(t, variables.accounts[3].Type, acc[0].Type)
+		}
+	}
+	// Verify error when email doesn't exist
+	t.Log("Testing account doesn't exist request.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "fake@test.com",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// validation checks -- invalid email
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	t.Log("Testing validation -- invalid email.")
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "invalidtest.com",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// validation checks -- empty email
+	t.Log("Testing validation -- empty email.")
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/link", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.LinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
 }
 
 func TestUnlinkAccounts(t *testing.T) {
-
+	// PUT, /account/unlink
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
+	// Test empty auth header
+	t.Log("Testing empty auth header.")
+	request := httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid auth header
+	t.Log("Testing invalid auth header.")
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid token
+	t.Log("Testing invalid token.")
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown email
+	t.Log("Testing unknown email in token.")
+	token, _, err := createTokens("unknown@test.com")
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test expired token
+	t.Log("Testing expired token.")
+	token, refresh, err := createExpiredTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account := variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test not logged in
+	t.Log("Testing not logged in.")
+	token, _, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test locked account - non admin
+	lockAccount(t, variables.accounts[1].Email, e, h)
+	t.Log("Testing locked account - non admin.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err := json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// Test locked account - admin
+	lockAccount(t, variables.accounts[0].Email, e, h)
+	t.Log("Testing locked account - admin.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// test empty request
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	t.Log("Testing empty request.")
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test bad request
+	t.Log("Testing bad request.")
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string("////")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test invalid content type
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	t.Log("Testing invalid content type.")
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// test admin
+	t.Log("Testing valid request.")
+	err = database.LinkAccounts(variables.accounts[0], variables.accounts[3])
+	assert.NoError(t, err)
+	acc, err := database.GetLinkedAccounts(variables.accounts[0].Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(acc))
+	}
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		acc, err := database.GetLinkedAccounts(account.Email)
+		if assert.NoError(t, err) {
+			assert.Equal(t, 0, len(acc))
+		}
+	}
+	// verify error on repeat
+	t.Log("Testing repeat request.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: variables.accounts[3].Email,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+	}
+	// Verify error when email doesn't exist
+	t.Log("Testing account doesn't exist request.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "fake@test.com",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// validation checks -- invalid email
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	t.Log("Testing validation -- invalid email.")
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "invalidtest.com",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
+	// validation checks -- empty email
+	t.Log("Testing validation -- empty email.")
+	body, err = json.Marshal(types.DeleteAccountRequest{
+		Email: "",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPut, "/account/unlink", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.UnlinkAccounts(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
+	}
 }

@@ -61,6 +61,18 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Type:     "registration",
 			Password: testHashPassword(output.testPassword2),
 		},
+		{
+			Name:     "Registration2",
+			Email:    "registration2@test.com",
+			Type:     "registration",
+			Password: testHashPassword(output.testPassword2),
+		},
+		{
+			Name:     "Registration3",
+			Email:    "registration3@test.com",
+			Type:     "registration",
+			Password: testHashPassword(output.testPassword2),
+		},
 	} {
 		database.AddAccount(account)
 	}

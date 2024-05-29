@@ -477,8 +477,12 @@ func (h Handler) LinkAccounts(c echo.Context) error {
 	if account.Type != "admin" && account.Type != "paid" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 	}
-	subAccount, err := database.GetAccount(request.Email)
+	err = h.validate.Struct(request)
 	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request", err)
+	}
+	subAccount, err := database.GetAccount(request.Email)
+	if err != nil || subAccount == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", errors.New("sub account not found"))
 	}
 	err = database.LinkAccounts(*account, *subAccount)
@@ -504,8 +508,12 @@ func (h Handler) UnlinkAccounts(c echo.Context) error {
 	if account.Locked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
 	}
-	subAccount, err := database.GetAccount(request.Email)
+	err = h.validate.Struct(request)
 	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Request", err)
+	}
+	subAccount, err := database.GetAccount(request.Email)
+	if err != nil || subAccount == nil {
 		return getAPIError(c, http.StatusNotFound, "Account Not Found", errors.New("sub account not found"))
 	}
 	err = database.UnlinkAccounts(*account, *subAccount)

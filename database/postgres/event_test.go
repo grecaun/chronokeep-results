@@ -4,6 +4,8 @@ import (
 	"chronokeep/results/types"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func setupEventTests() {
@@ -25,6 +27,12 @@ func setupEventTests() {
 				Name:     "Tia Johnson",
 				Email:    "tiatheway@test.com",
 				Type:     "free",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Registration",
+				Email:    "registration@test.com",
+				Type:     "registration",
 				Password: testHashPassword("password"),
 			},
 		}
@@ -236,6 +244,8 @@ func TestGetAccountEvents(t *testing.T) {
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
 	account3, _ := db.AddAccount(accounts[2])
+	registration, _ := db.AddAccount(accounts[3])
+	_ = db.LinkAccounts(*account1, *registration)
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
@@ -264,49 +274,50 @@ func TestGetAccountEvents(t *testing.T) {
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
 	}
+	t.Log("Verifying no events added for accounts.")
+	t.Logf("Account email: %v", account1.Email)
+	events, err := db.GetAccountEvents(account1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(events))
+	}
+	t.Logf("Account email: %v", account2.Email)
+	events, err = db.GetAccountEvents(account2.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(events))
+	}
 	t.Log("Adding one event for each account.")
 	db.AddEvent(event1)
 	db.AddEvent(event2)
 	t.Logf("Account email: %v", account1.Email)
-	events, err := db.GetAccountEvents(account1.Email)
-	if err != nil {
-		t.Fatalf("Error attempting to get events: %v", err)
-	}
-	if len(events) != 1 {
-		t.Errorf("Expected %v events but found %v.", 1, len(events))
+	events, err = db.GetAccountEvents(account1.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(events))
 	}
 	t.Logf("Account email: %v", account2.Email)
 	events, err = db.GetAccountEvents(account2.Email)
-	if err != nil {
-		t.Fatalf("Error attempting to get events: %v", err)
-	}
-	if len(events) != 1 {
-		t.Errorf("Expected %v events but found %v.", 1, len(events))
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(events))
 	}
 	t.Log("Adding the final two events.")
 	db.AddEvent(event3)
 	db.AddEvent(event4)
 	events, err = db.GetAccountEvents(account1.Email)
-	if err != nil {
-		t.Fatalf("Error attempting to get events: %v", err)
-	}
-	if len(events) != 2 {
-		t.Errorf("Expected %v events but found %v.", 2, len(events))
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(events))
 	}
 	events, err = db.GetAccountEvents(account2.Email)
-	if err != nil {
-		t.Fatalf("Error attempting to get events: %v", err)
-	}
-	if len(events) != 2 {
-		t.Errorf("Expected %v events but found %v.", 2, len(events))
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(events))
 	}
 	t.Log("Testing an account with no events.")
 	events, err = db.GetAccountEvents(account3.Email)
-	if err != nil {
-		t.Fatalf("Error attempting to get events: %v", err)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(events))
 	}
-	if len(events) != 0 {
-		t.Errorf("Expected %v events but found %v.", 0, len(events))
+	t.Log("Testing linked account fetch.")
+	events, err = db.GetAccountEvents(registration.Email)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(events))
 	}
 }
 
