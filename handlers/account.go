@@ -485,7 +485,9 @@ func (h Handler) LinkAccounts(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, types.ModifyAccountResponse{
+		Account: *subAccount,
+	})
 }
 
 func (h Handler) UnlinkAccounts(c echo.Context) error {
