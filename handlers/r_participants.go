@@ -38,8 +38,19 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 	if multi == nil || multi.Event == nil || multi.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
+	linked, err := database.GetLinkedAccounts(multi.Account.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Linked Accounts", nil)
+	}
+	is_linked := false
+	for _, acc := range linked {
+		if acc.Identifier == account.Identifier {
+			is_linked = true
+			break
+		}
+	}
 	// Verify they're allowed to pull these identifiers
-	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
+	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	participants, err := database.GetParticipants(multi.EventYear.Identifier)
@@ -78,8 +89,19 @@ func (h Handler) RAddParticipants(c echo.Context) error {
 	if multi == nil || multi.Event == nil || multi.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
+	linked, err := database.GetLinkedAccounts(multi.Account.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Linked Accounts", nil)
+	}
+	is_linked := false
+	for _, acc := range linked {
+		if acc.Identifier == account.Identifier {
+			is_linked = true
+			break
+		}
+	}
 	// Verify they're allowed to pull these identifiers
-	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
+	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	// validate participants
@@ -170,8 +192,19 @@ func (h Handler) RUpdateParticipant(c echo.Context) error {
 	if multi == nil || multi.Event == nil || multi.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
+	linked, err := database.GetLinkedAccounts(multi.Account.Email)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Linked Accounts", nil)
+	}
+	is_linked := false
+	for _, acc := range linked {
+		if acc.Identifier == account.Identifier {
+			is_linked = true
+			break
+		}
+	}
 	// Verify they're allowed to pull these identifiers
-	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier {
+	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
 	part, err := database.UpdateParticipant(multi.EventYear.Identifier, request.Participant)
