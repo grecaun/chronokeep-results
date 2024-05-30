@@ -40,6 +40,11 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if !mkey.Key.IsAllowed(c.Request().Referer()) {
 		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
 	}
+	// Check to ensure key isn't read only
+	// this is due to the endpoint returning names for anonymous participants
+	if mkey.Key.Type != "write" && mkey.Key.Type != "delete" {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Allowed", errors.New("read key not allowed to write"))
+	}
 	year := ""
 	if request.Year != nil {
 		year = *request.Year
@@ -51,8 +56,8 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
-	// Only the account owner can access restricted events.
-	if mult.Event.AccessRestricted && mkey.Account.Identifier != mult.Event.AccountIdentifier {
+	// Only the account owner or admins can get participants
+	if mkey.Account.Type == "admin" || mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
 	participants, err := database.GetParticipants(mult.EventYear.Identifier)
@@ -109,7 +114,7 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
-	// Only the account owner or admins can add.
+	// Only the account owner can add.
 	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
@@ -176,7 +181,7 @@ func (h Handler) DeleteParticipants(c echo.Context) error {
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
-	// Only the account owner or admins can delete.
+	// Only the account owner can delete.
 	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}

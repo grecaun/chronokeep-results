@@ -56,6 +56,16 @@ func TestGetParticipants(t *testing.T) {
 	if assert.NoError(t, h.GetParticipants(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
+	// Test read key
+	t.Log("Testing read host.")
+	request = httptest.NewRequest(http.MethodPost, "/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
 	// Test restricted event, wrong account key
 	t.Log("Testing restricted event, wrong account key.")
 	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
@@ -67,6 +77,7 @@ func TestGetParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test unrestricted event, wrong account key
+	t.Log("Testing unrestricted event, wrong account key.")
 	year = variables.eventYears["event1"]["2021"].Year
 	body, err = json.Marshal(types.GetParticipantsRequest{
 		Slug: variables.events["event1"].Slug,
@@ -81,22 +92,25 @@ func TestGetParticipants(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetParticipants(c)) {
-		assert.Equal(t, http.StatusOK, response.Code)
-		var resp types.GetParticipantsResponse
-		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, variables.events["event1"].Name, resp.Event.Name)
-			assert.Equal(t, variables.events["event1"].Slug, resp.Event.Slug)
-			assert.Equal(t, variables.events["event1"].Website, resp.Event.Website)
-			assert.Equal(t, variables.events["event1"].Image, resp.Event.Image)
-			assert.Equal(t, variables.events["event1"].ContactEmail, resp.Event.ContactEmail)
-			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
-			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
-			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.Year.Year)
-			assert.True(t, variables.eventYears["event1"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.Year.Live)
-			assert.Equal(t, 500, len(resp.Participants))
-		}
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unrestricted event, admin key
+	t.Log("Testing unrestricted event, wrong account key.")
+	year = variables.eventYears["event2"]["2021"].Year
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug: variables.events["event2"].Slug,
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetParticipants(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test invalid host
 	t.Log("Testing invalid host.")
