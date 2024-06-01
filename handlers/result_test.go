@@ -2029,7 +2029,7 @@ func TestAddResults(t *testing.T) {
 			assert.Equal(t, len(results), resp.Count)
 		}
 	}
-	// Test validation - Age1
+	// Test validation - Age1 (age is now allowed to be any integer)
 	t.Log("Test validation check - Age1.")
 	results[0].Last = "Smith-Johnson"
 	results[0].Age = -1
@@ -2050,10 +2050,10 @@ func TestAddResults(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(results)-1, resp.Count)
+			assert.Equal(t, len(results), resp.Count)
 		}
 	}
-	// Test validation - Age2
+	// Test validation - Age2 - age is allowed to be any integer
 	t.Log("Test validation check - Age2.")
 	results[0].Age = 135
 	body, err = json.Marshal(types.AddResultsRequest{
@@ -2073,7 +2073,7 @@ func TestAddResults(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.AddResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(results)-1, resp.Count)
+			assert.Equal(t, len(results), resp.Count)
 		}
 	}
 	// Test validation - Seconds
