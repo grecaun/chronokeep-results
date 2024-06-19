@@ -307,6 +307,49 @@ func (p *Postgres) DeleteResults(eventYearID int64, results []types.Result) erro
 	return tx.Commit(ctx)
 }
 
+// DeleteDistanceResults Deletes results for an Event Distance from the database.
+func (p *Postgres) DeleteDistanceResults(eventYearID int64, distance string) error {
+	db, err := p.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.Exec(
+		ctx,
+		"DELETE FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=$1 AND p.distance=$2 AND p.person_id=r.person_id);",
+		eventYearID,
+		distance,
+	)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("unable to delete results for event year & distance: %v", err)
+	}
+	if res.RowsAffected() < 0 {
+		tx.Rollback(ctx)
+		return fmt.Errorf("error fetching rows affected from event year & distance results deletion")
+	}
+	_, err = tx.Exec(
+		ctx,
+		"DELETE FROM person WHERE event_year_id=$1 AND distance=$2;",
+		eventYearID,
+		distance,
+	)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("unable to delete persons for event year & distance: %v", err)
+	}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to commit transaction: %v", err)
+	}
+	return nil
+}
+
 // DeleteEventResults Deletes results for an event year.
 func (p *Postgres) DeleteEventResults(eventYearID int64) (int64, error) {
 	db, err := p.GetDB()

@@ -318,6 +318,50 @@ func (s *SQLite) DeleteResults(eventYearID int64, results []types.Result) error 
 	return nil
 }
 
+// DeleteDistanceResults Deletes results for an Event Distance from the database.
+func (s *SQLite) DeleteDistanceResults(eventYearID int64, distance string) error {
+	db, err := s.GetDB()
+	if err != nil {
+		return err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	res, err := tx.ExecContext(
+		ctx,
+		"DELETE FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=$1 AND p.distance=$2 AND p.person_id=r.person_id);",
+		eventYearID,
+		distance,
+	)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("unable to delete results for event year & distance: %v", err)
+	}
+	_, err = res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error fetching rows affected from event year & distance results deletion: %v", err)
+	}
+	_, err = tx.ExecContext(
+		ctx,
+		"DELETE FROM person WHERE event_year_id=$1 AND distance=$2;",
+		eventYearID,
+		distance,
+	)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("unable to delete persons for event year & distance: %v", err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("unable to commit transaction: %v", err)
+	}
+	return nil
+}
+
 // DeleteEventResults Deletes results for an event year.
 func (s *SQLite) DeleteEventResults(eventYearID int64) (int64, error) {
 	db, err := s.GetDB()

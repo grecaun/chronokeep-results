@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -1328,6 +1330,58 @@ func TestDeleteEventResults(t *testing.T) {
 	res, _ = db.GetResults(eventYear2.Identifier, 0, 0)
 	if len(res) == 0 {
 		t.Error("Expected to find results after delete but found none.")
+	}
+}
+
+func TestDeleteDistanceResults(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupResultTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event2 := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 2",
+		Slug:              "event2",
+	}
+	event, _ = db.AddEvent(*event)
+	event2, _ = db.AddEvent(*event2)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear2 := &types.EventYear{
+		EventIdentifier: event2.Identifier,
+		Year:            "2022",
+		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	db.AddResults(eventYear.Identifier, results)
+	db.AddResults(eventYear2.Identifier, results)
+	err = db.DeleteDistanceResults(eventYear.Identifier, results[0].Distance)
+	if assert.Nil(t, err) {
+		res, _ := db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
+		assert.Equal(t, 0, len(res))
+		res, _ = db.GetResults(eventYear.Identifier, 0, 0)
+		assert.Equal(t, 2, len(res))
+		res, _ = db.GetResults(eventYear2.Identifier, 0, 0)
+		assert.Equal(t, len(results), len(res))
+	}
+	err = db.DeleteDistanceResults(eventYear2.Identifier, results[4].Distance)
+	if assert.Nil(t, err) {
+		res, _ := db.GetDistanceResults(eventYear2.Identifier, results[4].Distance, 0, 0)
+		assert.Equal(t, 0, len(res))
+		res, _ = db.GetResults(eventYear2.Identifier, 0, 0)
+		assert.Equal(t, 3, len(res))
 	}
 }
 

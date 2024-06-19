@@ -69,6 +69,7 @@ type Database interface {
 	GetFinishResults(eventYearID int64, distance string, limit, page int) ([]types.Result, error)
 	GetBibResults(eventYearID int64, bib string) ([]types.Result, error)
 	DeleteResults(eventYearID int64, results []types.Result) error
+	DeleteDistanceResults(eventYearId int64, distance string) error
 	DeleteEventResults(eventYearID int64) (int64, error)
 	AddResults(eventYearID int64, results []types.Result) ([]types.Result, error)
 	// Multi-Get Functions
