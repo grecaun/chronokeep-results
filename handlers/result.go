@@ -429,9 +429,17 @@ func (h Handler) DeleteResults(c echo.Context) error {
 	if mult.Event.AccountIdentifier != mkey.Account.Identifier {
 		return getAPIError(c, http.StatusUnauthorized, "Ownership Error", nil)
 	}
-	count, err := database.DeleteEventResults(mult.EventYear.Identifier)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Results", err)
+	var count int64
+	if request.Distance != nil && len(*request.Distance) > 0 {
+		count, err = database.DeleteDistanceResults(mult.EventYear.Identifier, *request.Distance)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Deleting Results", err)
+		}
+	} else {
+		count, err = database.DeleteEventResults(mult.EventYear.Identifier)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Deleting Results", err)
+		}
 	}
 	return c.JSON(http.StatusOK, types.AddResultsResponse{
 		Count: int(count),

@@ -482,8 +482,8 @@ func TestRAddParticipants(t *testing.T) {
 	}
 	year2, err := database.AddEventYear(types.EventYear{
 		EventIdentifier: variables.events["event1"].Identifier,
-		Year:            "2023",
-		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
+		Year:            "2024",
+		DateTime:        time.Date(2024, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
 	})
 	if err != nil {
@@ -1079,7 +1079,7 @@ func TestRAddParticipants(t *testing.T) {
 	if assert.NoError(t, h.RAddParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		if assert.NoError(t, err) {
-			part, err := database.GetParticipants(year.Identifier)
+			part, err := database.GetParticipants(year2.Identifier)
 			if assert.NoError(t, err) {
 				outer := parts[0]
 				found := false

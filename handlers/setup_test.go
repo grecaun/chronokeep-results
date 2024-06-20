@@ -229,6 +229,12 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2020, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 		},
+		{
+			EventIdentifier: output.events["event2"].Identifier,
+			Year:            "2019",
+			DateTime:        time.Date(2019, 04, 05, 11, 0, 0, 0, time.Local),
+			Live:            false,
+		},
 	} {
 		database.AddEventYear(eventYear)
 	}

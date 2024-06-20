@@ -1263,9 +1263,9 @@ func TestDeleteResults(t *testing.T) {
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	db.AddResults(eventYear.Identifier, results)
 	db.AddResults(eventYear2.Identifier, results)
-	err = db.DeleteResults(eventYear.Identifier, results[1:2])
-	if err != nil {
-		t.Fatalf("Error deleting specific results: %v", err)
+	count, err := db.DeleteResults(eventYear.Identifier, results[1:2])
+	if assert.Nil(t, err) {
+		assert.Equal(t, int64(1), count)
 	}
 	res, _ := db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != (len(results) - 1) {
@@ -1367,8 +1367,9 @@ func TestDeleteDistanceResults(t *testing.T) {
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	db.AddResults(eventYear.Identifier, results)
 	db.AddResults(eventYear2.Identifier, results)
-	err = db.DeleteDistanceResults(eventYear.Identifier, results[0].Distance)
+	count, err := db.DeleteDistanceResults(eventYear.Identifier, results[0].Distance)
 	if assert.Nil(t, err) {
+		assert.Equal(t, int64(3), count)
 		res, _ := db.GetDistanceResults(eventYear.Identifier, results[0].Distance, 0, 0)
 		assert.Equal(t, 0, len(res))
 		res, _ = db.GetResults(eventYear.Identifier, 0, 0)
@@ -1376,8 +1377,9 @@ func TestDeleteDistanceResults(t *testing.T) {
 		res, _ = db.GetResults(eventYear2.Identifier, 0, 0)
 		assert.Equal(t, len(results), len(res))
 	}
-	err = db.DeleteDistanceResults(eventYear2.Identifier, results[4].Distance)
+	count, err = db.DeleteDistanceResults(eventYear2.Identifier, results[4].Distance)
 	if assert.Nil(t, err) {
+		assert.Equal(t, int64(2), count)
 		res, _ := db.GetDistanceResults(eventYear2.Identifier, results[4].Distance, 0, 0)
 		assert.Equal(t, 0, len(res))
 		res, _ = db.GetResults(eventYear2.Identifier, 0, 0)
@@ -1463,13 +1465,17 @@ func TestBadDatabaseResult(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error getting results by event year and bib.")
 	}
-	err = db.DeleteResults(0, make([]types.Result, 0))
+	_, err = db.DeleteResults(0, make([]types.Result, 0))
 	if err == nil {
 		t.Fatalf("Expected error deleting results.")
 	}
 	_, err = db.DeleteEventResults(0)
 	if err == nil {
 		t.Fatalf("Expected error deleting event year results.")
+	}
+	_, err = db.DeleteDistanceResults(0, "")
+	if err == nil {
+		t.Fatalf("Expected error deleting event year & results.")
 	}
 	_, err = db.AddResults(0, make([]types.Result, 0))
 	if err == nil {
@@ -1499,13 +1505,17 @@ func TestNoDatabaseResult(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error getting results by event year and bib.")
 	}
-	err = db.DeleteResults(0, make([]types.Result, 0))
+	_, err = db.DeleteResults(0, make([]types.Result, 0))
 	if err == nil {
 		t.Fatalf("Expected error deleting results.")
 	}
 	_, err = db.DeleteEventResults(0)
 	if err == nil {
 		t.Fatalf("Expected error deleting event year results.")
+	}
+	_, err = db.DeleteDistanceResults(0, "")
+	if err == nil {
+		t.Fatalf("Expected error deleting event year & results.")
 	}
 	_, err = db.AddResults(0, make([]types.Result, 0))
 	if err == nil {

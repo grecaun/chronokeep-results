@@ -2197,6 +2197,7 @@ func TestAddResults(t *testing.T) {
 		}
 	}
 }
+
 func TestDeleteResults(t *testing.T) {
 	// DELETE, /results/delete
 	variables, finalize := setupTests(t)
@@ -2301,13 +2302,13 @@ func TestDeleteResults(t *testing.T) {
 	if assert.NoError(t, h.DeleteResults(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
+	// Test write key
 	// verify information is there to delete
 	t.Log("Verifying information before deletion.")
 	deleted, err := database.GetResults(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(variables.results["event2"]["2021"]), len(deleted))
 	}
-	// Test write key
 	t.Log("Testing write key.")
 	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -2327,13 +2328,13 @@ func TestDeleteResults(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(deleted))
 	}
+	// Test a delete request
 	// verify information is there to delete
 	t.Log("Verifying information before deletion.")
 	deleted, err = database.GetResults(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(variables.results["event2"]["2020"]), len(deleted))
 	}
-	// Test a delete request
 	year = variables.eventYears["event2"]["2020"].Year
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug: variables.events["event2"].Slug,
@@ -2360,6 +2361,42 @@ func TestDeleteResults(t *testing.T) {
 	deleted, err = database.GetResults(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(deleted))
+	}
+	// Test valid request with distance
+	// verify information is there to delete
+	t.Log("Verifying information before deletion.")
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2019"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(variables.results["event2"]["2019"]), len(deleted))
+	}
+	year = variables.eventYears["event2"]["2019"].Year
+	dist := "1 Mile"
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug:     variables.events["event2"].Slug,
+		Year:     &year,
+		Distance: &dist,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	t.Log("Testing delete key.")
+	request = httptest.NewRequest(http.MethodDelete, "/results/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AddResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 3, resp.Count)
+		}
+	}
+	// verify delete remotes information
+	t.Log("Verifying information was deleted.")
+	deleted, err = database.GetResults(variables.eventYears["event2"]["2019"].Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(deleted))
 	}
 	// Test invalid event
 	t.Log("Testing invalid event.")
