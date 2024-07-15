@@ -4,6 +4,12 @@ package types
 	Responses
 */
 
+// LoginResponse Struct used for the response when a user successfully logs in / refreshes their login.
+type LoginResponse struct {
+	Token   string `json:"access_token"`
+	Refresh string `json:"refresh_token"`
+}
+
 // GetAccountResponse Struct used for the response of the Get Account Request.
 type GetAccountResponse struct {
 	Account        Account   `json:"account"`

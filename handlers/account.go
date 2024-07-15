@@ -347,9 +347,9 @@ func (h Handler) Login(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	return c.JSON(http.StatusOK, map[string]string{
-		"access_token":  *token,
-		"refresh_token": *refresh,
+	return c.JSON(http.StatusOK, types.LoginResponse{
+		Token:   *token,
+		Refresh: *refresh,
 	})
 }
 
@@ -422,9 +422,9 @@ func (h Handler) Refresh(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Database Error", err)
 	}
-	return c.JSON(http.StatusOK, map[string]string{
-		"access_token":  *token,
-		"refresh_token": *refresh,
+	return c.JSON(http.StatusOK, types.LoginResponse{
+		Token:   *token,
+		Refresh: *refresh,
 	})
 }
 
