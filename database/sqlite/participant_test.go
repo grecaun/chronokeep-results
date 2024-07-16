@@ -433,3 +433,62 @@ func TestUpdateParticipant(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, part)
 }
+
+func TestUpdateParticipants(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up tests. %v", err)
+	}
+	defer finalize(t)
+	setupParticipantTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	parts, _ := db.AddParticipants(eventYear.Identifier, participants)
+	assert.NotNil(t, parts)
+	id := parts[0].Identifier
+	// test update
+	temp := participants[0]
+	temp.Bib = "-200"
+	temp.Birthdate = "4/12/2020"
+	temp.AgeGroup = "Youngling"
+	temp.First = "Update!"
+	temp.Last = "Test"
+	temp.Distance = "12 Mile Fun"
+	temp.Gender = "U"
+	temp.Anonymous = !participants[0].Anonymous
+	part, err := db.UpdateParticipants(eventYear.Identifier, []types.Participant{temp})
+	if assert.NoError(t, err) {
+		assert.True(t, temp.Equals(&part[0]))
+		assert.Equal(t, 1, len(part))
+		assert.Equal(t, temp.Birthdate, part[0].Birthdate)
+		assert.Equal(t, temp.AgeGroup, part[0].AgeGroup)
+		assert.Equal(t, temp.Bib, part[0].Bib)
+		assert.Equal(t, temp.Distance, part[0].Distance)
+		assert.Equal(t, temp.First, part[0].First)
+		assert.Equal(t, temp.Gender, part[0].Gender)
+		assert.Equal(t, temp.Last, part[0].Last)
+		assert.Equal(t, id, part[0].Identifier)
+		assert.Equal(t, temp.Anonymous, part[0].Anonymous)
+		assert.Equal(t, temp.AlternateId, part[0].AlternateId)
+		assert.Equal(t, temp.SMSEnabled, part[0].SMSEnabled)
+		assert.Equal(t, temp.Mobile, part[0].Mobile)
+		assert.Equal(t, temp.Apparel, part[0].Apparel)
+	}
+	// test invalid update
+	temp = participants[1]
+	temp.AlternateId = "newbib"
+	part, err = db.UpdateParticipants(eventYear.Identifier, []types.Participant{temp})
+	assert.Error(t, err)
+	assert.Nil(t, part)
+}

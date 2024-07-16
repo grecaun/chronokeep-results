@@ -310,3 +310,92 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 	}
 	return &output, nil
 }
+
+func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Participant) ([]types.Participant, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("unable to start transaction: %v", err)
+	}
+	output := make([]types.Participant, 0)
+	for _, participant := range participants {
+		_, err = tx.ExecContext(
+			ctx,
+			"UPDATE participant SET "+
+				"bib=$1, "+
+				"first=$2, "+
+				"last=$3, "+
+				"birthdate=$4, "+
+				"gender=$5, "+
+				"age_group=$6, "+
+				"distance=$7, "+
+				"anonymous=$8, "+
+				"apparel=$9, "+
+				"sms_enabled=$10, "+
+				"mobile=$11 "+
+				"WHERE event_year_id=$12 AND alternate_id=$13;",
+			participant.Bib,
+			participant.First,
+			participant.Last,
+			participant.Birthdate,
+			participant.Gender,
+			participant.AgeGroup,
+			participant.Distance,
+			participant.AnonyInt(),
+			participant.Apparel,
+			participant.SMSInt(),
+			participant.Mobile,
+			eventYearID,
+			participant.AlternateId,
+		)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("error adding participant to database: %v", err)
+		}
+		res, err := tx.QueryContext(
+			ctx,
+			"SELECT participant_id FROM participant WHERE event_year_id=$1 AND alternate_id=$2;",
+			eventYearID,
+			participant.AlternateId,
+		)
+		if err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("error retrieving participant_id: %v", err)
+		}
+		defer res.Close()
+		tmp := types.Participant{
+			Bib:         participant.Bib,
+			First:       participant.First,
+			Last:        participant.Last,
+			Birthdate:   participant.Birthdate,
+			Gender:      participant.Gender,
+			AgeGroup:    participant.AgeGroup,
+			Distance:    participant.Distance,
+			Anonymous:   participant.Anonymous,
+			AlternateId: participant.AlternateId,
+			SMSEnabled:  participant.SMSEnabled,
+			Apparel:     participant.Apparel,
+			Mobile:      participant.Mobile,
+		}
+		if res.Next() {
+			res.Scan(
+				&tmp.Identifier,
+			)
+			output = append(output, tmp)
+		} else {
+			tx.Rollback()
+			return nil, fmt.Errorf("participant not found after add: %v", err)
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("error committing transaction: %v", err)
+	}
+	return output, nil
+}

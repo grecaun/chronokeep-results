@@ -16,6 +16,11 @@ type UpdateParticipantResponse struct {
 	Participant Participant `json:"participant"`
 }
 
+// UpdateParticipantsResponse Struct used for the response of an Update Participants request.
+type UpdateParticipantsResponse struct {
+	Participants []Participant `json:"participants"`
+}
+
 /*
 	Requests
 */
