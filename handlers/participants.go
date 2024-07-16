@@ -56,8 +56,8 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
-	// Only the account owner or admins can get participants
-	if mkey.Account.Type != "admin" || mkey.Account.Identifier != mult.Event.AccountIdentifier {
+	// Only the account owner can get participants
+	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
 	participants, err := database.GetParticipants(mult.EventYear.Identifier)
