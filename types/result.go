@@ -28,6 +28,7 @@ type Result struct {
 	Finish           bool   `json:"finish"`
 	Type             int    `json:"type"`
 	Anonymous        bool   `json:"anonymous"`
+	LocalTime        string `json:"local_time"`
 }
 
 // Validate Ensures valid data in the struct.

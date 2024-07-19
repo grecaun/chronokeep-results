@@ -15,12 +15,14 @@ type EventYear struct {
 	Year            string    `json:"year"`
 	DateTime        time.Time `json:"date_time" validate:"datetime"`
 	Live            bool      `json:"live"`
+	DaysAllowed     int       `json:"days_allowed"`
 }
 
 type RequestYear struct {
-	Year     string `json:"year" validate:"required"`
-	DateTime string `json:"date_time"`
-	Live     bool   `json:"live"`
+	Year        string `json:"year" validate:"required"`
+	DateTime    string `json:"date_time"`
+	Live        bool   `json:"live"`
+	DaysAllowed int    `json:"days_allowed"`
 }
 
 func (e *EventYear) Equals(other *EventYear) bool {
@@ -30,7 +32,7 @@ func (e *EventYear) Equals(other *EventYear) bool {
 		e.Live == other.Live
 }
 
-// Validate Ensures valid data ion the structure.
+// Validate Ensures valid data in the structure.
 func (e *EventYear) Validate(validate *validator.Validate) error {
 	if !validYear(e.Year) {
 		return errors.New("invalid year (only numbers and - allowed)")
@@ -38,7 +40,7 @@ func (e *EventYear) Validate(validate *validator.Validate) error {
 	return validate.Struct(e)
 }
 
-// Validate Ensures valid data ion the structure.
+// Validate Ensures valid data in the structure.
 func (e *RequestYear) Validate(validate *validator.Validate) error {
 	if !validYear(e.Year) {
 		return errors.New("invalid year (only numbers and - allowed)")
