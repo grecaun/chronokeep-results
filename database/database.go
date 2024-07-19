@@ -103,6 +103,10 @@ type Database interface {
 	AddBlockedEmails(emails []string) error
 	GetBlockedEmails() ([]string, error)
 	UnblockEmail(email string) error
+	// Text subscription functions
+	AddSubscribedPhone(eventYearID int64, subscription types.TextSubscription)
+	RemoveSubscribedPhone(eventYearID int64, phone string)
+	GetSubscribedPhones(eventYearID int64) ([]types.TextSubscription, error)
 	// Close the database.
 	Close()
 }

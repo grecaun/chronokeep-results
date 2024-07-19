@@ -36,7 +36,6 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 			"mobile"+
 			") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
-			"bib=VALUES(bib), "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
 			"birthdate=VALUES(birthdate), "+

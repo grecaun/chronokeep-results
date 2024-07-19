@@ -36,7 +36,6 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 			"mobile"+
 			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "+
 			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
-			"bib=$2, "+
 			"first=$3, "+
 			"last=$4, "+
 			"birthdate=$5, "+
