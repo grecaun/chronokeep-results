@@ -44,6 +44,7 @@ func setupResultTests() {
 			GenderRanking: 1,
 			Finish:        false,
 			Anonymous:     true,
+			LocalTime:     "2024/05/04 11:12:12-7:00",
 		},
 		{
 			PersonId:      "106",
@@ -64,6 +65,7 @@ func setupResultTests() {
 			GenderRanking: 1,
 			Finish:        true,
 			Anonymous:     false,
+			LocalTime:     "2024/12/04 11:12:12-7:00",
 		},
 		{
 			PersonId:      "209",
@@ -83,6 +85,7 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 2,
 			Finish:        true,
+			LocalTime:     "2023/05/04 11:10:12-8:00",
 		},
 		{
 			PersonId:      "287",
@@ -102,6 +105,7 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 2,
 			Finish:        false,
+			LocalTime:     "2024/02/04 11:12:15",
 		},
 		{
 			PersonId:      "287",
@@ -121,6 +125,7 @@ func setupResultTests() {
 			AgeRanking:    1,
 			GenderRanking: 2,
 			Finish:        true,
+			LocalTime:     "2024/05/02 10:12:12-7:00",
 		},
 	}
 }
@@ -149,6 +154,7 @@ func setupPageResultTests() {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        true,
+			LocalTime:     "2024/05/04 11:12:12-7:00",
 		})
 	}
 	for i := 200; i < 300; i++ {
@@ -171,6 +177,7 @@ func setupPageResultTests() {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        false,
+			LocalTime:     "2024/05/04 11:12:12-7:00",
 		})
 	}
 	for i := 300; i < 400; i++ {
@@ -193,6 +200,7 @@ func setupPageResultTests() {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        true,
+			LocalTime:     "2024/05/04 11:12:12-7:00",
 		})
 	}
 	for i := 0; i < 200; i++ {
@@ -215,6 +223,7 @@ func setupPageResultTests() {
 			AgeRanking:    i + 1,
 			GenderRanking: i + 1,
 			Finish:        false,
+			LocalTime:     "2024/05/04 11:12:12-7:00",
 		})
 	}
 }
@@ -260,6 +269,7 @@ func TestAddResults(t *testing.T) {
 	results[0].AgeRanking = 23
 	results[0].GenderRanking = 45
 	results[0].Finish = false
+	results[0].LocalTime = "updated-local-time"
 	res, err = db.AddResults(eventYear.Identifier, results[0:1])
 	if err != nil {
 		t.Fatalf("Error adding results: %v", err)
@@ -308,6 +318,9 @@ func TestAddResults(t *testing.T) {
 	}
 	if res[0].Anonymous != results[0].Anonymous {
 		t.Errorf("Expected to find result with anonymous %v, found %v.", results[0].Anonymous, res[0].Anonymous)
+	}
+	if res[0].LocalTime != results[0].LocalTime {
+		t.Errorf("Expected to find result with local_time %v, found %v.", results[0].LocalTime, res[0].LocalTime)
 	}
 	res, _ = db.GetResults(eventYear.Identifier, 0, 0)
 	if len(res) != len(results) {

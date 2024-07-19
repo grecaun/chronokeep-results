@@ -17,7 +17,7 @@ func (s *SQLite) GetEventYear(event_slug, year string) (*types.EventYear, error)
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -33,6 +33,7 @@ func (s *SQLite) GetEventYear(event_slug, year string) (*types.EventYear, error)
 			&outEventYear.Year,
 			&outEventYear.DateTime,
 			&outEventYear.Live,
+			&outEventYear.DaysAllowed,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
@@ -53,7 +54,7 @@ func (s *SQLite) GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -69,6 +70,7 @@ func (s *SQLite) GetEventYears(event_slug string) ([]types.EventYear, error) {
 			&year.Year,
 			&year.DateTime,
 			&year.Live,
+			&year.DaysAllowed,
 		)
 		if err != nil {
 			return nil, nil
@@ -88,11 +90,12 @@ func (s *SQLite) AddEventYear(year types.EventYear) (*types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event_year(event_id, year, date_time, live) VALUES (?, ?, ?, ?);",
+		"INSERT INTO event_year(event_id, year, date_time, live, days_allowed) VALUES (?, ?, ?, ?, ?);",
 		year.EventIdentifier,
 		year.Year,
 		year.DateTime,
 		year.Live,
+		year.DaysAllowed,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event year: %v", err)
@@ -107,6 +110,7 @@ func (s *SQLite) AddEventYear(year types.EventYear) (*types.EventYear, error) {
 		Year:            year.Year,
 		DateTime:        year.DateTime,
 		Live:            year.Live,
+		DaysAllowed:     year.DaysAllowed,
 	}, nil
 }
 
@@ -140,9 +144,10 @@ func (s *SQLite) UpdateEventYear(year types.EventYear) error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"UPDATE event_year SET date_time=?, live=? WHERE event_year_id=?",
+		"UPDATE event_year SET date_time=?, live=?, days_allowed=? WHERE event_year_id=?",
 		year.DateTime,
 		year.Live,
+		year.DaysAllowed,
 		year.Identifier,
 	)
 	if err != nil {

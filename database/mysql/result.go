@@ -32,7 +32,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? AND bib=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				bib,
@@ -44,7 +44,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? AND bib=? ORDER BY seconds ASC;",
 				eventYearID,
 				bib,
@@ -57,7 +57,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 						"WHERE finish=TRUE AND event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 					eventYearID,
 					distance,
@@ -69,7 +69,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 						"WHERE finish=TRUE AND event_year_id=? AND distance=? ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -81,7 +81,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 					eventYearID,
 					distance,
@@ -93,7 +93,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 						"WHERE event_year_id=? AND distance=? ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -105,7 +105,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -121,7 +121,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -138,7 +138,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				limit,
@@ -149,7 +149,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=? ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -160,7 +160,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=? ORDER BY seconds ASC LIMIT ? OFFSET ?;",
 				eventYearID,
 				limit,
@@ -171,7 +171,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=? ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -182,7 +182,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -197,7 +197,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -237,6 +237,7 @@ func (m *MySQL) getResultsInternal(eventYearID int64, bib *string, rtype ResultT
 			&result.Type,
 			&anonymous,
 			&result.PersonId,
+			&result.LocalTime,
 		)
 		result.Anonymous = anonymous != 0
 		if err != nil {
@@ -462,9 +463,10 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"age_ranking, "+
 			"gender_ranking, "+
 			"finish, "+
-			"result_type"+
+			"result_type, "+
+			"local_time"+
 			") "+
-			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"seconds=VALUES(seconds), "+
 			"milliseconds=VALUES(milliseconds), "+
@@ -475,7 +477,8 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			"age_ranking=VALUES(age_ranking), "+
 			"gender_ranking=VALUES(gender_ranking), "+
 			"finish=VALUES(finish), "+
-			"result_type=VALUES(result_type);",
+			"result_type=VALUES(result_type), "+
+			"local_time=VALUES(local_time);",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare statement for result add: %v", err)
@@ -548,6 +551,7 @@ func (m *MySQL) AddResults(eventYearID int64, results []types.Result) ([]types.R
 			result.GenderRanking,
 			result.Finish,
 			result.Type,
+			result.LocalTime,
 		)
 		if err != nil {
 			tx.Rollback()

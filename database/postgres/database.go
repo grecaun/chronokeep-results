@@ -266,6 +266,7 @@ func (p *Postgres) createTables() error {
 				"year VARCHAR(20) NOT NULL, " +
 				"date_time TIMESTAMPTZ NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
+				"days_allowed INT NOT NULL DEFAULT 1, " +
 				"year_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"year_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"year_deleted BOOL DEFAULT FALSE, " +
@@ -311,6 +312,7 @@ func (p *Postgres) createTables() error {
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
 				"result_type INT DEFAULT 0, " +
+				"local_time VARCHAR(100) NOT NULL DEFAULT '', " +
 				"result_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +

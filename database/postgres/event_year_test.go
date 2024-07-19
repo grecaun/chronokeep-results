@@ -55,24 +55,28 @@ func TestAddEventYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     3,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     4,
 	}
 	out, err := db.AddEventYear(*eventYear1)
 	if err != nil {
@@ -134,24 +138,28 @@ func TestGetEventYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     3,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     4,
 	}
 	db.AddEventYear(*eventYear1)
 	db.AddEventYear(*eventYear2)
@@ -239,24 +247,28 @@ func TestGetEventYears(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     3,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     4,
 	}
 	db.AddEventYear(*eventYear1)
 	db.AddEventYear(*eventYear2)
@@ -323,24 +335,28 @@ func TestDeleteEventYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	eventYear3 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     3,
 	}
 	eventYear4 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     4,
 	}
 	db.AddEventYear(*eventYear1)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
@@ -398,17 +414,20 @@ func TestUpdateEventYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	eventYear1, _ = db.AddEventYear(*eventYear1)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	eventYear1.DateTime = time.Date(2000, 10, 05, 10, 10, 0, 0, time.Local)
 	eventYear1.Live = true
+	eventYear1.DaysAllowed = 4
 	err = db.UpdateEventYear(*eventYear1)
 	if err != nil {
 		t.Fatalf("Error updating event year: %v", err)

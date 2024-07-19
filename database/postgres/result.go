@@ -34,7 +34,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
 				eventYearID,
 				bib,
@@ -46,7 +46,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=$1 AND bib=$2 ORDER BY seconds ASC;",
 				eventYearID,
 				bib,
@@ -59,7 +59,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person WHERE "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person WHERE "+
 						"finish=TRUE AND event_year_id=$1 AND distance=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
 					eventYearID,
 					distance,
@@ -71,7 +71,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person WHERE "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person WHERE "+
 						"finish=TRUE AND event_year_id=$1 AND distance=$2 ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -83,7 +83,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person WHERE "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person WHERE "+
 						"event_year_id=$1 AND distance=$2 ORDER BY seconds ASC LIMIT $3 OFFSET $4;",
 					eventYearID,
 					distance,
@@ -95,7 +95,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person WHERE "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person WHERE "+
 						"event_year_id=$1 AND distance=$2 ORDER BY seconds ASC;",
 					eventYearID,
 					distance,
@@ -107,7 +107,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -123,7 +123,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 					ctx,
 					"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 						"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-						"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+						"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 						"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 						"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 						"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -140,7 +140,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
 				eventYearID,
 				limit,
@@ -151,7 +151,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE event_year_id=$1 ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -162,7 +162,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=$1 ORDER BY seconds ASC LIMIT $2 OFFSET $3;",
 				eventYearID,
 				limit,
@@ -173,7 +173,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result NATURAL JOIN person "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result NATURAL JOIN person "+
 					"WHERE finish=TRUE AND event_year_id=$1 ORDER BY seconds ASC;",
 				eventYearID,
 			)
@@ -184,7 +184,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -199,7 +199,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 				ctx,
 				"SELECT bib, first, last, age, gender, age_group, distance, seconds, milliseconds, "+
 					"chip_seconds, chip_milliseconds, segment, location, occurence, ranking, age_ranking, "+
-					"gender_ranking, finish, result_type, anonymous, alternate_id FROM result r NATURAL JOIN person p "+
+					"gender_ranking, finish, result_type, anonymous, alternate_id, local_time FROM result r NATURAL JOIN person p "+
 					"JOIN (SELECT bib AS mx_bib, event_year_id AS mx_event_year_id, MAX(seconds) as mx_seconds "+
 					"FROM result NATURAL JOIN person GROUP BY bib, event_year_id, segment) b "+
 					"ON b.mx_bib=p.bib AND b.mx_event_year_id=p.event_year_id "+
@@ -239,6 +239,7 @@ func (p *Postgres) getResultsInternal(eventYearID int64, bib *string, rtype Resu
 			&result.Type,
 			&anonymous,
 			&result.PersonId,
+			&result.LocalTime,
 		)
 		result.Anonymous = anonymous != 0
 		if err != nil {
@@ -455,9 +456,10 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"age_ranking, "+
 				"gender_ranking, "+
 				"finish, "+
-				"result_type"+
+				"result_type, "+
+				"local_time"+
 				") "+
-				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "+
+				" VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) "+
 				"ON CONFLICT (person_id, location, occurence) DO UPDATE SET "+
 				"seconds=$2, "+
 				"milliseconds=$3, "+
@@ -468,7 +470,8 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 				"age_ranking=$10, "+
 				"gender_ranking=$11, "+
 				"finish=$12, "+
-				"result_type=$13;",
+				"result_type=$13, "+
+				"local_time=$14;",
 			id,
 			result.Seconds,
 			result.Milliseconds,
@@ -482,6 +485,7 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 			result.GenderRanking,
 			result.Finish,
 			result.Type,
+			result.LocalTime,
 		)
 		if err != nil {
 			tx.Rollback(ctx)
