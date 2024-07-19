@@ -178,7 +178,7 @@ func TestAddParticipants(t *testing.T) {
 	for _, temp := range participants {
 		upd = append(upd, types.Participant{
 			AlternateId: temp.AlternateId,
-			Bib:         temp.Bib + "new",
+			Bib:         temp.Bib,
 			Birthdate:   "2/2/1975",
 			AgeGroup:    "newgroup",
 			First:       "Update!",
@@ -228,6 +228,75 @@ func TestAddParticipants(t *testing.T) {
 					assert.Equal(t, outer.Birthdate, inner.Birthdate)
 					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
 					assert.Equal(t, outer.Bib, inner.Bib)
+					assert.Equal(t, outer.Distance, inner.Distance)
+					assert.Equal(t, outer.First, inner.First)
+					assert.Equal(t, outer.Gender, inner.Gender)
+					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
+					assert.Equal(t, outer.AlternateId, inner.AlternateId)
+					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+					assert.Equal(t, outer.Mobile, inner.Mobile)
+					assert.Equal(t, outer.Apparel, inner.Apparel)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	} // test update (bib should not update)
+	upd = make([]types.Participant, 0)
+	for _, temp := range participants {
+		upd = append(upd, types.Participant{
+			AlternateId: temp.AlternateId,
+			Bib:         temp.Bib + "new",
+			Birthdate:   "2/2/1975",
+			AgeGroup:    "newgroup",
+			First:       "Update!",
+			Last:        "test",
+			Distance:    "12 Mile Fun",
+			Gender:      "U",
+			Anonymous:   true,
+			SMSEnabled:  true,
+			Mobile:      "empty",
+			Apparel:     "moreempty",
+		})
+	}
+	p, err = db.AddParticipants(eventYear.Identifier, upd)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(upd), len(p))
+		for _, outer := range upd {
+			found := false
+			for _, inner := range p {
+				if outer.AlternateId == inner.AlternateId {
+					assert.True(t, outer.Equals(&inner))
+					assert.Equal(t, outer.Birthdate, inner.Birthdate)
+					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+					assert.Equal(t, outer.Bib, inner.Bib)
+					assert.Equal(t, outer.Distance, inner.Distance)
+					assert.Equal(t, outer.First, inner.First)
+					assert.Equal(t, outer.Gender, inner.Gender)
+					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
+					assert.Equal(t, outer.AlternateId, inner.AlternateId)
+					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+					assert.Equal(t, outer.Mobile, inner.Mobile)
+					assert.Equal(t, outer.Apparel, inner.Apparel)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+	p, err = db.GetParticipants(eventYear.Identifier)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(upd), len(p))
+		for _, outer := range upd {
+			found := false
+			for _, inner := range p {
+				if outer.AlternateId == inner.AlternateId {
+					assert.False(t, outer.Equals(&inner))
+					assert.Equal(t, outer.Birthdate, inner.Birthdate)
+					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+					assert.NotEqual(t, outer.Bib, inner.Bib)
 					assert.Equal(t, outer.Distance, inner.Distance)
 					assert.Equal(t, outer.First, inner.First)
 					assert.Equal(t, outer.Gender, inner.Gender)
