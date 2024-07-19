@@ -128,7 +128,8 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE linked_accounts;"+
+		"DROP TABLE sms_subscriptions;"+
+			"DROP TABLE linked_accounts;"+
 			"DROP TABLE segments;"+
 			"DROP TABLE participant;"+
 			"DROP TABLE chips;"+
@@ -250,6 +251,7 @@ func (s *SQLite) createTables() error {
 				"year VARCHAR(20) NOT NULL, " +
 				"date_time DATETIME NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
+				"days_allowed INT NOT NULL DEFAULT 1, " +
 				"year_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"year_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
 				"year_deleted BOOL DEFAULT FALSE, " +
@@ -293,6 +295,7 @@ func (s *SQLite) createTables() error {
 				"gender_ranking INT DEFAULT -1, " +
 				"finish BOOL DEFAULT TRUE, " +
 				"result_type INT DEFAULT 0, " +
+				"local_time VARCHAR(100) NOT NULL DEFAULT '', " +
 				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +
@@ -377,6 +380,7 @@ func (s *SQLite) createTables() error {
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
+		// LINKED ACCOUNTS TABLE
 		{
 			name: "CreateLinkedAccountsTable",
 			query: "CREATE TABLE IF NOT EXISTS linked_accounts(" +
@@ -385,6 +389,18 @@ func (s *SQLite) createTables() error {
 				"CONSTRAINT unique_link UNIQUE (main_account_id, sub_account_id), " +
 				"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
 				"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
+				");",
+		},
+		// SMS SUBSCRIPTIONS TABLE
+		{
+			name: "CreateSMSSubscriptionsTable",
+			query: "CREATE TABLE IF NOT EXISTS sms_subscriptions(" +
+				"event_year_id BIGINT NOT NULL, " +
+				"bib VARCHAR(100) NOT NULL, " +
+				"first VARCHAR(100) NOT NULL, " +
+				"last VARCHAR(100) NOT NULL, " +
+				"phone VARCHAR(15) NOT NULL, " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -833,6 +849,41 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"FOREIGN KEY (main_account_id) REFERENCES account(account_id)," +
 					"FOREIGN KEY (sub_account_id) REFERENCES account(account_id)" +
 					");",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 15 && newVersion >= 15 {
+		log.Info("Updating to database version 15.")
+		queries := []myQuery{
+			// SMS SUBSCRIPTIONS TABLE
+			{
+				name: "CreateSMSSubscriptionsTable",
+				query: "CREATE TABLE IF NOT EXISTS sms_subscriptions(" +
+					"event_year_id BIGINT NOT NULL, " +
+					"bib VARCHAR(100) NOT NULL, " +
+					"first VARCHAR(100) NOT NULL, " +
+					"last VARCHAR(100) NOT NULL, " +
+					"phone VARCHAR(15) NOT NULL, " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
+			},
+			{
+				name:  "AlterEventYearTable",
+				query: "ALTER TABLE event_year ADD COLUMN days_allowed INT NOT NULL DEFAULT 1;",
+			},
+			{
+				name:  "AlterResultTable",
+				query: "ALTER TABLE result ADD COLUMN local_time VARCHAR(100) NOT NULL DEFAULT '';",
 			},
 		}
 		for _, q := range queries {
