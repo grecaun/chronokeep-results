@@ -400,6 +400,7 @@ func (s *SQLite) createTables() error {
 				"first VARCHAR(100) NOT NULL, " +
 				"last VARCHAR(100) NOT NULL, " +
 				"phone VARCHAR(15) NOT NULL, " +
+				"CONSTRAINT one_subscription UNIQUE (event_year_id, bib, first, last, phone), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
@@ -874,6 +875,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"first VARCHAR(100) NOT NULL, " +
 					"last VARCHAR(100) NOT NULL, " +
 					"phone VARCHAR(15) NOT NULL, " +
+					"CONSTRAINT one_subscription UNIQUE (event_year_id, bib, first, last, phone), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 					");",
 			},

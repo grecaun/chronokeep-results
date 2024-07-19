@@ -22,7 +22,7 @@ func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
 		email,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("erorr retrieving key: %v", err)
+		return nil, fmt.Errorf("error retrieving key: %v", err)
 	}
 	defer res.Close()
 	var outKeys []types.Key
@@ -58,7 +58,7 @@ func (p *Postgres) GetKey(key string) (*types.Key, error) {
 		key,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("erorr retrieving key: %v", err)
+		return nil, fmt.Errorf("error retrieving key: %v", err)
 	}
 	defer res.Close()
 	var outKey types.Key

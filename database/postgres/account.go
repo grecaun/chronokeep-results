@@ -445,7 +445,7 @@ func (p *Postgres) ChangeEmail(oldEmail, newEmail string) error {
 		oldEmail,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating account email: %v", err)
+		return fmt.Errorf("error updating account email: %v", err)
 	}
 	if res.RowsAffected() != 1 {
 		return fmt.Errorf("error changing email, rows affected: %v", res.RowsAffected())
@@ -481,7 +481,7 @@ func (p *Postgres) InvalidPassword(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating invalid password information: %v", err)
+		return fmt.Errorf("error updating invalid password information: %v", err)
 	}
 	if res.RowsAffected() != 1 {
 		return fmt.Errorf("error updating invalid password information, rows affected: %v", res.RowsAffected())
@@ -510,7 +510,7 @@ func (p *Postgres) ValidPassword(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating valid password information: %v", err)
+		return fmt.Errorf("error updating valid password information: %v", err)
 	}
 	return nil
 }
@@ -532,7 +532,7 @@ func (p *Postgres) UnlockAccount(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr unlocking account: %v", err)
+		return fmt.Errorf("error unlocking account: %v", err)
 	}
 	if res.RowsAffected() != 1 {
 		return fmt.Errorf("error unlocking account, rows affected: %v", res.RowsAffected())
