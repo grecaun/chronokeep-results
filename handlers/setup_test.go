@@ -5,6 +5,7 @@ import (
 	"chronokeep/results/database/sqlite"
 	"chronokeep/results/types"
 	"chronokeep/results/util"
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -153,7 +154,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			ValidUntil:        nil,
 		},
 		{
-			AccountIdentifier: output.accounts[0].Identifier,
+			AccountIdentifier: output.accounts[1].Identifier,
 			Name:              "expired2",
 			Value:             "030001-1ACSDD-K2389A-001230B",
 			Type:              "delete",
@@ -186,6 +187,13 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Name:              "Event 2",
 			Slug:              "event2",
 			ContactEmail:      "event2@test.com",
+			AccessRestricted:  true,
+		},
+		{
+			AccountIdentifier: output.accounts[1].Identifier,
+			Name:              "Event 3",
+			Slug:              "event3",
+			ContactEmail:      "event3@test.com",
 			AccessRestricted:  true,
 		},
 	} {
@@ -235,6 +243,13 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2019, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 		},
+		{
+			EventIdentifier: output.events["event3"].Identifier,
+			Year:            fmt.Sprintf("%v", time.Now().Year()),
+			DateTime:        time.Now(),
+			Live:            false,
+			DaysAllowed:     2,
+		},
 	} {
 		database.AddEventYear(eventYear)
 	}
@@ -251,6 +266,14 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	}
 	for _, eventYear := range evYear {
 		output.eventYears[output.events["event2"].Slug][eventYear.Year] = eventYear
+	}
+	evYear, err = database.GetEventYears(output.events["event3"].Slug)
+	if err != nil {
+		t.Fatalf("Unexpected error getting event years: %v", err)
+	}
+	for _, eventYear := range evYear {
+		fmt.Printf("%v\n", eventYear)
+		output.eventYears[output.events["event3"].Slug][eventYear.Year] = eventYear
 	}
 	// add results
 	t.Log("Adding results.")
@@ -763,6 +786,33 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			}
 		}
 	}
+	output.sms = []types.SmsSubscription{
+		{
+			Bib:   "1001",
+			First: "",
+			Last:  "",
+			Phone: "1235557890",
+		},
+		{
+			Bib:   "",
+			First: "John",
+			Last:  "Smith",
+			Phone: "1325557890",
+		},
+		{
+			Bib:   "100",
+			First: "",
+			Last:  "",
+			Phone: "1235557890",
+		},
+	}
+	database.AddSubscribedPhone(output.eventYears["event1"]["2020"].Identifier, output.sms[1])
+	database.AddSubscribedPhone(output.eventYears["event1"]["2021"].Identifier, output.sms[1])
+	database.AddSubscribedPhone(output.eventYears["event2"]["2020"].Identifier, output.sms[0])
+	database.AddSubscribedPhone(output.eventYears["event2"]["2020"].Identifier, output.sms[1])
+	database.AddSubscribedPhone(output.eventYears["event2"]["2020"].Identifier, output.sms[2])
+	database.AddSubscribedPhone(output.eventYears["event2"]["2021"].Identifier, output.sms[0])
+	database.AddSubscribedPhone(output.eventYears["event2"]["2021"].Identifier, output.sms[2])
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
@@ -791,4 +841,5 @@ type SetupVariables struct {
 	eventYears    map[string]map[string]types.EventYear
 	results       map[string]map[string][]types.Result
 	knownValues   map[string]string
+	sms           []types.SmsSubscription
 }

@@ -50,6 +50,10 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/blocked/emails/unblock", h.RemoveBannedEmail)
 	// Certificate image
 	group.GET("/certificate/:name/:event/:time/:date", h.GetCertificate)
+	// SMS Subscriptions
+	group.POST("/sms", h.GetSmsSubscriptions)
+	group.POST("/sms/add", h.AddSmsSubscription)
+	group.POST("/sms/remove", h.RemoveSmsSubscription)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {

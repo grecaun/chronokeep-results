@@ -978,7 +978,7 @@ func TestGetAllResults(t *testing.T) {
 	// Test valid event invalid year
 	year = "2000"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug: "invalid event",
+		Slug: "event1",
 		Year: &year,
 	})
 	if err != nil {

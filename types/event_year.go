@@ -29,7 +29,8 @@ func (e *EventYear) Equals(other *EventYear) bool {
 	return e.EventIdentifier == other.EventIdentifier &&
 		e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
-		e.Live == other.Live
+		e.Live == other.Live &&
+		e.DaysAllowed == other.DaysAllowed
 }
 
 // Validate Ensures valid data in the structure.

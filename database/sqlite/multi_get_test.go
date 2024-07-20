@@ -118,12 +118,14 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	db.AddEventYear(eventYear1)
 	db.AddEventYear(eventYear2)
@@ -191,12 +193,14 @@ func TestGetEventAndYear(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
 	}
 	eventYear2 := types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     2,
 	}
 	db.AddEventYear(eventYear1)
 	db.AddEventYear(eventYear2)
