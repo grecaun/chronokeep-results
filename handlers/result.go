@@ -307,12 +307,17 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	if person == nil {
 		return getAPIError(c, http.StatusNotFound, "Person Not Found", nil)
 	}
+	segments, err := database.GetSegments(mult.EventYear.Identifier)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Fetching Segments", nil)
+	}
 	return c.JSON(http.StatusOK, types.GetBibResultsResponse{
 		Event:          *mult.Event,
 		EventYear:      *mult.EventYear,
 		Results:        results,
 		Person:         person,
 		SingleDistance: *mult.DistanceCount == 1,
+		Segments:       segments,
 	})
 }
 

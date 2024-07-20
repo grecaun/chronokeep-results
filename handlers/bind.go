@@ -54,6 +54,10 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/sms", h.GetSmsSubscriptions)
 	group.POST("/sms/add", h.AddSmsSubscription)
 	group.POST("/sms/remove", h.RemoveSmsSubscription)
+	// Segments
+	group.POST("/segments", h.GetSegments)
+	group.POST("/segments/add", h.AddSegments)
+	group.POST("/segments/remove", h.RemoveSegments)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {

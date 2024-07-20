@@ -25,6 +25,7 @@ type GetBibResultsResponse struct {
 	Results        []Result  `json:"results"`
 	Person         *Person   `json:"person"`
 	SingleDistance bool      `json:"single_distance"`
+	Segments       []Segment `json:"segments"`
 }
 
 /*
