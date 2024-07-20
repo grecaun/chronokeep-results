@@ -191,6 +191,96 @@ func TestAddSegments(t *testing.T) {
 	}
 }
 
+func TestDistanceGetSegments(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up tests. %v", err)
+	}
+	defer finalize(t)
+	setupSegmentTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	s, err := db.GetDistanceSegments(eventYear.Identifier, segments[0].DistanceName)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(s))
+	}
+	s, err = db.AddSegments(eventYear.Identifier, segments)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(segments), len(s))
+	}
+	s, err = db.GetDistanceSegments(eventYear.Identifier, segments[0].DistanceName)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 1, len(s))
+		for _, outer := range segments[:1] {
+			found := false
+			for _, inner := range s {
+				if outer.Name == inner.Name && outer.DistanceName == inner.DistanceName {
+					assert.Equal(t, outer.Location, inner.Location)
+					assert.Equal(t, outer.DistanceName, inner.DistanceName)
+					assert.Equal(t, outer.Name, inner.Name)
+					assert.Equal(t, outer.DistanceValue, inner.DistanceValue)
+					assert.Equal(t, outer.DistanceUnit, inner.DistanceUnit)
+					assert.Equal(t, outer.GPS, inner.GPS)
+					assert.Equal(t, outer.MapLink, inner.MapLink)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+	s, err = db.GetDistanceSegments(eventYear.Identifier, segments[1].DistanceName)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(s))
+		for _, outer := range segments[1:3] {
+			found := false
+			for _, inner := range s {
+				if outer.Name == inner.Name && outer.DistanceName == inner.DistanceName {
+					assert.Equal(t, outer.Location, inner.Location)
+					assert.Equal(t, outer.DistanceName, inner.DistanceName)
+					assert.Equal(t, outer.Name, inner.Name)
+					assert.Equal(t, outer.DistanceValue, inner.DistanceValue)
+					assert.Equal(t, outer.DistanceUnit, inner.DistanceUnit)
+					assert.Equal(t, outer.GPS, inner.GPS)
+					assert.Equal(t, outer.MapLink, inner.MapLink)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+	s, err = db.GetDistanceSegments(eventYear.Identifier, segments[3].DistanceName)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 2, len(s))
+		for _, outer := range segments[3:] {
+			found := false
+			for _, inner := range s {
+				if outer.Name == inner.Name && outer.DistanceName == inner.DistanceName {
+					assert.Equal(t, outer.Location, inner.Location)
+					assert.Equal(t, outer.DistanceName, inner.DistanceName)
+					assert.Equal(t, outer.Name, inner.Name)
+					assert.Equal(t, outer.DistanceValue, inner.DistanceValue)
+					assert.Equal(t, outer.DistanceUnit, inner.DistanceUnit)
+					assert.Equal(t, outer.GPS, inner.GPS)
+					assert.Equal(t, outer.MapLink, inner.MapLink)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+}
+
 func TestGetSegments(t *testing.T) {
 	db, finalize, err := setupTests(t)
 	if err != nil {

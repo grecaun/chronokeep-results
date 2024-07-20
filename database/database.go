@@ -109,6 +109,7 @@ type Database interface {
 	GetSubscribedPhones(eventYearID int64) ([]types.SmsSubscription, error)
 	// Segment functions
 	AddSegments(eventYearID int64, segments []types.Segment) ([]types.Segment, error)
+	GetDistanceSegments(eventYearID int64, distance string) ([]types.Segment, error)
 	GetSegments(eventYearID int64) ([]types.Segment, error)
 	DeleteSegments(eventYearID int64) (int64, error)
 	// Close the database.

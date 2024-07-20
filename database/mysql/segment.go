@@ -78,6 +78,46 @@ func (m *MySQL) AddSegments(eventYearID int64, segments []types.Segment) ([]type
 	return output, nil
 }
 
+func (m *MySQL) GetDistanceSegments(eventYearID int64, distance string) ([]types.Segment, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT segment_id, location_name, distance_name, segment_name, "+
+			"segment_distance, segment_distance_unit, segment_gps, "+
+			"segment_map_link FROM segments WHERE event_year_id=? AND distance_name=?;",
+		eventYearID,
+		distance,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving segments: %v", err)
+	}
+	defer res.Close()
+	output := make([]types.Segment, 0)
+	for res.Next() {
+		var seg types.Segment
+		err := res.Scan(
+			&seg.Identifier,
+			&seg.Location,
+			&seg.DistanceName,
+			&seg.Name,
+			&seg.DistanceValue,
+			&seg.DistanceUnit,
+			&seg.GPS,
+			&seg.MapLink,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting segment: %v", err)
+		}
+		output = append(output, seg)
+	}
+	return output, nil
+}
+
 func (m *MySQL) GetSegments(eventYearID int64) ([]types.Segment, error) {
 	db, err := m.GetDB()
 	if err != nil {
