@@ -375,8 +375,8 @@ func TestUpgrade(t *testing.T) {
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
 		Live:            false,
 	}
-	_, _ = db.AddEventYear(*eventYear1)
-	eventYear1, err = db.GetEventYear(event1.Slug, eventYear1.Year)
+	_, _ = db.oldAddEventYear(*eventYear1)
+	eventYear1, err = db.oldGetEventYear(event1.Slug, eventYear1.Year)
 	if err != nil {
 		t.Fatalf("Error adding event year: %v", err)
 	}

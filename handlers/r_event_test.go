@@ -1637,7 +1637,7 @@ func TestRDeleteEvent(t *testing.T) {
 	event := types.Event{
 		AccountIdentifier: variables.accounts[1].Identifier,
 		Name:              "Test Event 3",
-		Slug:              "event3",
+		Slug:              "event4",
 		ContactEmail:      "email@test.com",
 		AccessRestricted:  false,
 		Type:              "distance",

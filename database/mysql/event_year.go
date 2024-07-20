@@ -7,6 +7,42 @@ import (
 	"time"
 )
 
+// oldGetEventYear The old getter for an event year.
+func (m *MySQL) oldGetEventYear(event_slug, year string) (*types.EventYear, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT event_year_id, event_id, year, date_time, live FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
+		event_slug,
+		year,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving event year: %v", err)
+	}
+	defer res.Close()
+	var outEventYear types.EventYear
+	if res.Next() {
+		err := res.Scan(
+			&outEventYear.Identifier,
+			&outEventYear.EventIdentifier,
+			&outEventYear.Year,
+			&outEventYear.DateTime,
+			&outEventYear.Live,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting event year: %v", err)
+		}
+	} else {
+		return nil, nil
+	}
+	return &outEventYear, nil
+}
+
 // GetEventYear Gets an event year for an event with a slug and a specific year.
 func (m *MySQL) GetEventYear(event_slug, year string) (*types.EventYear, error) {
 	db, err := m.GetDB()
@@ -78,6 +114,39 @@ func (m *MySQL) GetEventYears(event_slug string) ([]types.EventYear, error) {
 		outEventYears = append(outEventYears, year)
 	}
 	return outEventYears, nil
+}
+
+// oldAddEventYear Old function that adds an event year to the database
+func (m *MySQL) oldAddEventYear(year types.EventYear) (*types.EventYear, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"INSERT INTO event_year(event_id, year, date_time, live) VALUES (?, ?, ?, ?);",
+		year.EventIdentifier,
+		year.Year,
+		year.DateTime,
+		year.Live,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add event year: %v", err)
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine ID for event year: %v", err)
+	}
+	return &types.EventYear{
+		Identifier:      id,
+		EventIdentifier: year.EventIdentifier,
+		Year:            year.Year,
+		DateTime:        year.DateTime,
+		Live:            year.Live,
+		DaysAllowed:     year.DaysAllowed,
+	}, nil
 }
 
 // AddEventYear Adds an event year to the database.

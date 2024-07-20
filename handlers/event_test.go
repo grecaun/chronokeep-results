@@ -383,7 +383,7 @@ func TestGetMyEvents(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetEventsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 1, len(resp.Events))
+			assert.Equal(t, 2, len(resp.Events))
 		}
 	}
 }
@@ -397,7 +397,7 @@ func TestAddEvent(t *testing.T) {
 	h.Setup()
 	event := types.Event{
 		Name:             "Test Event 3",
-		Slug:             "event3",
+		Slug:             "event4",
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
 		Type:             "distance",
@@ -506,7 +506,7 @@ func TestAddEvent(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddEvent(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		nEv, err := database.GetEvent("event3")
+		nEv, err := database.GetEvent("event4")
 		if assert.NoError(t, err) {
 			assert.Equal(t, event.Name, nEv.Name)
 			assert.Equal(t, event.Slug, nEv.Slug)
@@ -1123,7 +1123,7 @@ func TestDeleteEvent(t *testing.T) {
 	e := echo.New()
 	h := Handler{}
 	body, err := json.Marshal(types.DeleteEventRequest{
-		Slug: "event3",
+		Slug: "event4",
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -1264,7 +1264,7 @@ func TestDeleteEvent(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.DeleteEvent(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		nEv, err := database.GetEvent("event3")
+		nEv, err := database.GetEvent("event2")
 		if assert.NoError(t, err) {
 			assert.Nil(t, nEv)
 		}
