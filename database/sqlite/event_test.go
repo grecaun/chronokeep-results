@@ -244,7 +244,13 @@ func TestGetAccountEvents(t *testing.T) {
 	account1, _ := db.AddAccount(accounts[0])
 	account2, _ := db.AddAccount(accounts[1])
 	account3, _ := db.AddAccount(accounts[2])
-	registration, _ := db.AddAccount(accounts[3])
+	registration, _ := db.AddAccount(
+		types.Account{
+			Name:     "Registration",
+			Email:    "registration@test.com",
+			Type:     "registration",
+			Password: testHashPassword("password"),
+		})
 	_ = db.LinkAccounts(*account1, *registration)
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
