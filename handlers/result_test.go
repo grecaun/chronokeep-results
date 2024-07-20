@@ -501,7 +501,12 @@ func TestGetResults(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetResults(c)) {
-		assert.Equal(t, http.StatusNotFound, response.Code)
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, 0, len(resp.Results))
+		}
 	}
 	// Test valid key with restricted event
 	t.Log("Testing restricted event but unauthorized key.")
@@ -1009,7 +1014,12 @@ func TestGetAllResults(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetAllResults(c)) {
-		assert.Equal(t, http.StatusNotFound, response.Code)
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, 0, len(resp.Results))
+		}
 	}
 	// Test valid key with restricted event
 	t.Log("Testing restricted event but unauthorized key.")
@@ -1517,7 +1527,12 @@ func TestGetFinishResults(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetFinishResults(c)) {
-		assert.Equal(t, http.StatusNotFound, response.Code)
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, 0, len(resp.Results))
+		}
 	}
 	// Test valid key with restricted event
 	t.Log("Testing restricted event but unauthorized key.")
