@@ -33,6 +33,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		events:        make(map[string]types.Event),
 		eventYears:    make(map[string]map[string]types.EventYear),
 		results:       make(map[string]map[string][]types.Result),
+		segments:      make(map[string]map[string][]types.Segment),
 	}
 	// add accounts
 	t.Log("Adding accounts.")
@@ -208,6 +209,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			output.events[event.Slug] = event
 			output.eventYears[event.Slug] = make(map[string]types.EventYear)
 			output.results[event.Slug] = make(map[string][]types.Result)
+			output.segments[event.Slug] = make(map[string][]types.Segment)
 		}
 	}
 	// add event years, two per event
@@ -813,6 +815,47 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	database.AddSubscribedPhone(output.eventYears["event2"]["2020"].Identifier, output.sms[2])
 	database.AddSubscribedPhone(output.eventYears["event2"]["2021"].Identifier, output.sms[0])
 	database.AddSubscribedPhone(output.eventYears["event2"]["2021"].Identifier, output.sms[2])
+	segs := []types.Segment{
+		{
+			Location:      "Half Marathon",
+			DistanceName:  "Marathon",
+			Name:          "13.1 Miles",
+			DistanceValue: 13.1,
+			DistanceUnit:  "Mi",
+			GPS:           "https://maps.google.com",
+			MapLink:       "https://maps.google.com",
+		},
+		{
+			Location:      "7 Mile",
+			DistanceName:  "Marathon",
+			Name:          "7 Miles",
+			DistanceValue: 7.0,
+			DistanceUnit:  "Mi",
+			GPS:           "https://maps.google.com",
+			MapLink:       "https://maps.google.com",
+		},
+		{
+			Location:      "21 Mile",
+			DistanceName:  "Marathon",
+			Name:          "21 Miles",
+			DistanceValue: 21.0,
+			DistanceUnit:  "Mi",
+			GPS:           "https://maps.google.com",
+			MapLink:       "https://maps.google.com",
+		},
+		{
+			Location:      "21 Mile",
+			DistanceName:  "Half Marathon",
+			Name:          "8 Miles",
+			DistanceValue: 8.0,
+			DistanceUnit:  "Mi",
+			GPS:           "https://maps.google.com",
+			MapLink:       "https://maps.google.com",
+		},
+	}
+	output.segments["event1"]["2020"], _ = database.AddSegments(output.eventYears["event1"]["2020"].Identifier, segs)
+	output.segments["event1"]["2021"], _ = database.AddSegments(output.eventYears["event1"]["2021"].Identifier, segs)
+	output.segments["event2"]["2020"], _ = database.AddSegments(output.eventYears["event2"]["2020"].Identifier, segs)
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
@@ -842,4 +885,5 @@ type SetupVariables struct {
 	results       map[string]map[string][]types.Result
 	knownValues   map[string]string
 	sms           []types.SmsSubscription
+	segments      map[string]map[string][]types.Segment
 }

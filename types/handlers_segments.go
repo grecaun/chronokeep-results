@@ -12,7 +12,7 @@ type AddSegmentsResponse struct {
 	Segments []Segment `json:"segments"`
 }
 
-type RemoveSegmentsResponse struct {
+type DeleteSegmentsResponse struct {
 	Count int64 `json:"count"`
 }
 
@@ -31,7 +31,7 @@ type AddSegmentsRequest struct {
 	Segments []Segment `json:"segments"`
 }
 
-type RemoveSegmentsRequest struct {
+type DeleteSegmentsRequest struct {
 	Slug string `json:"slug"`
 	Year string `json:"year"`
 }

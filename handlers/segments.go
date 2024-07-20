@@ -75,7 +75,7 @@ func (h Handler) AddSegments(c echo.Context) error {
 	}
 	var segToAdd []types.Segment
 	for _, seg := range request.Segments {
-		if err := seg.Validate(h.validate); err != nil {
+		if err := seg.Validate(h.validate); err == nil {
 			segToAdd = append(segToAdd, seg)
 		}
 	}
@@ -119,7 +119,7 @@ func (h Handler) AddSegments(c echo.Context) error {
 	})
 }
 
-func (h Handler) RemoveSegments(c echo.Context) error {
+func (h Handler) DeleteSegments(c echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -128,7 +128,7 @@ func (h Handler) RemoveSegments(c echo.Context) error {
 	if k == nil {
 		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
 	}
-	var request types.RemoveSegmentsRequest
+	var request types.DeleteSegmentsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
@@ -168,7 +168,7 @@ func (h Handler) RemoveSegments(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Segments", nil)
 	}
-	return c.JSON(http.StatusOK, types.RemoveSegmentsResponse{
+	return c.JSON(http.StatusOK, types.DeleteSegmentsResponse{
 		Count: count,
 	})
 }

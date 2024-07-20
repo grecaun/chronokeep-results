@@ -470,7 +470,7 @@ func TestGetResults(t *testing.T) {
 	// Test valid event invalid year
 	year = "2000"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug: "invalid event",
+		Slug: "event2",
 		Year: &year,
 	})
 	if err != nil {
@@ -488,7 +488,7 @@ func TestGetResults(t *testing.T) {
 	year = "2021"
 	distance = "invalid-distance"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug:     "invalid event",
+		Slug:     "event2",
 		Year:     &year,
 		Distance: &distance,
 	})
@@ -996,7 +996,7 @@ func TestGetAllResults(t *testing.T) {
 	year = "2021"
 	distance = "invalid-distance"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug:     "invalid event",
+		Slug:     "event2",
 		Year:     &year,
 		Distance: &distance,
 	})
@@ -1486,7 +1486,7 @@ func TestGetFinishResults(t *testing.T) {
 	// Test valid event invalid year
 	year = "2000"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug: "invalid event",
+		Slug: "event2",
 		Year: &year,
 	})
 	if err != nil {
@@ -1504,7 +1504,7 @@ func TestGetFinishResults(t *testing.T) {
 	year = "2021"
 	distance = "invalid-distance"
 	body, err = json.Marshal(types.GetResultsRequest{
-		Slug:     "invalid event",
+		Slug:     "event2",
 		Year:     &year,
 		Distance: &distance,
 	})
@@ -1931,7 +1931,7 @@ func TestAddResults(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
 	// Test valid event invalid year
-	t.Log("Testing invalid event.")
+	t.Log("Testing valid event invalid year.")
 	body, err = json.Marshal(types.AddResultsRequest{
 		Slug:    variables.events["event2"].Slug,
 		Year:    "invalid-year",
@@ -2416,7 +2416,7 @@ func TestDeleteResults(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
 	// Test valid event invalid year
-	t.Log("Testing invalid event.")
+	t.Log("Testing valid event invalid year.")
 	year = "invalid-year"
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug: variables.events["event2"].Slug,
