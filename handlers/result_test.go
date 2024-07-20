@@ -1646,7 +1646,7 @@ func TestGetBibResults(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	}
 	// Test a valid request
-	t.Log("Testing slug only.")
+	t.Log("Testing valid request - segments.")
 	request = httptest.NewRequest(http.MethodPost, "/results/bib", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
@@ -1672,6 +1672,54 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, variables.results["event1"]["2021"][0], resp.Results[0])
 			// second result
 			assert.Equal(t, variables.results["event1"]["2021"][300], resp.Results[1])
+			// segments
+			assert.Equal(t, 3, len(resp.Segments))
+			for _, outer := range resp.Segments {
+				found := false
+				for _, inner := range variables.segments["event1"]["2021"] {
+					if outer.Equals(inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+	}
+	// Test a valid request
+	t.Log("Testing valid request - no segments.")
+	body, err = json.Marshal(types.GetBibResultsRequest{
+		Slug: variables.events["event1"].Slug,
+		Year: variables.eventYears["event1"]["2021"].Year,
+		Bib:  "301",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/bib", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetBibResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetBibResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 1, len(resp.Results))
+			assert.Equal(t, variables.events["event1"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event1"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event1"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event1"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
+			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
+			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
+			assert.NotNil(t, resp.Person)
+			// first result
+			assert.Equal(t, variables.results["event1"]["2021"][601], resp.Results[0])
+			// segments
+			assert.Equal(t, 0, len(resp.Segments))
 		}
 	}
 	// Test invalid event
