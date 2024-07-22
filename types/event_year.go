@@ -26,8 +26,7 @@ type RequestYear struct {
 }
 
 func (e *EventYear) Equals(other *EventYear) bool {
-	return e.EventIdentifier == other.EventIdentifier &&
-		e.Year == other.Year &&
+	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
 		e.Live == other.Live &&
 		e.DaysAllowed == other.DaysAllowed
@@ -52,15 +51,16 @@ func (e *RequestYear) Validate(validate *validator.Validate) error {
 // ToYear Turns a RequestYear into a year object.
 func (e RequestYear) ToYear() EventYear {
 	out := EventYear{
-		Year: e.Year,
-		Live: e.Live,
+		Year:        e.Year,
+		Live:        e.Live,
+		DaysAllowed: e.DaysAllowed,
 	}
 	d, err := time.Parse(time.RFC3339, e.DateTime)
 	if err == nil {
 		out.DateTime = d
 		return out
 	}
-	d, err = time.ParseInLocation("2006/01/02 15:04:05", e.DateTime, time.Local)
+	d, err = time.Parse("2006/01/02 15:04:05 -07:00", e.DateTime)
 	if err == nil {
 		out.DateTime = d
 		return out
@@ -75,7 +75,7 @@ func (e RequestYear) GetDateTime() time.Time {
 	if err == nil {
 		return d
 	}
-	d, err = time.ParseInLocation("2006/01/02 15:04:05", e.DateTime, time.Local)
+	d, err = time.Parse("2006/01/02 15:04:05 -07:00", e.DateTime)
 	if err == nil {
 		return d
 	}

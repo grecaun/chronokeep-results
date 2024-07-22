@@ -91,6 +91,7 @@ func TestGetEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
+			assert.Equal(t, variables.eventYears["event1"]["2020"].DaysAllowed, resp.EventYear.DaysAllowed)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime.Local())
 		}
 	}
@@ -171,6 +172,7 @@ func TestGetEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.EventYear.Live)
+			assert.Equal(t, variables.eventYears["event2"]["2020"].DaysAllowed, resp.EventYear.DaysAllowed)
 			assert.Equal(t, variables.eventYears["event2"]["2020"].DateTime.Local(), resp.EventYear.DateTime.Local())
 		}
 	}
@@ -355,6 +357,15 @@ func TestGetEventYears(t *testing.T) {
 		var resp types.EventYearsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, len(variables.eventYears["event1"]), len(resp.EventYears))
+			for _, outer := range variables.eventYears["event1"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.Equals(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
 		}
 	}
 	// Test invalid event
@@ -386,7 +397,7 @@ func TestAddEventYear(t *testing.T) {
 		Slug: variables.events["event1"].Slug,
 		EventYear: types.RequestYear{
 			Year:     "2022",
-			DateTime: "2022/04/05 9:00:00",
+			DateTime: "2022/04/05 9:00:00 -07:00",
 			Live:     false,
 		},
 	})
@@ -487,7 +498,7 @@ func TestAddEventYear(t *testing.T) {
 		Slug: "unknown-event",
 		EventYear: types.RequestYear{
 			Year:     "2022",
-			DateTime: "2022/04/05 9:00:00",
+			DateTime: "2022/04/05 9:00:00 -07:00",
 			Live:     false,
 		},
 	})
@@ -506,7 +517,7 @@ func TestAddEventYear(t *testing.T) {
 	// Test wrong account key
 	eYear := types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/05 09:00:00",
+		DateTime: "2022/04/05 09:00:00 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -527,9 +538,10 @@ func TestAddEventYear(t *testing.T) {
 	}
 	// Test valid request
 	eYear = types.RequestYear{
-		Year:     "2022",
-		DateTime: "2022/04/05 09:00:00",
-		Live:     false,
+		Year:        "2022",
+		DateTime:    "2022/04/05 09:00:00 +00:00",
+		Live:        false,
+		DaysAllowed: 1,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -550,7 +562,8 @@ func TestAddEventYear(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.Equal(t, eYear.Year, nEv.Year)
 			assert.Equal(t, eYear.Live, nEv.Live)
-			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, nEv.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 		var resp types.EventYearResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
@@ -563,13 +576,14 @@ func TestAddEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, eYear.Year, resp.EventYear.Year)
 			assert.Equal(t, eYear.Live, resp.EventYear.Live)
-			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, resp.EventYear.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 	}
 	// Test valid request 2
 	eYear = types.RequestYear{
 		Year:     "2022-2",
-		DateTime: "2022/05/05 09:00:00",
+		DateTime: "2022/05/05 09:00:00 +00:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -591,7 +605,8 @@ func TestAddEventYear(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.Equal(t, eYear.Year, nEv.Year)
 			assert.Equal(t, eYear.Live, nEv.Live)
-			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, nEv.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 		var resp types.EventYearResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
@@ -604,7 +619,8 @@ func TestAddEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, eYear.Year, resp.EventYear.Year)
 			assert.Equal(t, eYear.Live, resp.EventYear.Live)
-			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, resp.EventYear.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 	}
 	// Test year collision
@@ -622,7 +638,7 @@ func TestAddEventYear(t *testing.T) {
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
 			Year:     "invalid-year",
-			DateTime: "2022/04/05 9:00:00",
+			DateTime: "2022/04/05 9:00:00 +00:00",
 			Live:     false,
 		},
 	})
@@ -671,9 +687,10 @@ func TestUpdateEventYear(t *testing.T) {
 	body, err := json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:     variables.eventYears["event2"]["2021"].Year,
-			DateTime: "2022/04/05 9:00:00",
-			Live:     false,
+			Year:        variables.eventYears["event2"]["2021"].Year,
+			DateTime:    "2022/04/05 9:00:00 -07:00",
+			Live:        false,
+			DaysAllowed: 9,
 		},
 	})
 	if err != nil {
@@ -780,9 +797,10 @@ func TestUpdateEventYear(t *testing.T) {
 	}
 	// Test valid request
 	eYear := types.RequestYear{
-		Year:     variables.eventYears["event2"]["2021"].Year,
-		DateTime: variables.eventYears["event2"]["2021"].DateTime.Add(time.Hour * 48).Format("2006/01/02 15:04:05"),
-		Live:     !variables.eventYears["event2"]["2021"].Live,
+		Year:        variables.eventYears["event2"]["2021"].Year,
+		DateTime:    variables.eventYears["event2"]["2021"].DateTime.Add(time.Hour * 48).Format("2006/01/02 15:04:05 -07:00"),
+		Live:        !variables.eventYears["event2"]["2021"].Live,
+		DaysAllowed: variables.eventYears["event2"]["2021"].DaysAllowed + 2,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -803,7 +821,8 @@ func TestUpdateEventYear(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.Equal(t, eYear.Year, nEv.Year)
 			assert.Equal(t, eYear.Live, nEv.Live)
-			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, nEv.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 		var resp types.EventYearResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
@@ -816,14 +835,16 @@ func TestUpdateEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, eYear.Year, resp.EventYear.Year)
 			assert.Equal(t, eYear.Live, resp.EventYear.Live)
-			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05"))
+			assert.Equal(t, eYear.DaysAllowed, resp.EventYear.DaysAllowed)
+			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
 	}
 	// Test attempt to update year
 	eYear = types.RequestYear{
-		Year:     variables.eventYears["event2"]["2021"].Year + "-2",
-		DateTime: variables.eventYears["event2"]["2021"].DateTime.Add(time.Hour * 48).Format("2006/01/02 15:04:05"),
-		Live:     variables.eventYears["event2"]["2021"].Live,
+		Year:        variables.eventYears["event2"]["2021"].Year + "-2",
+		DateTime:    variables.eventYears["event2"]["2021"].DateTime.Add(time.Hour * 48).Format("2006/01/02 15:04:05 -07:00"),
+		Live:        variables.eventYears["event2"]["2021"].Live,
+		DaysAllowed: variables.eventYears["event2"]["2021"].DaysAllowed + 3,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -832,7 +853,7 @@ func TestUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	t.Log("Testing valid request.")
+	t.Log("Testing attempt to update year - invalid.")
 	request = httptest.NewRequest(http.MethodPut, "/event-year/update", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
