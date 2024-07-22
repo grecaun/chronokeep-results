@@ -92,7 +92,7 @@ func TestGetEventYear(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DaysAllowed, resp.EventYear.DaysAllowed)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime.Local())
+			assert.True(t, variables.eventYears["event1"]["2020"].DateTime.Equal(resp.EventYear.DateTime))
 		}
 	}
 	// Test invalid host
@@ -337,6 +337,15 @@ func TestGetEventYears(t *testing.T) {
 		var resp types.EventYearsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, len(variables.eventYears["event2"]), len(resp.EventYears))
+			for _, outer := range variables.eventYears["event2"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.Equals(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
 		}
 	}
 	// Test valid request
