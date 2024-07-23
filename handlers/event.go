@@ -131,10 +131,15 @@ func (h Handler) GetEvent(c echo.Context) error {
 		}
 	}
 	var res []types.Result
+	var parts []types.Participant
 	if recent != nil {
 		res, err = database.GetResults(recent.Identifier, 0, 0)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
+		}
+		parts, err = database.GetParticipants(recent.Identifier)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving participants", err)
 		}
 	}
 	outRes := make(map[string][]types.Result)
@@ -144,11 +149,16 @@ func (h Handler) GetEvent(c echo.Context) error {
 		}
 		outRes[result.Distance] = append(outRes[result.Distance], result)
 	}
+	outParts := make([]types.ResultParticipant, 0)
+	for _, part := range parts {
+		outParts = append(outParts, part.ToResultParticipant())
+	}
 	return c.JSON(http.StatusOK, types.GetEventResponse{
-		Event:      *event,
-		EventYears: eventYears,
-		Year:       recent,
-		Results:    outRes,
+		Event:        *event,
+		EventYears:   eventYears,
+		Year:         recent,
+		Results:      outRes,
+		Participants: outParts,
 	})
 }
 

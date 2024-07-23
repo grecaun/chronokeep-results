@@ -11,10 +11,11 @@ type GetEventsResponse struct {
 
 // GetEventResponse Struct used for the response of a Get Event request.
 type GetEventResponse struct {
-	Event      Event               `json:"event"`
-	EventYears []EventYear         `json:"event_years"`
-	Year       *EventYear          `json:"year"`
-	Results    map[string][]Result `json:"results"`
+	Event        Event               `json:"event"`
+	EventYears   []EventYear         `json:"event_years"`
+	Year         *EventYear          `json:"year"`
+	Results      map[string][]Result `json:"results"`
+	Participants []ResultParticipant `json:"participants"`
 }
 
 // ModifyEventResponse Struct used for the response of a Add/Update Event request.

@@ -24,6 +24,16 @@ type Participant struct {
 	Apparel     string `json:"apparel"`
 }
 
+// ResultParticipant Describes the information we want publicly available.
+type ResultParticipant struct {
+	Bib      string `json:"bib"`
+	First    string `json:"first"`
+	Last     string `json:"last"`
+	AgeGroup string `json:"age_group"`
+	Gender   string `json:"gender"`
+	Distance string `json:"distance"`
+}
+
 // Validate Ensures valid data in the struct.
 func (p *Participant) Validate(validate *validator.Validate) error {
 	us_layout := "1/2/2006"
@@ -67,4 +77,15 @@ func (p *Participant) SMSInt() int {
 		return 1
 	}
 	return 0
+}
+
+func (p *Participant) ToResultParticipant() ResultParticipant {
+	return ResultParticipant{
+		Bib:      p.Bib,
+		First:    p.First,
+		Last:     p.Last,
+		AgeGroup: p.AgeGroup,
+		Gender:   p.Gender,
+		Distance: p.Distance,
+	}
 }
