@@ -74,6 +74,10 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
+	parts, err := database.GetParticipants(mult.EventYear.Identifier)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
+	}
 	outRes := make(map[string][]types.Result)
 	for _, result := range results {
 		if _, ok := outRes[result.Distance]; !ok {
@@ -81,12 +85,17 @@ func (h Handler) GetResults(c echo.Context) error {
 		}
 		outRes[result.Distance] = append(outRes[result.Distance], result)
 	}
+	outParts := make([]types.ResultParticipant, 0)
+	for _, part := range parts {
+		outParts = append(outParts, part.ToResultParticipant())
+	}
 	return c.JSON(http.StatusOK, types.GetResultsResponse{
-		Event:     *mult.Event,
-		EventYear: *mult.EventYear,
-		Years:     years,
-		Results:   outRes,
-		Count:     len(results),
+		Event:        *mult.Event,
+		EventYear:    *mult.EventYear,
+		Years:        years,
+		Results:      outRes,
+		Count:        len(results),
+		Participants: outParts,
 	})
 }
 
