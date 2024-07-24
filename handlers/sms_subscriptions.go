@@ -116,7 +116,7 @@ func (h Handler) AddSmsSubscription(c echo.Context) error {
 			return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 		}
 	}
-	if request.Bib == nil && (request.First == nil || request.Last == nil) {
+	if (request.Bib == nil) && (request.First == nil || request.Last == nil) {
 		return getAPIError(c, http.StatusBadRequest, "No Participant Identified", nil)
 	}
 	var phone = reg.ReplaceAllString(request.Phone, "")
@@ -134,6 +134,9 @@ func (h Handler) AddSmsSubscription(c echo.Context) error {
 	}
 	if request.Last != nil {
 		last = *request.Last
+	}
+	if len(bib+first+last) < 1 {
+		return getAPIError(c, http.StatusBadRequest, "Bib or First/Last Must Be Set", nil)
 	}
 	err = database.AddSubscribedPhone(mult.EventYear.Identifier, types.SmsSubscription{
 		Bib:   bib,

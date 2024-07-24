@@ -416,6 +416,7 @@ func TestAddSmsSubscription(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
 	// Test valid event invalid year
+	t.Log("Testing valid event invalid year.")
 	year := "2000"
 	body, err = json.Marshal(types.AddSmsSubscriptionRequest{
 		Slug: "event1",
@@ -431,6 +432,31 @@ func TestAddSmsSubscription(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddSmsSubscription(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
+	// Test invalid bib/first/last
+	t.Log("Testing invalid bib/first/last.")
+	year = "2000"
+	bib = ""
+	first = ""
+	last = ""
+	body, err = json.Marshal(types.AddSmsSubscriptionRequest{
+		Slug:  variables.events["event3"].Slug,
+		Year:  &thisYear,
+		Bib:   &bib,
+		First: &first,
+		Last:  &last,
+		Phone: "1122334567",
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/sms/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddSmsSubscription(c)) {
+		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
 	// Test valid key with restricted event
 	t.Log("Testing restricted event but unauthorized key.")

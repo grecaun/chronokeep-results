@@ -642,11 +642,32 @@ func TestAddEventYear(t *testing.T) {
 	if assert.NoError(t, h.AddEventYear(c)) {
 		assert.Equal(t, http.StatusInternalServerError, response.Code)
 	}
-	// Test validation errors -- year
+	// Test validation errors -- year (valid)
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
 			Year:     "invalid-year",
+			DateTime: "2022/04/05 9:00:00 +00:00",
+			Live:     false,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	t.Log("Testing validation errors -- year (valid).")
+	request = httptest.NewRequest(http.MethodPost, "/event-year/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddEventYear(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+	}
+	// Test validation errors -- year
+	body, err = json.Marshal(types.ModifyEventYearRequest{
+		Slug: variables.events["event2"].Slug,
+		EventYear: types.RequestYear{
+			Year:     "invalid-year$_",
 			DateTime: "2022/04/05 9:00:00 +00:00",
 			Live:     false,
 		},
