@@ -318,6 +318,27 @@ func TestAddSmsSubscription(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
+	t.Log("Testing repeat.")
+	request = httptest.NewRequest(http.MethodPost, "/sms/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddSmsSubscription(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		subs, err := database.GetSubscribedPhones(variables.eventYears["event3"][thisYear].Identifier)
+		if assert.NoError(t, err) {
+			assert.Equal(t, 1, len(subs))
+			// event2
+			found := false
+			for _, outer := range subs {
+				if outer.Bib == bib && outer.Phone == "5551234567" {
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
 	// Test with slug and year
 	t.Log("Testing with slug and year.")
 	first := "John"

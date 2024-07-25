@@ -20,7 +20,8 @@ func (m *MySQL) AddSubscribedPhone(eventYearID int64, subscription types.SmsSubs
 	}
 	_, err = tx.ExecContext(
 		ctx,
-		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES (?,?,?,?,?)",
+		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES (?,?,?,?,?) "+
+			"ON DUPLICATE KEY UPDATE bib=VALUES(bib), first=VALUES(first), last=VALUES(last), phone=VALUES(phone);",
 		eventYearID,
 		subscription.Bib,
 		subscription.First,

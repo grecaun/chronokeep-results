@@ -71,7 +71,7 @@ func TestAddSubscribedPhone(t *testing.T) {
 		assert.Equal(t, subs[0].Phone, added[0].Phone)
 	}
 	err = db.AddSubscribedPhone(eventYear.Identifier, subs[0])
-	if assert.Error(t, err) {
+	if assert.NoError(t, err) {
 		added, _ := db.GetSubscribedPhones(eventYear.Identifier)
 		assert.Equal(t, 1, len(added))
 	}

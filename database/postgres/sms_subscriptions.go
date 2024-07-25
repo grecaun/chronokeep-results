@@ -20,7 +20,7 @@ func (p *Postgres) AddSubscribedPhone(eventYearID int64, subscription types.SmsS
 	}
 	_, err = tx.Exec(
 		ctx,
-		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES ($1,$2,$3,$4,$5)",
+		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING;",
 		eventYearID,
 		subscription.Bib,
 		subscription.First,

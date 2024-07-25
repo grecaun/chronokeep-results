@@ -20,7 +20,7 @@ func (s *SQLite) AddSubscribedPhone(eventYearID int64, subscription types.SmsSub
 	}
 	_, err = tx.ExecContext(
 		ctx,
-		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES (?,?,?,?,?)",
+		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING;",
 		eventYearID,
 		subscription.Bib,
 		subscription.First,
