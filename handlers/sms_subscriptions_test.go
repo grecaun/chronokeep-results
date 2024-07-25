@@ -554,6 +554,23 @@ func TestRemoveSmsSubscription(t *testing.T) {
 			assert.Equal(t, 0, len(subs))
 		}
 	}
+	// Test a valid request with just a slug.
+	t.Log("Testing repeat valid request.")
+	subs, err = database.GetSubscribedPhones(variables.eventYears["event2"]["2021"].Identifier)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(subs))
+	}
+	request = httptest.NewRequest(http.MethodPost, "/sms/remove", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RemoveSmsSubscription(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		subs, err := database.GetSubscribedPhones(variables.eventYears["event2"]["2021"].Identifier)
+		if assert.NoError(t, err) {
+			assert.Equal(t, 0, len(subs))
+		}
+	}
 	// Test with slug and year
 	t.Log("Testing with slug and year.")
 	subs, err = database.GetSubscribedPhones(variables.eventYears["event2"]["2020"].Identifier)
