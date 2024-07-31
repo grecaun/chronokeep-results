@@ -10,15 +10,18 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
+	"github.com/twilio/twilio-go/client"
 )
 
 var (
-	database db.Database
-	config   *util.Config
+	database               db.Database
+	config                 *util.Config
+	twilioRequestValidator client.RequestValidator
 )
 
 func Setup(inCfg *util.Config) error {
 	config = inCfg
+	twilioRequestValidator = client.NewRequestValidator(config.TwilioAuthToken)
 	switch config.DBDriver {
 	case "mysql":
 		log.Info("Database set to MySQL")

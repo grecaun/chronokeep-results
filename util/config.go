@@ -76,46 +76,53 @@ func GetConfig() (*Config, error) {
 	admin_name := os.Getenv("ADMIN_NAME")
 	admin_pass := os.Getenv("ADMIN_PASS")
 
+	twilio_auth_token := os.Getenv("TWILIO_AUTH_TOKEN")
+	twilio_response_webhook_url := os.Getenv("TWILIO_RESPONSE_WEBHOOK_URL")
+
 	domain := os.Getenv("DOMAIN")
 
 	return &Config{
-		DBName:         dbName,
-		DBHost:         dbHost,
-		DBPort:         dbPort,
-		DBUser:         dbUser,
-		DBPassword:     dbPassword,
-		DBDriver:       dbDriver,
-		RecordInterval: recordInterval,
-		Port:           port,
-		Development:    development,
-		AutoTLS:        autotls,
-		SecretKey:      secret_key,
-		RefreshKey:     refresh_key,
-		AdminEmail:     admin_email,
-		AdminName:      admin_name,
-		AdminPass:      admin_pass,
-		Domain:         domain,
-		CertificateURL: certificate_url,
+		DBName:                   dbName,
+		DBHost:                   dbHost,
+		DBPort:                   dbPort,
+		DBUser:                   dbUser,
+		DBPassword:               dbPassword,
+		DBDriver:                 dbDriver,
+		RecordInterval:           recordInterval,
+		Port:                     port,
+		Development:              development,
+		AutoTLS:                  autotls,
+		SecretKey:                secret_key,
+		RefreshKey:               refresh_key,
+		AdminEmail:               admin_email,
+		AdminName:                admin_name,
+		AdminPass:                admin_pass,
+		Domain:                   domain,
+		CertificateURL:           certificate_url,
+		TwilioAuthToken:          twilio_auth_token,
+		TwilioResponseWebhookURL: twilio_response_webhook_url,
 	}, nil
 }
 
 // Config is the struct that holds all of the config values for connecting to a database
 type Config struct {
-	DBName         string
-	DBHost         string
-	DBPort         int
-	DBUser         string
-	DBPassword     string
-	DBDriver       string
-	RecordInterval int
-	Port           int
-	Development    bool
-	AutoTLS        bool
-	SecretKey      string
-	RefreshKey     string
-	AdminEmail     string
-	AdminName      string
-	AdminPass      string
-	Domain         string
-	CertificateURL string
+	DBName                   string
+	DBHost                   string
+	DBPort                   int
+	DBUser                   string
+	DBPassword               string
+	DBDriver                 string
+	RecordInterval           int
+	Port                     int
+	Development              bool
+	AutoTLS                  bool
+	SecretKey                string
+	RefreshKey               string
+	AdminEmail               string
+	AdminName                string
+	AdminPass                string
+	Domain                   string
+	CertificateURL           string
+	TwilioAuthToken          string
+	TwilioResponseWebhookURL string
 }

@@ -54,6 +54,7 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/sms", h.GetSmsSubscriptions)
 	group.POST("/sms/add", h.AddSmsSubscription)
 	group.POST("/sms/remove", h.RemoveSmsSubscription)
+	group.POST("/twilio", h.Twilio)
 	// Segments
 	group.POST("/segments", h.GetSegments)
 	group.POST("/segments/add", h.AddSegments)
