@@ -116,6 +116,41 @@ func (s *SQLite) GetEventYears(event_slug string) ([]types.EventYear, error) {
 	return outEventYears, nil
 }
 
+// GetAllEventYears Gets all event years.
+func (s *SQLite) GetAllEventYears() ([]types.EventYear, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving event years: %v", err)
+	}
+	defer res.Close()
+	var outEventYears []types.EventYear
+	for res.Next() {
+		var year types.EventYear
+		err := res.Scan(
+			&year.Identifier,
+			&year.EventIdentifier,
+			&year.Year,
+			&year.DateTime,
+			&year.Live,
+			&year.DaysAllowed,
+		)
+		if err != nil {
+			return nil, nil
+		}
+		outEventYears = append(outEventYears, year)
+	}
+	return outEventYears, nil
+}
+
 // AddEventYear Adds an event year to the database.
 func (s *SQLite) AddEventYear(year types.EventYear) (*types.EventYear, error) {
 	db, err := s.GetDB()

@@ -53,6 +53,65 @@ func (h Handler) GetEventYear(c echo.Context) error {
 	})
 }
 
+func (h Handler) GetAllEventYears(c echo.Context) error {
+	// Get Key from Authorization Header
+	k, err := retrieveKey(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Error Getting Key From Authorization Header", err)
+	}
+	if k == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key Not Provided in Authorization Header", nil)
+	}
+	// Get Key
+	mkey, err := database.GetKeyAndAccount(*k)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key/Account", err)
+	}
+	if mkey == nil || mkey.Key == nil || mkey.Account == nil {
+		return getAPIError(c, http.StatusUnauthorized, "Key/Account Not Found", nil)
+	}
+	// Check for expired key
+	if mkey.Key.Expired() {
+		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
+	}
+	// Check for host being allowed.
+	if !mkey.Key.IsAllowed(c.Request().Referer()) {
+		return getAPIError(c, http.StatusUnauthorized, "Host Not Allowed", nil)
+	}
+	events, err := database.GetAllEvents()
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	eventDict := make(map[int64]types.Event)
+	for _, event := range events {
+		eventDict[event.Identifier] = event
+	}
+	years, err := database.GetAllEventYears()
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	// Only the account owner can access restricted events.
+	output := make([]types.AllEventYear, 0)
+	for _, year := range years {
+		ev, ok := eventDict[year.EventIdentifier]
+		if ok {
+			if !ev.AccessRestricted || mkey.Account.Identifier == ev.AccountIdentifier {
+				output = append(output, types.AllEventYear{
+					Name:        ev.Name,
+					Slug:        ev.Slug,
+					Year:        year.Year,
+					DateTime:    year.DateTime,
+					Live:        year.Live,
+					DaysAllowed: year.DaysAllowed,
+				})
+			}
+		}
+	}
+	return c.JSON(http.StatusOK, types.AllEventYearsResponse{
+		EventYears: output,
+	})
+}
+
 func (h Handler) GetEventYears(c echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())

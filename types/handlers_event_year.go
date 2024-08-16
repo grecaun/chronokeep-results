@@ -15,6 +15,11 @@ type EventYearsResponse struct {
 	EventYears []EventYear `json:"years"`
 }
 
+// AllEventYearsResponse Struct used for the response of a Get All Event Years request.
+type AllEventYearsResponse struct {
+	EventYears []AllEventYear `json:"years"`
+}
+
 /*
 	Requests
 */

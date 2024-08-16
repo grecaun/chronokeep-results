@@ -60,7 +60,7 @@ func (s *SQLite) GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
-func (s *SQLite) getEventsInternal(email *string) ([]types.Event, error) {
+func (s *SQLite) getEventsInternal(email *string, restricted ...bool) ([]types.Event, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
@@ -69,12 +69,21 @@ func (s *SQLite) getEventsInternal(email *string) ([]types.Event, error) {
 	defer cancelfunc()
 	var res *sql.Rows
 	if email == nil {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
-				"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
-		)
+		if len(restricted) > 0 && restricted[0] {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
+			)
+		} else {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+			)
+		}
 	} else {
 		res, err = db.QueryContext(
 			ctx,
@@ -122,9 +131,14 @@ func (s *SQLite) getEventsInternal(email *string) ([]types.Event, error) {
 	return outEvents, nil
 }
 
-// GetEvents Gets all events.
+// GetEvents Gets all events minus restricted.
 func (s *SQLite) GetEvents() ([]types.Event, error) {
 	return s.getEventsInternal(nil)
+}
+
+// GetAllEvents Gets all events.
+func (s *SQLite) GetAllEvents() ([]types.Event, error) {
+	return s.getEventsInternal(nil, true)
 }
 
 // GetAccountsEvents Gets all events associated with an account.

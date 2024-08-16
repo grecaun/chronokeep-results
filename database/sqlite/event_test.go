@@ -222,9 +222,92 @@ func TestGetEvents(t *testing.T) {
 	for _, ev := range events {
 		if ev.RecentTime != nil {
 			found++
-			if ev.RecentTime == nil {
-				t.Errorf("Expected to find a recent time on this event. Found nothing.")
-			} else if !ev.RecentTime.Equal(eventYear1.DateTime) {
+			if !ev.RecentTime.Equal(eventYear1.DateTime) {
+				t.Errorf("Expected time %v, found %v", eventYear1.DateTime, ev.RecentTime)
+			}
+		}
+	}
+	if found != 1 {
+		t.Errorf("Expected to find %v events with times, found %v.", 1, found)
+	}
+}
+
+func TestGetAllEvents(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up test. %v", err)
+	}
+	defer finalize(t)
+	setupEventTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	event1 := types.Event{
+		AccountIdentifier: account1.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+		ContactEmail:      "event1@test.com",
+		AccessRestricted:  false,
+	}
+	event2 := types.Event{
+		AccountIdentifier: account2.Identifier,
+		Name:              "Event 2",
+		Slug:              "event2",
+		ContactEmail:      "event2@test.com",
+		AccessRestricted:  true,
+	}
+	event3 := types.Event{
+		AccountIdentifier: account1.Identifier,
+		Name:              "Event 3",
+		Slug:              "event3",
+		ContactEmail:      "event3@test.com",
+		AccessRestricted:  false,
+	}
+	event4 := types.Event{
+		AccountIdentifier: account2.Identifier,
+		Name:              "Event 4",
+		Slug:              "event4",
+		ContactEmail:      "event4@test.com",
+		AccessRestricted:  false,
+	}
+	events, err := db.GetAllEvents()
+	if err != nil {
+		t.Fatalf("Error attempting to get events: %v", err)
+	}
+	if len(events) != 0 {
+		t.Errorf("Expected %v events but found %v.", 0, len(events))
+	}
+	nEvent1, _ := db.AddEvent(event1)
+	db.AddEvent(event2)
+	eventYear1 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	db.AddEventYear(*eventYear1)
+	events, err = db.GetAllEvents()
+	if err != nil {
+		t.Fatalf("Error attempting to get events: %v", err)
+	}
+	// db.GetAllEvents does get restricted events.  The second event added is restricted.
+	if len(events) != 2 {
+		t.Errorf("Expected %v events but found %v.", 2, len(events))
+	}
+	db.AddEvent(event3)
+	db.AddEvent(event4)
+	events, err = db.GetAllEvents()
+	if err != nil {
+		t.Fatalf("Error attempting to get events: %v", err)
+	}
+	// db.GetAllEvents does get restricted events.  The second event added is restricted.
+	if len(events) != 4 {
+		t.Errorf("Expected %v events but found %v.", 4, len(events))
+	}
+	found := 0
+	for _, ev := range events {
+		if ev.RecentTime != nil {
+			found++
+			if !ev.RecentTime.Equal(eventYear1.DateTime) {
 				t.Errorf("Expected time %v, found %v", eventYear1.DateTime, ev.RecentTime)
 			}
 		}

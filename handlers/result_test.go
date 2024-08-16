@@ -154,7 +154,7 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -179,12 +179,12 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, distance
 	t.Log("Testing with slug and distance defined.")
-	distance := "1 Mile"
+	distance := "Marathon"
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug:     variables.events["event1"].Slug,
 		Distance: &distance,
@@ -329,7 +329,7 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -355,7 +355,7 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, year, distance
@@ -667,7 +667,7 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -692,12 +692,12 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, distance
 	t.Log("Testing with slug and distance defined.")
-	distance := "1 Mile"
+	distance := "Marathon"
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug:     variables.events["event1"].Slug,
 		Distance: &distance,
@@ -842,7 +842,7 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -868,7 +868,7 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, year, distance
@@ -1180,7 +1180,7 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -1205,12 +1205,12 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, distance
 	t.Log("Testing with slug and distance defined.")
-	distance := "1 Mile"
+	distance := "Marathon"
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug:     variables.events["event1"].Slug,
 		Distance: &distance,
@@ -1355,7 +1355,7 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
-			testCorrect = resp.Results["1 Mile"][50]
+			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
 	// verify pages work properly
@@ -1381,7 +1381,7 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
-			assert.Equal(t, testCorrect, resp.Results["1 Mile"][0])
+			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
 	// Test with slug, year, distance

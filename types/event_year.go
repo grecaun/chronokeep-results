@@ -25,7 +25,23 @@ type RequestYear struct {
 	DaysAllowed int    `json:"days_allowed"`
 }
 
+type AllEventYear struct {
+	Name        string    `json:"name"`
+	Slug        string    `json:"slug"`
+	Year        string    `json:"year"`
+	DateTime    time.Time `json:"date_time" validate:"datetime"`
+	Live        bool      `json:"live"`
+	DaysAllowed int       `json:"days_allowed"`
+}
+
 func (e *EventYear) Equals(other *EventYear) bool {
+	return e.Year == other.Year &&
+		e.DateTime.Equal(other.DateTime) &&
+		e.Live == other.Live &&
+		e.DaysAllowed == other.DaysAllowed
+}
+
+func (e *EventYear) EqualsAll(other *AllEventYear) bool {
 	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
 		e.Live == other.Live &&
@@ -65,6 +81,11 @@ func (e RequestYear) ToYear() EventYear {
 		out.DateTime = d
 		return out
 	}
+	d, err = time.Parse("2006/01/02 15:04:05", e.DateTime)
+	if err != nil {
+		out.DateTime = d
+		return out
+	}
 	out.DateTime = time.Now()
 	return out
 }
@@ -77,6 +98,10 @@ func (e RequestYear) GetDateTime() time.Time {
 	}
 	d, err = time.Parse("2006/01/02 15:04:05 -07:00", e.DateTime)
 	if err == nil {
+		return d
+	}
+	d, err = time.Parse("2006/01/02 15:04:05", e.DateTime)
+	if err != nil {
 		return d
 	}
 	return time.Now()

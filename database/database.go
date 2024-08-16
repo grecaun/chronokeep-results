@@ -43,6 +43,7 @@ type Database interface {
 	AddCallRecord(record types.CallRecord) error
 	AddCallRecords(records []types.CallRecord) error
 	// EventYear Functions
+	GetAllEventYears() ([]types.EventYear, error)
 	GetEventYear(event_slug, year string) (*types.EventYear, error)
 	GetEventYears(event_slug string) ([]types.EventYear, error)
 	AddEventYear(year types.EventYear) (*types.EventYear, error)
@@ -51,6 +52,7 @@ type Database interface {
 	// Event Functions
 	GetEvent(slug string) (*types.Event, error)
 	GetEvents() ([]types.Event, error)
+	GetAllEvents() ([]types.Event, error)
 	GetAccountEvents(email string) ([]types.Event, error)
 	AddEvent(event types.Event) (*types.Event, error)
 	DeleteEvent(event types.Event) error

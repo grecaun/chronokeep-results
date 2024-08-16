@@ -51,7 +51,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
-func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
+func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types.Event, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -60,12 +60,21 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 	defer cancelfunc()
 	var res pgx.Rows
 	if email == nil {
-		res, err = db.Query(
-			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
-				"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
-		)
+		if len(restricted) > 0 && restricted[0] {
+			res, err = db.Query(
+				ctx,
+				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+			)
+		}
 	} else {
 		res, err = db.Query(
 			ctx,
@@ -105,9 +114,14 @@ func (p *Postgres) getEventsInternal(email *string) ([]types.Event, error) {
 	return outEvents, nil
 }
 
-// GetEvents Gets all events.
+// GetEvents Gets all events minus restricted.
 func (p *Postgres) GetEvents() ([]types.Event, error) {
 	return p.getEventsInternal(nil)
+}
+
+// GetEvents Gets all events.
+func (p *Postgres) GetAllEvents() ([]types.Event, error) {
+	return p.getEventsInternal(nil, true)
 }
 
 // GetAccountsEvents Gets all events associated with an account.

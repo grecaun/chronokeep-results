@@ -531,7 +531,7 @@ func TestRAddEventYear(t *testing.T) {
 	t.Log("Testing invalid content type.")
 	eYear := types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 09:00:00",
+		DateTime: "2022/04/06 09:00:00 -07:00",
 		Live:     false,
 	}
 	body, err := json.Marshal(types.ModifyEventYearRequest{
@@ -564,7 +564,7 @@ func TestRAddEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 9:01:15",
+		DateTime: "2022/04/06 9:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -580,6 +580,9 @@ func TestRAddEventYear(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddEventYear(c)) {
+		tmpYear, err := database.GetEventYear(variables.events["event2"].Slug, "2024")
+		assert.NoError(t, err)
+		assert.Nil(t, tmpYear)
 		if assert.Equal(t, http.StatusOK, response.Code) {
 			var resp types.EventYearResponse
 			if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
@@ -615,7 +618,7 @@ func TestRAddEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2023",
-		DateTime: "2023/07/12 6:03:02",
+		DateTime: "2023/07/12 6:03:02 -07:00",
 		Live:     true,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -666,7 +669,7 @@ func TestRAddEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2024",
-		DateTime: "2024/07/12 06:03:02",
+		DateTime: "2024/07/12 06:03:02 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -699,7 +702,7 @@ func TestRAddEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 09:01:15",
+		DateTime: "2022/04/06 09:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -732,7 +735,7 @@ func TestRAddEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 09:01:15",
+		DateTime: "2022/04/06 09:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -764,8 +767,8 @@ func TestRAddEventYear(t *testing.T) {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
 	eYear = types.RequestYear{
-		Year:     "invalid",
-		DateTime: "2022/04/06 09:01:15",
+		Year:     "invalid$",
+		DateTime: "2022/04/06 09:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -993,7 +996,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	t.Log("Testing invalid content type.")
 	eYear := types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 09:00:00",
+		DateTime: "2022/04/06 09:00:00 -07:00",
 		Live:     false,
 	}
 	body, err := json.Marshal(types.ModifyEventYearRequest{
@@ -1026,7 +1029,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     variables.eventYears["event2"]["2020"].Year,
-		DateTime: "2020/12/31 9:01:15",
+		DateTime: "2020/12/31 9:01:15 -07:00",
 		Live:     true,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -1077,7 +1080,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     variables.eventYears["event2"]["2020"].Year,
-		DateTime: "2023/07/12 6:03:02",
+		DateTime: "2023/07/12 6:03:02 +00:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -1128,7 +1131,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     variables.eventYears["event2"]["2020"].Year,
-		DateTime: "2024/07/12 06:03:02",
+		DateTime: "2024/07/12 06:03:02 -07:00",
 		Live:     true,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -1161,7 +1164,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2022",
-		DateTime: "2022/04/06 09:01:15",
+		DateTime: "2022/04/06 09:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
@@ -1194,7 +1197,7 @@ func TestRUpdateEventYear(t *testing.T) {
 	}
 	eYear = types.RequestYear{
 		Year:     "2024",
-		DateTime: "2022/04/06 09:01:15",
+		DateTime: "2022/04/06 09:01:15 -07:00",
 		Live:     false,
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
