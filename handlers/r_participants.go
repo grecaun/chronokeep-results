@@ -271,9 +271,6 @@ func (h Handler) RUpdateManyParticipants(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
-	if len(participants) > 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Multiple Participants Added", nil)
-	}
 	return c.JSON(http.StatusOK, types.UpdateParticipantsResponse{
 		Participants: participants,
 	})
