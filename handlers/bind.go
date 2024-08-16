@@ -13,7 +13,6 @@ type Handler struct {
 func (h Handler) Bind(group *echo.Group) {
 	// Event Year handlers
 	group.POST("/event-year", h.GetEventYear)
-	group.GET("/event-year/all", h.GetAllEventYears)
 	group.POST("/event-year/event", h.GetEventYears)
 	group.POST("/event-year/add", h.AddEventYear)
 	group.PUT("/event-year/update", h.UpdateEventYear)
@@ -87,6 +86,7 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.DELETE("/r/event/delete", h.RDeleteEvent)
 	// Event Year handlers (restricted for website use)
 	group.POST("/r/event-year", h.RGetEventYears)
+	group.POST("/r/event-year/all", h.RGetAllEventYears)
 	group.POST("/r/event-year/add", h.RAddEventYear)
 	group.PUT("/r/event-year/update", h.RUpdateEventYear)
 	group.DELETE("/r/event-year/delete", h.RDeleteEventYear)

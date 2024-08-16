@@ -384,6 +384,218 @@ func TestRGetEventYears(t *testing.T) {
 	}
 }
 
+func TestRGetAllEventYears(t *testing.T) {
+	// POST, /r/event-year/all
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	// Test empty auth header
+	t.Log("Testing empty auth header.")
+	request := httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid auth header
+	t.Log("Testing invalid auth header.")
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test invalid token
+	t.Log("Testing invalid token.")
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer invalid-bearer-token")
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test unknown email
+	t.Log("Testing unknown email in token.")
+	token, _, err := createTokens("unknown@test.com")
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test expired token
+	t.Log("Testing expired token.")
+	token, refresh, err := createExpiredTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account := variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test not logged in
+	t.Log("Testing not logged in.")
+	token, _, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test locked account
+	lockAccount(t, variables.accounts[0].Email, e, h)
+	t.Log("Testing locked account.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	account.Locked = true
+	err = database.UnlockAccount(account)
+	if err != nil {
+		t.Fatalf("Error unlocking account during test: %v", err)
+	}
+	// test invalid content type
+	t.Log("Testing invalid content type.")
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
+	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+	}
+	// Test whether or not restricted events show up for non-account holders.
+	t.Log("Testing whether or not restricted events show up for non-account holders.")
+	token, refresh, err = createTokens(variables.accounts[0].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[0]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(""))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AllEventYearsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(variables.eventYears["event1"]), len(resp.EventYears))
+			for _, outer := range variables.eventYears["event1"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.EqualsAll(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+	}
+	// Test whether or not restricted events show up for account holders
+	t.Log("Testing whether or not restricted events show up for account holders.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(""))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetAllEventYears(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.AllEventYearsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(variables.eventYears["event1"])+len(variables.eventYears["event2"])+len(variables.eventYears["event3"]), len(resp.EventYears))
+			for _, outer := range variables.eventYears["event1"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.EqualsAll(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+			for _, outer := range variables.eventYears["event2"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.EqualsAll(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+			for _, outer := range variables.eventYears["event3"] {
+				found := false
+				for _, inner := range resp.EventYears {
+					if outer.EqualsAll(&inner) {
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+	}
+}
+
 func TestRAddEventYear(t *testing.T) {
 	// POST, /r/event-year/add
 	variables, finalize := setupTests(t)

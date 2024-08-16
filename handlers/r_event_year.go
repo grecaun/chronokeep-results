@@ -46,6 +46,52 @@ func (h Handler) RGetEventYears(c echo.Context) error {
 	})
 }
 
+func (h Handler) RGetAllEventYears(c echo.Context) error {
+	// Get Key from Authorization Header
+	account, err := verifyToken(c.Request())
+	if err != nil {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
+	}
+	if account == nil {
+		return getAPIError(c, http.StatusNotFound, "Account Not Found", nil)
+	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	events, err := database.GetAllEvents()
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	eventDict := make(map[int64]types.Event)
+	for _, event := range events {
+		eventDict[event.Identifier] = event
+	}
+	years, err := database.GetAllEventYears()
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
+	}
+	// Only the account owner can access restricted events.
+	output := make([]types.AllEventYear, 0)
+	for _, year := range years {
+		ev, ok := eventDict[year.EventIdentifier]
+		if ok {
+			if !ev.AccessRestricted || account.Identifier == ev.AccountIdentifier {
+				output = append(output, types.AllEventYear{
+					Name:        ev.Name,
+					Slug:        ev.Slug,
+					Year:        year.Year,
+					DateTime:    year.DateTime,
+					Live:        year.Live,
+					DaysAllowed: year.DaysAllowed,
+				})
+			}
+		}
+	}
+	return c.JSON(http.StatusOK, types.AllEventYearsResponse{
+		EventYears: output,
+	})
+}
+
 func (h Handler) RAddEventYear(c echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
