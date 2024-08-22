@@ -83,6 +83,7 @@ func (h Handler) RGetAllEventYears(c echo.Context) error {
 					DateTime:    year.DateTime,
 					Live:        year.Live,
 					DaysAllowed: year.DaysAllowed,
+					RankingType: year.RankingType,
 				})
 			}
 		}

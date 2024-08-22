@@ -18,7 +18,7 @@ func (p *Postgres) GetEventYear(event_slug, year string) (*types.EventYear, erro
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=$1 AND year=$2 AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=$1 AND year=$2 AND year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -35,6 +35,7 @@ func (p *Postgres) GetEventYear(event_slug, year string) (*types.EventYear, erro
 			&outEventYear.DateTime,
 			&outEventYear.Live,
 			&outEventYear.DaysAllowed,
+			&outEventYear.RankingType,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
@@ -91,7 +92,7 @@ func (p *Postgres) GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=$1 AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=$1 AND year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -108,6 +109,7 @@ func (p *Postgres) GetEventYears(event_slug string) ([]types.EventYear, error) {
 			&year.DateTime,
 			&year.Live,
 			&year.DaysAllowed,
+			&year.RankingType,
 		)
 		if err != nil {
 			return nil, nil
@@ -127,7 +129,7 @@ func (p *Postgres) GetAllEventYears() ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event years: %v", err)
@@ -143,6 +145,7 @@ func (p *Postgres) GetAllEventYears() ([]types.EventYear, error) {
 			&year.DateTime,
 			&year.Live,
 			&year.DaysAllowed,
+			&year.RankingType,
 		)
 		if err != nil {
 			return nil, nil
@@ -163,12 +166,13 @@ func (p *Postgres) AddEventYear(year types.EventYear) (*types.EventYear, error) 
 	var id int64
 	err = db.QueryRow(
 		ctx,
-		"INSERT INTO event_year(event_id, year, date_time, live, days_allowed) VALUES ($1, $2, $3, $4, $5) RETURNING (event_year_id);",
+		"INSERT INTO event_year(event_id, year, date_time, live, days_allowed, ranking_type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING (event_year_id);",
 		year.EventIdentifier,
 		year.Year,
 		year.DateTime,
 		year.Live,
 		year.DaysAllowed,
+		year.RankingType,
 	).Scan(&id)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event year: %v", err)
@@ -183,6 +187,7 @@ func (p *Postgres) AddEventYear(year types.EventYear) (*types.EventYear, error) 
 		DateTime:        year.DateTime,
 		Live:            year.Live,
 		DaysAllowed:     year.DaysAllowed,
+		RankingType:     year.RankingType,
 	}, nil
 }
 
@@ -215,6 +220,8 @@ func (p *Postgres) oldAddEventYear(year types.EventYear) (*types.EventYear, erro
 		Year:            year.Year,
 		DateTime:        year.DateTime,
 		Live:            year.Live,
+		DaysAllowed:     year.DaysAllowed,
+		RankingType:     year.RankingType,
 	}, nil
 }
 
@@ -248,11 +255,12 @@ func (p *Postgres) UpdateEventYear(year types.EventYear) error {
 	defer cancelfunc()
 	_, err = db.Exec(
 		ctx,
-		"UPDATE event_year SET date_time=$1, live=$2, days_allowed=$4 WHERE event_year_id=$3",
+		"UPDATE event_year SET date_time=$1, live=$2, days_allowed=$4, ranking_type=$5 WHERE event_year_id=$3",
 		year.DateTime,
 		year.Live,
 		year.Identifier,
 		year.DaysAllowed,
+		year.RankingType,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating event year: %v", err)

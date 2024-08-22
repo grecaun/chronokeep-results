@@ -53,7 +53,7 @@ func (m *MySQL) GetEventYear(event_slug, year string) (*types.EventYear, error) 
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -70,6 +70,7 @@ func (m *MySQL) GetEventYear(event_slug, year string) (*types.EventYear, error) 
 			&outEventYear.DateTime,
 			&outEventYear.Live,
 			&outEventYear.DaysAllowed,
+			&outEventYear.RankingType,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting event year: %v", err)
@@ -90,7 +91,7 @@ func (m *MySQL) GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -107,6 +108,7 @@ func (m *MySQL) GetEventYears(event_slug string) ([]types.EventYear, error) {
 			&year.DateTime,
 			&year.Live,
 			&year.DaysAllowed,
+			&year.RankingType,
 		)
 		if err != nil {
 			return nil, nil
@@ -126,7 +128,7 @@ func (m *MySQL) GetAllEventYears() ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event years: %v", err)
@@ -142,6 +144,7 @@ func (m *MySQL) GetAllEventYears() ([]types.EventYear, error) {
 			&year.DateTime,
 			&year.Live,
 			&year.DaysAllowed,
+			&year.RankingType,
 		)
 		if err != nil {
 			return nil, nil
@@ -181,6 +184,7 @@ func (m *MySQL) oldAddEventYear(year types.EventYear) (*types.EventYear, error) 
 		DateTime:        year.DateTime,
 		Live:            year.Live,
 		DaysAllowed:     year.DaysAllowed,
+		RankingType:     year.RankingType,
 	}, nil
 }
 
@@ -194,12 +198,13 @@ func (m *MySQL) AddEventYear(year types.EventYear) (*types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event_year(event_id, year, date_time, live, days_allowed) VALUES (?, ?, ?, ?, ?);",
+		"INSERT INTO event_year(event_id, year, date_time, live, days_allowed, ranking_type) VALUES (?, ?, ?, ?, ?, ?);",
 		year.EventIdentifier,
 		year.Year,
 		year.DateTime,
 		year.Live,
 		year.DaysAllowed,
+		year.RankingType,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to add event year: %v", err)
@@ -215,6 +220,7 @@ func (m *MySQL) AddEventYear(year types.EventYear) (*types.EventYear, error) {
 		DateTime:        year.DateTime,
 		Live:            year.Live,
 		DaysAllowed:     year.DaysAllowed,
+		RankingType:     year.RankingType,
 	}, nil
 }
 
@@ -248,10 +254,11 @@ func (m *MySQL) UpdateEventYear(year types.EventYear) error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"UPDATE event_year SET date_time=?, live=?, days_allowed=? WHERE event_year_id=?",
+		"UPDATE event_year SET date_time=?, live=?, days_allowed=?, ranking_type=? WHERE event_year_id=?",
 		year.DateTime,
 		year.Live,
 		year.DaysAllowed,
+		year.RankingType,
 		year.Identifier,
 	)
 	if err != nil {

@@ -16,6 +16,7 @@ type EventYear struct {
 	DateTime        time.Time `json:"date_time" validate:"datetime"`
 	Live            bool      `json:"live"`
 	DaysAllowed     int       `json:"days_allowed"`
+	RankingType     string    `json:"ranking_type"`
 }
 
 type RequestYear struct {
@@ -23,6 +24,7 @@ type RequestYear struct {
 	DateTime    string `json:"date_time"`
 	Live        bool   `json:"live"`
 	DaysAllowed int    `json:"days_allowed"`
+	RankingType string `json:"ranking_type"`
 }
 
 type AllEventYear struct {
@@ -32,20 +34,23 @@ type AllEventYear struct {
 	DateTime    time.Time `json:"date_time" validate:"datetime"`
 	Live        bool      `json:"live"`
 	DaysAllowed int       `json:"days_allowed"`
+	RankingType string    `json:"ranking_type"`
 }
 
 func (e *EventYear) Equals(other *EventYear) bool {
 	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
 		e.Live == other.Live &&
-		e.DaysAllowed == other.DaysAllowed
+		e.DaysAllowed == other.DaysAllowed &&
+		e.RankingType == other.RankingType
 }
 
 func (e *EventYear) EqualsAll(other *AllEventYear) bool {
 	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
 		e.Live == other.Live &&
-		e.DaysAllowed == other.DaysAllowed
+		e.DaysAllowed == other.DaysAllowed &&
+		e.RankingType == other.RankingType
 }
 
 // Validate Ensures valid data in the structure.
@@ -70,6 +75,7 @@ func (e RequestYear) ToYear() EventYear {
 		Year:        e.Year,
 		Live:        e.Live,
 		DaysAllowed: e.DaysAllowed,
+		RankingType: e.RankingType,
 	}
 	d, err := time.Parse(time.RFC3339, e.DateTime)
 	if err == nil {
