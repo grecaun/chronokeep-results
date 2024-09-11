@@ -195,6 +195,65 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
+	// Test valid request - Limit and Page defined
+	t.Log("Testing valid request. Limit and Page defined")
+	year = variables.eventYears["event1"]["2021"].Year
+	limit := 50
+	page := 1
+	fetchedParticipants := make([]types.Participant, 0)
+	for {
+		body, err = json.Marshal(types.GetParticipantsRequest{
+			Slug:  variables.events["event1"].Slug,
+			Year:  &year,
+			Limit: &limit,
+			Page:  &page,
+		})
+		if err != nil {
+			t.Fatalf("Error encoding request body into json object: %v", err)
+		}
+		request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
+		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete3"])
+		response = httptest.NewRecorder()
+		c = e.NewContext(request, response)
+		if assert.NoError(t, h.GetParticipants(c)) {
+			assert.Equal(t, http.StatusOK, response.Code)
+			var resp types.GetParticipantsResponse
+			if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+				assert.Equal(t, variables.events["event1"].Name, resp.Event.Name)
+				assert.Equal(t, variables.events["event1"].Slug, resp.Event.Slug)
+				assert.Equal(t, variables.events["event1"].Website, resp.Event.Website)
+				assert.Equal(t, variables.events["event1"].Image, resp.Event.Image)
+				assert.Equal(t, variables.events["event1"].ContactEmail, resp.Event.ContactEmail)
+				assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
+				assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
+				assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+				assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.Year.Year)
+				assert.True(t, variables.eventYears["event1"]["2021"].DateTime.Equal(resp.Year.DateTime))
+				assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.Year.Live)
+				assert.True(t, len(resp.Participants) == 50 || len(resp.Participants) == 0)
+				for _, outer := range resp.Participants {
+					found := false
+					for _, inner := range fetchedParticipants {
+						if outer.AlternateId == inner.AlternateId {
+							found = true
+						}
+					}
+					assert.False(t, found)
+				}
+				fetchedParticipants = append(fetchedParticipants, resp.Participants...)
+				if len(resp.Participants) != 50 {
+					break
+				}
+			} else {
+				break
+			}
+		} else {
+			break
+		}
+		page += 1
+	}
+	assert.Equal(t, 500, len(fetchedParticipants))
 	// Test valid request - no year
 	t.Log("Testing valid request.")
 	body, err = json.Marshal(types.GetParticipantsRequest{
