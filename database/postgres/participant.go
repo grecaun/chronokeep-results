@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgx/v4"
 )
 
 func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Participant) ([]types.Participant, error) {
@@ -93,19 +95,33 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 	return output, nil
 }
 
-func (p *Postgres) GetParticipants(eventYearID int64) ([]types.Participant, error) {
+func (p *Postgres) GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.Query(
-		ctx,
-		"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-			"FROM participant WHERE event_year_id=$1;",
-		eventYearID,
+	var (
+		res pgx.Rows
 	)
+	if limit > 0 {
+		res, err = db.Query(
+			ctx,
+			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
+				"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
+			eventYearID,
+			limit,
+			page*limit,
+		)
+	} else {
+		res, err = db.Query(
+			ctx,
+			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
+				"FROM participant WHERE event_year_id=$1;",
+			eventYearID,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving participants: %v", err)
 	}

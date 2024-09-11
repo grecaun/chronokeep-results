@@ -88,7 +88,7 @@ type Database interface {
 	UpdatePerson(eventYearID int64, person types.Person) (*types.Person, error)
 	// Registration Functions
 	AddParticipants(eventYearID int64, participant []types.Participant) ([]types.Participant, error)
-	GetParticipants(eventYearID int64) ([]types.Participant, error)
+	GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error)
 	DeleteParticipants(eventYearID int64, alternateIds []string) (int64, error)
 	UpdateParticipant(eventYearID int64, participant types.Participant) (*types.Participant, error)
 	UpdateParticipants(eventYearID int64, participant []types.Participant) ([]types.Participant, error)

@@ -137,7 +137,7 @@ func (h Handler) GetEvent(c echo.Context) error {
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 		}
-		parts, err = database.GetParticipants(recent.Identifier)
+		parts, err = database.GetParticipants(recent.Identifier, 0, 0)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving participants", err)
 		}

@@ -511,7 +511,7 @@ func TestAddParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetParticipants(year.Identifier)
+		part, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(parts), len(part))
 			for _, outer := range parts {
@@ -851,7 +851,7 @@ func TestDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.DeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(newP))
 		}
@@ -882,7 +882,7 @@ func TestDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.DeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(parts)-2, len(newP))
 		}
@@ -914,13 +914,13 @@ func TestDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.DeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(parts)-2, len(newP))
 		}
 	}
 	// Test admin delete other
-	p, err = database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
+	p, err = database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 	if err != nil {
 		t.Fatalf("Error getting participants from database: %v", err)
 	}

@@ -40,8 +40,10 @@ type GetParticipantRequest struct {
 
 // GetParticipantsRequest Struct used for the request to get participants for an event.
 type GetParticipantsRequest struct {
-	Slug string  `json:"slug"`
-	Year *string `json:"year"`
+	Slug  string  `json:"slug"`
+	Year  *string `json:"year"`
+	Limit *int    `json:"limit"`
+	Page  *int    `json:"page"`
 }
 
 // AddParticipantsRequest Struct used for the request to add/update participants for an event.

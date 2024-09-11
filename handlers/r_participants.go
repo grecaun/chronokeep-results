@@ -53,7 +53,18 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
-	participants, err := database.GetParticipants(multi.EventYear.Identifier)
+	limit := 0
+	page := 0
+	if request.Limit != nil {
+		limit = *request.Limit
+	}
+	if request.Page != nil {
+		page = *request.Page
+		if page > 0 {
+			page--
+		}
+	}
+	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}

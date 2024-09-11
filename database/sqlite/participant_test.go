@@ -2,6 +2,8 @@ package sqlite
 
 import (
 	"chronokeep/results/types"
+	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -9,7 +11,8 @@ import (
 )
 
 var (
-	participants []types.Participant
+	participants     []types.Participant
+	manyParticipants []types.Participant
 )
 
 func setupParticipantTests() {
@@ -95,6 +98,23 @@ func setupParticipantTests() {
 			Apparel:     "X-Small",
 		},
 	}
+	manyParticipants = make([]types.Participant, 0)
+	for i := 0; i < 220; i++ {
+		manyParticipants = append(manyParticipants, types.Participant{
+			AlternateId: fmt.Sprintf("%d", i),
+			Bib:         fmt.Sprintf("%d", i),
+			First:       fmt.Sprintf("%s-%d", "John", i),
+			Last:        fmt.Sprintf("%s-%d", "Smith", i),
+			Birthdate:   "1/1/2000",
+			Gender:      "M",
+			AgeGroup:    "20-29",
+			Distance:    "1 Mile",
+			Anonymous:   true,
+			SMSEnabled:  false,
+			Mobile:      "3555521234",
+			Apparel:     "Medium",
+		})
+	}
 }
 
 func TestAddParticipants(t *testing.T) {
@@ -117,7 +137,7 @@ func TestAddParticipants(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	p, err := db.GetParticipants(eventYear.Identifier)
+	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
@@ -147,7 +167,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 		for _, outer := range participants {
@@ -217,7 +237,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(upd), len(p))
 		for _, outer := range upd {
@@ -286,7 +306,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(upd), len(p))
 		for _, outer := range upd {
@@ -334,12 +354,126 @@ func TestGetParticipants(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	iParts, err := db.GetParticipants(eventYear.Identifier)
+	iParts, err := db.GetParticipants(eventYear.Identifier, 50, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(iParts))
 	}
 	db.AddParticipants(eventYear.Identifier, participants)
-	iParts, err = db.GetParticipants(eventYear.Identifier)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 50, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(participants), len(iParts))
+		for _, outer := range participants {
+			found := false
+			for _, inner := range iParts {
+				if outer.AlternateId == inner.AlternateId {
+					assert.True(t, outer.Equals(&inner))
+					assert.Equal(t, outer.Birthdate, inner.Birthdate)
+					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+					assert.Equal(t, outer.Bib, inner.Bib)
+					assert.Equal(t, outer.Distance, inner.Distance)
+					assert.Equal(t, outer.First, inner.First)
+					assert.Equal(t, outer.Gender, inner.Gender)
+					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
+					assert.Equal(t, outer.AlternateId, inner.AlternateId)
+					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+					assert.Equal(t, outer.Mobile, inner.Mobile)
+					assert.Equal(t, outer.Apparel, inner.Apparel)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+	db.DeleteParticipants(eventYear.Identifier, nil)
+	db.AddParticipants(eventYear.Identifier, manyParticipants)
+	pulledParticipants := make([]types.Participant, 0)
+	for i := 0; i < int(math.Ceil(float64(len(manyParticipants))/50)); i++ {
+		iParts, err = db.GetParticipants(eventYear.Identifier, 50, i)
+		if assert.NoError(t, err) {
+			assert.True(t, len(iParts) > 0 && len(iParts) <= 50)
+			for _, outer := range iParts {
+				found := false
+				for _, inner := range manyParticipants {
+					if outer.AlternateId == inner.AlternateId {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+				found = false
+				for _, inner := range pulledParticipants {
+					if outer.AlternateId == inner.AlternateId {
+						found = true
+					}
+				}
+				assert.False(t, found)
+			}
+			pulledParticipants = append(pulledParticipants, iParts...)
+		}
+	}
+	for _, outer := range manyParticipants {
+		found := false
+		for _, inner := range pulledParticipants {
+			if outer.AlternateId == inner.AlternateId {
+				assert.True(t, outer.Equals(&inner))
+				assert.Equal(t, outer.Birthdate, inner.Birthdate)
+				assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+				assert.Equal(t, outer.Bib, inner.Bib)
+				assert.Equal(t, outer.Distance, inner.Distance)
+				assert.Equal(t, outer.First, inner.First)
+				assert.Equal(t, outer.Gender, inner.Gender)
+				assert.Equal(t, outer.Last, inner.Last)
+				assert.Equal(t, outer.Anonymous, inner.Anonymous)
+				assert.Equal(t, outer.AlternateId, inner.AlternateId)
+				assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+				assert.Equal(t, outer.Mobile, inner.Mobile)
+				assert.Equal(t, outer.Apparel, inner.Apparel)
+				found = true
+			}
+		}
+		assert.True(t, found)
+	}
+}
+
+func TestGetAllParticipants(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up tests. %v", err)
+	}
+	defer finalize(t)
+	setupParticipantTests()
+	account, _ := db.AddAccount(accounts[0])
+	event := &types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		Slug:              "event1",
+	}
+	event, _ = db.AddEvent(*event)
+	eventYear := &types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+	}
+	eventYear, _ = db.AddEventYear(*eventYear)
+	iParts, err := db.GetParticipants(eventYear.Identifier, 0, 0)
+	if assert.NoError(t, err) {
+		assert.Equal(t, 0, len(iParts))
+	}
+	db.AddParticipants(eventYear.Identifier, participants)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(iParts))
 		for _, outer := range participants {
@@ -387,26 +521,26 @@ func TestDeleteParticipants(t *testing.T) {
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	p, err := db.GetParticipants(eventYear.Identifier)
+	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
 	_, err = db.AddParticipants(eventYear.Identifier, participants)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 	}
 	count, err := db.DeleteParticipants(eventYear.Identifier, nil)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
 	assert.Equal(t, count, int64(len(participants)))
 	_, err = db.AddParticipants(eventYear.Identifier, participants)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 	}
@@ -417,7 +551,7 @@ func TestDeleteParticipants(t *testing.T) {
 	count, err = db.DeleteParticipants(eventYear.Identifier, toDelete)
 	assert.NoError(t, err)
 	assert.Equal(t, count, int64(len(toDelete)))
-	p, err = db.GetParticipants(eventYear.Identifier)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants)-2, len(p))
 		for _, outer := range participants[2:] {

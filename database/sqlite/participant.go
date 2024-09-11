@@ -3,6 +3,7 @@ package sqlite
 import (
 	"chronokeep/results/types"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -127,19 +128,33 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 	return output, nil
 }
 
-func (s *SQLite) GetParticipants(eventYearID int64) ([]types.Participant, error) {
+func (s *SQLite) GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	res, err := db.QueryContext(
-		ctx,
-		"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-			"FROM participant WHERE event_year_id=$1;",
-		eventYearID,
+	var (
+		res *sql.Rows
 	)
+	if limit > 0 {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
+				"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
+			eventYearID,
+			limit,
+			page*limit,
+		)
+	} else {
+		res, err = db.QueryContext(
+			ctx,
+			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
+				"FROM participant WHERE event_year_id=$1;",
+			eventYearID,
+		)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving participants: %v", err)
 	}

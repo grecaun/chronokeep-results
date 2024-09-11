@@ -730,7 +730,7 @@ func TestRAddParticipant(t *testing.T) {
 	if assert.NoError(t, h.RAddParticipant(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		if assert.NoError(t, err) {
-			part, err := database.GetParticipants(year.Identifier)
+			part, err := database.GetParticipants(year.Identifier, 0, 0)
 			if assert.NoError(t, err) {
 				outer := parts[0]
 				found := false
@@ -797,7 +797,7 @@ func TestRAddParticipant(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddParticipant(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetParticipants(year.Identifier)
+		part, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			outer := parts[1]
 			found := false
@@ -1079,7 +1079,7 @@ func TestRAddParticipant(t *testing.T) {
 	if assert.NoError(t, h.RAddParticipant(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		if assert.NoError(t, err) {
-			part, err := database.GetParticipants(year2.Identifier)
+			part, err := database.GetParticipants(year2.Identifier, 0, 0)
 			if assert.NoError(t, err) {
 				outer := parts[0]
 				found := false
@@ -1375,7 +1375,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(newP))
 		}
@@ -1412,7 +1412,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 0, len(newP))
 		}
@@ -1482,7 +1482,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(parts)-2, len(newP))
 		}
@@ -1524,7 +1524,7 @@ func TestRDeleteParticipants(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RDeleteParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		newP, err := database.GetParticipants(year.Identifier)
+		newP, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			assert.Equal(t, len(parts), len(newP))
 		}
@@ -1884,7 +1884,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateParticipant(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantResponse
@@ -1950,7 +1950,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateParticipant(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantResponse
@@ -2142,7 +2142,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateParticipant(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event1"]["2021"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event1"]["2021"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantResponse
@@ -2453,7 +2453,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateManyParticipants(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantsResponse
@@ -2519,7 +2519,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateManyParticipants(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2021"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantsResponse
@@ -2711,7 +2711,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	response = httptest.NewRecorder()
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RUpdateManyParticipants(c)) {
-		p, err := database.GetParticipants(variables.eventYears["event1"]["2021"].Identifier)
+		p, err := database.GetParticipants(variables.eventYears["event1"]["2021"].Identifier, 0, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantsResponse
@@ -3018,7 +3018,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 	if assert.NoError(t, h.RAddManyParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		if assert.NoError(t, err) {
-			part, err := database.GetParticipants(year.Identifier)
+			part, err := database.GetParticipants(year.Identifier, 0, 0)
 			if assert.NoError(t, err) {
 				outer := parts[0]
 				found := false
@@ -3085,7 +3085,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.RAddManyParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
-		part, err := database.GetParticipants(year.Identifier)
+		part, err := database.GetParticipants(year.Identifier, 0, 0)
 		if assert.NoError(t, err) {
 			outer := parts[1]
 			second := parts[2]
@@ -3408,7 +3408,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 	if assert.NoError(t, h.RAddManyParticipants(c)) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		if assert.NoError(t, err) {
-			part, err := database.GetParticipants(year2.Identifier)
+			part, err := database.GetParticipants(year2.Identifier, 0, 0)
 			if assert.NoError(t, err) {
 				outer := parts[0]
 				found := false
