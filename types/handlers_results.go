@@ -12,6 +12,7 @@ type GetResultsResponse struct {
 	Years        []EventYear         `json:"years"`
 	Results      map[string][]Result `json:"results"`
 	Participants []ResultParticipant `json:"participants"`
+	Distances    []Distance          `json:"distances"`
 }
 
 // AddResultsResponse Struct used for the response to an Add/Update/Delete Results request.
@@ -27,6 +28,7 @@ type GetBibResultsResponse struct {
 	Person         *Person   `json:"person"`
 	SingleDistance bool      `json:"single_distance"`
 	Segments       []Segment `json:"segments"`
+	Distance       *Distance `json:"distance"`
 }
 
 /*

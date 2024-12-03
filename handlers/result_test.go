@@ -129,6 +129,10 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, limits
@@ -155,6 +159,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
 			testCorrect = resp.Results["Marathon"][50]
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// verify pages work properly
@@ -180,6 +188,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, distance
@@ -215,6 +227,10 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, distance, limits
@@ -242,6 +258,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
 			testCorrect = resp.Results["2 Mile"][50]
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// verify pages work properly
@@ -268,6 +288,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test with slug and year
@@ -303,6 +327,10 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// ResultParticipants
+			assert.Equal(t, 4, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2020"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, year and limits
@@ -330,6 +358,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
 			testCorrect = resp.Results["Marathon"][50]
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// verify pages work properly
@@ -356,6 +388,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, year, distance
@@ -393,6 +429,10 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// ResultParticipants
+			assert.Equal(t, 4, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2020"]), len(resp.Distances))
 		}
 	}
 	// Test with slug, year, distance, limits
@@ -422,6 +462,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
 			testCorrect = resp.Results["2 Mile"][50]
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// verify pages work properly
@@ -449,6 +493,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// ResultParticipants
+			assert.Equal(t, 500, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
 	}
 	// Test invalid event
@@ -506,6 +554,10 @@ func TestGetResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 0, resp.Count)
 			assert.Equal(t, 0, len(resp.Results))
+			// ResultParticipants
+			assert.Equal(t, 4, len(resp.Participants))
+			// Distances
+			assert.Nil(t, resp.Distances)
 		}
 	}
 	// Test valid key with restricted event
@@ -1683,6 +1735,9 @@ func TestGetBibResults(t *testing.T) {
 				}
 				assert.True(t, found)
 			}
+			assert.NotNil(t, resp.Distance)
+			assert.Equal(t, variables.distances["event1"]["2021"][0].Name, resp.Distance.Name)
+			assert.Equal(t, variables.distances["event1"]["2021"][0].Certification, resp.Distance.Certification)
 		}
 	}
 	// Test a valid request
@@ -1720,6 +1775,8 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, variables.results["event1"]["2021"][601], resp.Results[0])
 			// segments
 			assert.Equal(t, 0, len(resp.Segments))
+			// No distance uploaded for 2 Mile
+			assert.Nil(t, resp.Distance)
 		}
 	}
 	// Test invalid event
