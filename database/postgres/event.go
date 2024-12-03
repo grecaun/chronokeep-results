@@ -20,7 +20,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+		"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
 		slug,
@@ -34,6 +34,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 		err := res.Scan(
 			&outEvent.Identifier,
 			&outEvent.Name,
+			&outEvent.CertificateName,
 			&outEvent.Slug,
 			&outEvent.Website,
 			&outEvent.Image,
@@ -63,14 +64,14 @@ func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types
 		if len(restricted) > 0 && restricted[0] {
 			res, err = db.Query(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
 			)
 		} else {
 			res, err = db.Query(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 			)
@@ -78,7 +79,7 @@ func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types
 	} else {
 		res, err = db.Query(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+			"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account a "+
 				"NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND (account_email=$1 "+
@@ -97,6 +98,7 @@ func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types
 		err := res.Scan(
 			&event.Identifier,
 			&event.Name,
+			&event.CertificateName,
 			&event.Slug,
 			&event.Website,
 			&event.Image,
@@ -140,8 +142,9 @@ func (p *Postgres) AddEvent(event types.Event) (*types.Event, error) {
 	var id int64
 	err = db.QueryRow(
 		ctx,
-		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING (event_id);",
+		"INSERT INTO event(event_name, cert_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING (event_id);",
 		event.Name,
+		event.CertificateName,
 		event.Slug,
 		event.Website,
 		event.Image,
@@ -278,7 +281,7 @@ func (p *Postgres) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"UPDATE event SET event_name=$1, website=$2, image=$3, contact_email=$4, access_restricted=$5, event_type=$7 WHERE event_id=$6;",
+		"UPDATE event SET event_name=$1, cert_name=$8, website=$2, image=$3, contact_email=$4, access_restricted=$5, event_type=$7 WHERE event_id=$6;",
 		event.Name,
 		event.Website,
 		event.Image,
@@ -286,6 +289,7 @@ func (p *Postgres) UpdateEvent(event types.Event) error {
 		event.AccessRestricted,
 		event.Identifier,
 		event.Type,
+		event.CertificateName,
 	)
 	if err != nil {
 		return fmt.Errorf("error updating event: %v", err)

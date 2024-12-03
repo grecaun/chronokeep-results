@@ -11,8 +11,8 @@ import (
 
 const timeFormat = "2006-01-02 15:04:05-07:00"
 
-// GetEvent Gets an event with a slug.
-func (s *SQLite) GetEvent(slug string) (*types.Event, error) {
+// oldGetEvent Gets an event with a slug. (used for testing update database)
+func (s *SQLite) oldGetEvent(slug string) (*types.Event, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
@@ -60,6 +60,56 @@ func (s *SQLite) GetEvent(slug string) (*types.Event, error) {
 	return nil, nil
 }
 
+// GetEvent Gets an event with a slug.
+func (s *SQLite) GetEvent(slug string) (*types.Event, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
+			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=?;",
+		slug,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving event: %v", err)
+	}
+	defer res.Close()
+	if res.Next() {
+		var outEvent types.Event
+		var recentTime sql.NullString
+		err := res.Scan(
+			&outEvent.Identifier,
+			&outEvent.Name,
+			&outEvent.CertificateName,
+			&outEvent.Slug,
+			&outEvent.Website,
+			&outEvent.Image,
+			&outEvent.AccountIdentifier,
+			&outEvent.ContactEmail,
+			&outEvent.AccessRestricted,
+			&outEvent.Type,
+			&recentTime,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting event: %v", err)
+		}
+		if recentTime.Valid {
+			tmp, err := time.Parse(timeFormat, recentTime.String)
+			if err != nil {
+				return nil, fmt.Errorf("error parcing event time: %v", err)
+			}
+			outEvent.RecentTime = &tmp
+		}
+		return &outEvent, nil
+	}
+	return nil, nil
+}
+
 func (s *SQLite) getEventsInternal(email *string, restricted ...bool) ([]types.Event, error) {
 	db, err := s.GetDB()
 	if err != nil {
@@ -72,14 +122,14 @@ func (s *SQLite) getEventsInternal(email *string, restricted ...bool) ([]types.E
 		if len(restricted) > 0 && restricted[0] {
 			res, err = db.QueryContext(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
 			)
 		} else {
 			res, err = db.QueryContext(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 			)
@@ -87,7 +137,7 @@ func (s *SQLite) getEventsInternal(email *string, restricted ...bool) ([]types.E
 	} else {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+			"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account a NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND (account_email=? "+
 				"OR EXISTS (SELECT sub_account_id FROM linked_accounts JOIN account b ON b.account_id=sub_account_id WHERE "+
@@ -107,6 +157,7 @@ func (s *SQLite) getEventsInternal(email *string, restricted ...bool) ([]types.E
 		err := res.Scan(
 			&event.Identifier,
 			&event.Name,
+			&event.CertificateName,
 			&event.Slug,
 			&event.Website,
 			&event.Image,
@@ -146,8 +197,8 @@ func (s *SQLite) GetAccountEvents(email string) ([]types.Event, error) {
 	return s.getEventsInternal(&email)
 }
 
-// AddEvent Adds an event to the database.
-func (s *SQLite) AddEvent(event types.Event) (*types.Event, error) {
+// oldAddEvent Adds an event to the database. (for use testing update database)
+func (s *SQLite) oldAddEvent(event types.Event) (*types.Event, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
@@ -177,6 +228,49 @@ func (s *SQLite) AddEvent(event types.Event) (*types.Event, error) {
 		Identifier:        id,
 		AccountIdentifier: event.AccountIdentifier,
 		Name:              event.Name,
+		CertificateName:   "",
+		Slug:              event.Slug,
+		Website:           event.Website,
+		Image:             event.Image,
+		ContactEmail:      event.ContactEmail,
+		AccessRestricted:  event.AccessRestricted,
+		Type:              event.Type,
+	}, nil
+}
+
+// AddEvent Adds an event to the database.
+func (s *SQLite) AddEvent(event types.Event) (*types.Event, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"INSERT INTO event(event_name, cert_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+		event.Name,
+		event.CertificateName,
+		event.Slug,
+		event.Website,
+		event.Image,
+		event.ContactEmail,
+		event.AccountIdentifier,
+		event.AccessRestricted,
+		event.Type,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add event: %v", err)
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine ID for event: %v", err)
+	}
+	return &types.Event{
+		Identifier:        id,
+		AccountIdentifier: event.AccountIdentifier,
+		Name:              event.Name,
+		CertificateName:   event.CertificateName,
 		Slug:              event.Slug,
 		Website:           event.Website,
 		Image:             event.Image,
@@ -300,8 +394,9 @@ func (s *SQLite) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET event_name=?, website=?, image=?, contact_email=?, access_restricted=?, event_type=? WHERE event_id=?;",
+		"UPDATE event SET event_name=?, cert_name=?, website=?, image=?, contact_email=?, access_restricted=?, event_type=? WHERE event_id=?;",
 		event.Name,
+		event.CertificateName,
 		event.Website,
 		event.Image,
 		event.ContactEmail,

@@ -14,6 +14,7 @@ type Event struct {
 	AccountIdentifier int64      `json:"-"`
 	Identifier        int64      `json:"-"`
 	Name              string     `json:"name" validate:"required"`
+	CertificateName   string     `json:"cert_name"`
 	Slug              string     `json:"slug" validate:"required"`
 	Website           string     `json:"website"`
 	Image             string     `json:"image"`
@@ -27,6 +28,7 @@ type Event struct {
 func (e *Event) Equals(other *Event) bool {
 	return e.AccountIdentifier == other.AccountIdentifier &&
 		e.Name == other.Name &&
+		e.CertificateName == other.CertificateName &&
 		e.Slug == other.Slug &&
 		e.Website == other.Website &&
 		e.Image == other.Website &&

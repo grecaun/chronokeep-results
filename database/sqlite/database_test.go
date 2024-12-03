@@ -363,8 +363,8 @@ func TestUpgrade(t *testing.T) {
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
 	}
-	_, _ = db.AddEvent(*event1)
-	event1, err = db.GetEvent(event1.Slug)
+	_, _ = db.oldAddEvent(*event1)
+	event1, err = db.oldGetEvent(event1.Slug)
 	if err != nil {
 		t.Fatalf("Error adding event: %v", err)
 	}
@@ -506,6 +506,15 @@ func TestUpgrade(t *testing.T) {
 	version = db.checkVersion()
 	if version != 16 {
 		t.Fatalf("Version set to '%v' expected '16'.", version)
+	}
+	// Verify version 17
+	err = db.updateTables(version, 17)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 17, err)
+	}
+	version = db.checkVersion()
+	if version != 17 {
+		t.Fatalf("Version set to '%v' expected '17'.", version)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()

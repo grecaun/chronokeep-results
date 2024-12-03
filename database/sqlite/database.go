@@ -128,7 +128,8 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE sms_subscriptions;"+
+		"DROP TABLE distances;"+
+			"DROP TABLE sms_subscriptions;"+
 			"DROP TABLE linked_accounts;"+
 			"DROP TABLE segments;"+
 			"DROP TABLE participant;"+
@@ -228,6 +229,7 @@ func (s *SQLite) createTables() error {
 				"event_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
+				"cert_name VARCHAR(100) NOT NULL, " +
 				"slug VARCHAR(50) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
@@ -378,6 +380,18 @@ func (s *SQLite) createTables() error {
 				"segment_gps VARCHAR NOT NULL DEFAULT '', " +
 				"segment_map_link VARCHAR NOT NULL DEFAULT '', " +
 				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+				");",
+		},
+		// DISTANCES TABLE
+		{
+			name: "CreateDistancesTable",
+			query: "CREATE TABLE IF NOT EXISTS distances(" +
+				"distance_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"distance_name VARCHAR NOT NULL, " +
+				"certification VARCHAR NOT NULL, " +
+				"CONSTRAINT unique_distance UNIQUE (event_year_id, distance_name), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
 		},
@@ -906,6 +920,36 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "AlterEventYearTable",
 				query: "ALTER TABLE event_year ADD COLUMN ranking_type VARCHAR(20) DEFAULT 'gun';",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 17 && newVersion >= 17 {
+		log.Info("Updating to database version 17.")
+		queries := []myQuery{
+			{
+				name:  "AlterEventTable",
+				query: "ALTER TABLE event ADD COLUMN cert_name VARCHAR(100) NOT NULL DEFAULT '';",
+			},
+			{
+				name: "CreateDistancesTable",
+				query: "CREATE TABLE IF NOT EXISTS distances(" +
+					"distance_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"distance_name VARCHAR NOT NULL, " +
+					"certification VARCHAR NOT NULL, " +
+					"CONSTRAINT unique_distance UNIQUE (event_year_id, distance_name), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
+					");",
 			},
 		}
 		for _, q := range queries {

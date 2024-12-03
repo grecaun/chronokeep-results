@@ -51,6 +51,7 @@ func TestAddEvent(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "cascade-express-half-marathon",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -58,6 +59,7 @@ func TestAddEvent(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -96,6 +98,7 @@ func TestGetEvent(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -103,6 +106,7 @@ func TestGetEvent(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -159,6 +163,7 @@ func TestGetEvents(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -166,6 +171,7 @@ func TestGetEvents(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -173,6 +179,7 @@ func TestGetEvents(t *testing.T) {
 	event3 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 3",
+		CertificateName:   "Oops Event",
 		Slug:              "event3",
 		ContactEmail:      "event3@test.com",
 		AccessRestricted:  false,
@@ -180,6 +187,7 @@ func TestGetEvents(t *testing.T) {
 	event4 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 4",
+		CertificateName:   "Fun Event",
 		Slug:              "event4",
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
@@ -244,6 +252,7 @@ func TestGetAllEvents(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -251,6 +260,7 @@ func TestGetAllEvents(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -258,6 +268,7 @@ func TestGetAllEvents(t *testing.T) {
 	event3 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 3",
+		CertificateName:   "Oops Event",
 		Slug:              "event3",
 		ContactEmail:      "event3@test.com",
 		AccessRestricted:  false,
@@ -265,6 +276,7 @@ func TestGetAllEvents(t *testing.T) {
 	event4 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 4",
+		CertificateName:   "Fun Event",
 		Slug:              "event4",
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
@@ -338,6 +350,7 @@ func TestGetAccountEvents(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -345,6 +358,7 @@ func TestGetAccountEvents(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -352,6 +366,7 @@ func TestGetAccountEvents(t *testing.T) {
 	event3 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 3",
+		CertificateName:   "Oops Event",
 		Slug:              "event3",
 		ContactEmail:      "event3@test.com",
 		AccessRestricted:  false,
@@ -359,6 +374,7 @@ func TestGetAccountEvents(t *testing.T) {
 	event4 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 4",
+		CertificateName:   "Fun Event",
 		Slug:              "event4",
 		ContactEmail:      "event4@test.com",
 		AccessRestricted:  false,
@@ -422,6 +438,7 @@ func TestDeleteEvent(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -429,6 +446,7 @@ func TestDeleteEvent(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  false,
@@ -479,6 +497,7 @@ func TestUpdateEvent(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -486,6 +505,7 @@ func TestUpdateEvent(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -494,6 +514,7 @@ func TestUpdateEvent(t *testing.T) {
 	event2, _ = db.AddEvent(*event2)
 	event1.AccountIdentifier = account2.Identifier
 	event1.Name = "Updated Event Name"
+	event1.CertificateName = "An Updated Event"
 	event1.Slug = "update"
 	event1.ContactEmail = "event1_test@test.com"
 	event1.Website = "https://test.com/"
@@ -507,6 +528,9 @@ func TestUpdateEvent(t *testing.T) {
 	}
 	if event.Name == "Event 1" {
 		t.Errorf("Event name not changed: %v to %v.", "Event 1", event.Name)
+	}
+	if event.CertificateName == "An Event" {
+		t.Errorf("Certificate name not changed: %v to %v.", "An Event", event.CertificateName)
 	}
 	if event.Slug != "event1" {
 		t.Errorf("Event name changed from %v to %v.", "event1", event.Slug)

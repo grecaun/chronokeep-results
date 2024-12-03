@@ -19,7 +19,7 @@ func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+		"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=?;",
 		slug,
@@ -33,6 +33,7 @@ func (m *MySQL) GetEvent(slug string) (*types.Event, error) {
 		err := res.Scan(
 			&outEvent.Identifier,
 			&outEvent.Name,
+			&outEvent.CertificateName,
 			&outEvent.Slug,
 			&outEvent.Website,
 			&outEvent.Image,
@@ -62,14 +63,14 @@ func (m *MySQL) getEventsInternal(email *string, restricted ...bool) ([]types.Ev
 		if len(restricted) > 0 && restricted[0] {
 			res, err = db.QueryContext(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
 			)
 		} else {
 			res, err = db.QueryContext(
 				ctx,
-				"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 			)
@@ -77,7 +78,7 @@ func (m *MySQL) getEventsInternal(email *string, restricted ...bool) ([]types.Ev
 	} else {
 		res, err = db.QueryContext(
 			ctx,
-			"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
+			"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account a NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
 				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND (account_email=? "+
 				"OR EXISTS (SELECT sub_account_id FROM linked_accounts JOIN account b ON b.account_id=sub_account_id WHERE "+
@@ -96,6 +97,7 @@ func (m *MySQL) getEventsInternal(email *string, restricted ...bool) ([]types.Ev
 		err := res.Scan(
 			&event.Identifier,
 			&event.Name,
+			&event.CertificateName,
 			&event.Slug,
 			&event.Website,
 			&event.Image,
@@ -138,8 +140,9 @@ func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO event(event_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+		"INSERT INTO event(event_name, cert_name, slug, website, image, contact_email, account_id, access_restricted, event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 		event.Name,
+		event.CertificateName,
 		event.Slug,
 		event.Website,
 		event.Image,
@@ -159,6 +162,7 @@ func (m *MySQL) AddEvent(event types.Event) (*types.Event, error) {
 		Identifier:        id,
 		AccountIdentifier: event.AccountIdentifier,
 		Name:              event.Name,
+		CertificateName:   event.CertificateName,
 		Slug:              event.Slug,
 		Website:           event.Website,
 		Image:             event.Image,
@@ -282,8 +286,9 @@ func (m *MySQL) UpdateEvent(event types.Event) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE event SET event_name=?, website=?, image=?, contact_email=?, access_restricted=?, event_type=? WHERE event_id=?;",
+		"UPDATE event SET event_name=?, cert_name=?, website=?, image=?, contact_email=?, access_restricted=?, event_type=? WHERE event_id=?;",
 		event.Name,
+		event.CertificateName,
 		event.Website,
 		event.Image,
 		event.ContactEmail,

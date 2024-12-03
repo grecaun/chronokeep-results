@@ -141,6 +141,7 @@ func (m *MySQL) dropTables() error {
 	_, err = db.ExecContext(
 		ctx,
 		"DROP TABLE "+
+			"distances, "+
 			"sms_subscriptions, "+
 			"linked_accounts, "+
 			"segments, "+
@@ -242,6 +243,7 @@ func (m *MySQL) createTables() error {
 				"event_id BIGINT NOT NULL AUTO_INCREMENT, " +
 				"account_id BIGINT NOT NULL, " +
 				"event_name VARCHAR(100) NOT NULL, " +
+				"cert_name VARCHAR(100) NOT NULL, " +
 				"slug VARCHAR(50) NOT NULL, " +
 				"website VARCHAR(200), " +
 				"image VARCHAR(200), " +
@@ -399,6 +401,19 @@ func (m *MySQL) createTables() error {
 				"CONSTRAINT unique_segment UNIQUE (event_year_id, distance_name, segment_name), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (segment_id)" +
+				");",
+		},
+		// DISTANCES TABLE
+		{
+			name: "CreateDistancesTable",
+			query: "CREATE TABLE IF NOT EXISTS distances(" +
+				"distance_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"event_year_id BIGINT NOT NULL, " +
+				"distance_name VARCHAR(100) NOT NULL, " +
+				"certification VARCHAR(150) NOT NULL, " +
+				"CONSTRAINT unique_distance UNIQUE (event_year_id, distance_name), " +
+				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+				"PRIMARY KEY (distance_id)" +
 				");",
 		},
 		// LINKED ACCOUNTS TABLE
@@ -926,6 +941,37 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "AlterEventYearTable",
 				query: "ALTER TABLE event_year ADD COLUMN ranking_type VARCHAR(20) DEFAULT 'gun';",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 17 && newVersion >= 17 {
+		log.Info("Updating to database version 17.")
+		queries := []myQuery{
+			{
+				name:  "AlterEventTable",
+				query: "ALTER TABLE event ADD COLUMN cert_name VARCHAR(100) NOT NULL DEFAULT '';",
+			},
+			{
+				name: "CreateDistancesTable",
+				query: "CREATE TABLE IF NOT EXISTS distances(" +
+					"distance_id BIGINT NOT NULL AUTO_INCREMENT, " +
+					"event_year_id BIGINT NOT NULL, " +
+					"distance_name VARCHAR(100) NOT NULL, " +
+					"certification VARCHAR(150) NOT NULL, " +
+					"CONSTRAINT unique_distance UNIQUE (event_year_id, distance_name), " +
+					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
+					"PRIMARY KEY (distance_id)" +
+					");",
 			},
 		}
 		for _, q := range queries {
