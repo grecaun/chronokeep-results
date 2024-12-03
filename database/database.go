@@ -114,6 +114,11 @@ type Database interface {
 	GetDistanceSegments(eventYearID int64, distance string) ([]types.Segment, error)
 	GetSegments(eventYearID int64) ([]types.Segment, error)
 	DeleteSegments(eventYearID int64) (int64, error)
+	// Distance functions
+	AddDistances(eventYearID int64, distances []types.Distance) ([]types.Distance, error)
+	GetDistance(eventYearID int64, distance_name string) (*types.Distance, error)
+	GetDistances(eventYearID int64) ([]types.Distance, error)
+	DeleteDistances(eventYearID int64) (int64, error)
 	// Close the database.
 	Close()
 }
