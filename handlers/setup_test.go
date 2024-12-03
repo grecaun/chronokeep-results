@@ -34,6 +34,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		eventYears:    make(map[string]map[string]types.EventYear),
 		results:       make(map[string]map[string][]types.Result),
 		segments:      make(map[string]map[string][]types.Segment),
+		distances:     make(map[string]map[string][]types.Distance),
 	}
 	// add accounts
 	t.Log("Adding accounts.")
@@ -179,6 +180,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
 			Name:              "Event 1",
+			CertificateName:   "An Event",
 			Slug:              "event1",
 			ContactEmail:      "event1@test.com",
 			AccessRestricted:  false,
@@ -186,6 +188,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Name:              "Event 2",
+			CertificateName:   "Another Event",
 			Slug:              "event2",
 			ContactEmail:      "event2@test.com",
 			AccessRestricted:  true,
@@ -193,6 +196,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Name:              "Event 3",
+			CertificateName:   "Fun Event",
 			Slug:              "event3",
 			ContactEmail:      "event3@test.com",
 			AccessRestricted:  true,
@@ -210,6 +214,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			output.eventYears[event.Slug] = make(map[string]types.EventYear)
 			output.results[event.Slug] = make(map[string][]types.Result)
 			output.segments[event.Slug] = make(map[string][]types.Segment)
+			output.distances[event.Slug] = make(map[string][]types.Distance)
 		}
 	}
 	// add event years, two per event
@@ -861,6 +866,27 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	output.segments["event1"]["2020"], _ = database.AddSegments(output.eventYears["event1"]["2020"].Identifier, segs)
 	output.segments["event1"]["2021"], _ = database.AddSegments(output.eventYears["event1"]["2021"].Identifier, segs)
 	output.segments["event2"]["2020"], _ = database.AddSegments(output.eventYears["event2"]["2020"].Identifier, segs)
+	dists := []types.Distance{
+		{
+			Name:          "Marathon",
+			Certification: "USATF Certification #WA51231111332",
+		},
+		{
+			Name:          "Half Marathon",
+			Certification: "USATF Certification #WA51231111334",
+		},
+		{
+			Name:          "5k",
+			Certification: "USATF Certification #WA51231111754",
+		},
+		{
+			Name:          "10k",
+			Certification: "USATF Certification #WA51232727884",
+		},
+	}
+	output.distances["event1"]["2020"], _ = database.AddDistances(output.eventYears["event1"]["2020"].Identifier, dists)
+	output.distances["event1"]["2021"], _ = database.AddDistances(output.eventYears["event1"]["2021"].Identifier, dists)
+	output.distances["event2"]["2020"], _ = database.AddDistances(output.eventYears["event2"]["2020"].Identifier, dists)
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
@@ -891,4 +917,5 @@ type SetupVariables struct {
 	knownValues   map[string]string
 	sms           []types.SmsSubscription
 	segments      map[string]map[string][]types.Segment
+	distances     map[string]map[string][]types.Distance
 }
