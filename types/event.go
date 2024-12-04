@@ -24,14 +24,13 @@ type Event struct {
 	RecentTime        *time.Time `json:"recent_time"`
 }
 
-// Equals Returns true if all fields other than Identifier are equal.
+// Equals Returns true if all fields other than the Identifier fields are equal.
 func (e *Event) Equals(other *Event) bool {
-	return e.AccountIdentifier == other.AccountIdentifier &&
-		e.Name == other.Name &&
+	return e.Name == other.Name &&
 		e.CertificateName == other.CertificateName &&
 		e.Slug == other.Slug &&
 		e.Website == other.Website &&
-		e.Image == other.Website &&
+		e.Image == other.Image &&
 		e.ContactEmail == other.ContactEmail &&
 		e.AccessRestricted == other.AccessRestricted &&
 		e.Type == other.Type

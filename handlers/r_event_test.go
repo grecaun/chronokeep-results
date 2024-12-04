@@ -185,6 +185,7 @@ func TestRGetEvents(t *testing.T) {
 							assert.Equal(t, outer.Image, inner.Image)
 							assert.Equal(t, outer.Type, inner.Type)
 							assert.Equal(t, outer.Website, inner.Website)
+							assert.True(t, outer.Equals(&inner))
 						}
 					}
 					assert.True(t, found)
@@ -234,6 +235,7 @@ func TestRGetEvents(t *testing.T) {
 							assert.Equal(t, outer.Image, inner.Image)
 							assert.Equal(t, outer.Type, inner.Type)
 							assert.Equal(t, outer.Website, inner.Website)
+							assert.True(t, outer.Equals(&inner))
 						}
 					}
 					assert.True(t, found)
@@ -477,6 +479,7 @@ func TestRAddEvent(t *testing.T) {
 	t.Log("Testing invalid content type.")
 	event := types.Event{
 		Name:             "Test Event 3",
+		CertificateName:  "An Event",
 		Slug:             "event3",
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
@@ -511,6 +514,7 @@ func TestRAddEvent(t *testing.T) {
 	}
 	event = types.Event{
 		Name:             "Test Event 5",
+		CertificateName:  "Another Event",
 		Slug:             "event5",
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
@@ -532,22 +536,26 @@ func TestRAddEvent(t *testing.T) {
 		nEv, err := database.GetEvent(event.Slug)
 		if assert.NoError(t, err) && assert.NotNil(t, nEv) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
 			assert.Equal(t, event.Website, nEv.Website)
 			assert.Equal(t, event.Image, nEv.Image)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
 			assert.Equal(t, event.Website, resp.Event.Website)
 			assert.Equal(t, event.Image, resp.Event.Image)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// test valid request - admin for other
@@ -565,6 +573,7 @@ func TestRAddEvent(t *testing.T) {
 	}
 	event = types.Event{
 		Name:             "Test Event 6",
+		CertificateName:  "6",
 		Slug:             "event6",
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
@@ -587,22 +596,26 @@ func TestRAddEvent(t *testing.T) {
 		nEv, err := database.GetEvent(event.Slug)
 		if assert.NoError(t, err) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
 			assert.Equal(t, event.Website, nEv.Website)
 			assert.Equal(t, event.Image, nEv.Image)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
 			assert.Equal(t, event.Website, resp.Event.Website)
 			assert.Equal(t, event.Image, resp.Event.Image)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// test duplicate
@@ -1097,6 +1110,7 @@ func TestRUpdateEvent(t *testing.T) {
 	}
 	event = types.Event{
 		Name:             "Updated Event Title 1",
+		CertificateName:  "Updated CertName",
 		Slug:             variables.events["event2"].Slug,
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
@@ -1120,22 +1134,26 @@ func TestRUpdateEvent(t *testing.T) {
 		nEv, err := database.GetEvent(event.Slug)
 		if assert.NoError(t, err) && assert.NotNil(t, nEv) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
 			assert.Equal(t, event.Website, nEv.Website)
 			assert.Equal(t, event.Image, nEv.Image)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
 			assert.Equal(t, event.Image, resp.Event.Image)
 			assert.Equal(t, event.Website, resp.Event.Website)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// test valid request - admin for other
@@ -1153,6 +1171,7 @@ func TestRUpdateEvent(t *testing.T) {
 	}
 	event = types.Event{
 		Name:             "Other Updated Event Title 1",
+		CertificateName:  "Other Upd 1",
 		Slug:             variables.events["event2"].Slug,
 		ContactEmail:     "email2@test.com",
 		AccessRestricted: true,
@@ -1174,22 +1193,26 @@ func TestRUpdateEvent(t *testing.T) {
 		nEv, err := database.GetEvent(event.Slug)
 		if assert.NoError(t, err) && assert.NotNil(t, nEv) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
 			assert.Equal(t, event.Website, nEv.Website)
 			assert.Equal(t, event.Image, nEv.Image)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
 			assert.Equal(t, event.Website, resp.Event.Website)
 			assert.Equal(t, event.Image, resp.Event.Image)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// test invalid request - non-admin for other

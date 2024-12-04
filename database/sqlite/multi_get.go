@@ -20,7 +20,7 @@ func (s *SQLite) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 		ctx,
 		"SELECT "+
 			"account_id, account_name, account_email, account_type, account_locked, "+
-			"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type "+
+			"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, cert_name "+
 			"FROM account NATURAL JOIN event WHERE account_deleted=FALSE AND event_deleted=FALSE and slug=?",
 		slug,
 	)
@@ -46,6 +46,7 @@ func (s *SQLite) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 			&outVal.Event.ContactEmail,
 			&outVal.Event.AccessRestricted,
 			&outVal.Event.Type,
+			&outVal.Event.CertificateName,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting values for account and event: %v", err)
@@ -71,7 +72,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, live, days_allowed "+
+				"event_year_id, year, date_time, live, days_allowed, cert_name "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				"WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=?",
@@ -83,7 +84,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, live, days_allowed "+
+				"event_year_id, year, date_time, live, days_allowed, cert_name "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
 			slug,
 			year,
@@ -117,6 +118,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			&outVal.EventYear.DateTime,
 			&outVal.EventYear.Live,
 			&outVal.EventYear.DaysAllowed,
+			&outVal.Event.CertificateName,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting values for account and event: %v", err)
@@ -143,7 +145,7 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			ctx,
 			"SELECT "+
 				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, live, days_allowed "+
+				"event_year_id, year, date_time, live, days_allowed, cert_name "+
 				"FROM event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				" WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=?",
@@ -168,7 +170,7 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			ctx,
 			"SELECT "+
 				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, live, days_allowed "+
+				"event_year_id, year, date_time, live, days_allowed, cert_name "+
 				"FROM event NATURAL JOIN event_year WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
 			slug,
 			year,
@@ -219,6 +221,7 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			&outVal.EventYear.DateTime,
 			&outVal.EventYear.Live,
 			&outVal.EventYear.DaysAllowed,
+			&outVal.Event.CertificateName,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting values for account and event: %v", err)

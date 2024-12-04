@@ -125,6 +125,8 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -158,6 +160,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -186,6 +190,8 @@ func TestGetResults(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, 50, resp.Count)
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 			// ResultParticipants
@@ -223,6 +229,8 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -257,6 +265,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -287,6 +297,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -323,6 +335,8 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -357,6 +371,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -387,6 +403,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -425,6 +443,8 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -461,6 +481,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -492,6 +514,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -553,6 +577,8 @@ func TestGetResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 0, resp.Count)
+			event := variables.events["event2"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, 0, len(resp.Results))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
@@ -690,6 +716,8 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -719,6 +747,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
@@ -744,6 +774,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
@@ -776,6 +808,8 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -806,6 +840,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 		}
 	}
@@ -832,6 +868,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 		}
 	}
@@ -864,6 +902,8 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -894,6 +934,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
@@ -920,6 +962,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
@@ -954,6 +998,8 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -986,6 +1032,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 		}
 	}
@@ -1013,6 +1061,8 @@ func TestGetAllResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 		}
 	}
@@ -1071,6 +1121,8 @@ func TestGetAllResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 0, resp.Count)
 			assert.Equal(t, 0, len(resp.Results))
+			event := variables.events["event2"]
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// Test valid key with restricted event
@@ -1203,6 +1255,8 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -1232,6 +1286,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
@@ -1257,6 +1313,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
@@ -1289,6 +1347,8 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -1319,6 +1379,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 		}
 	}
@@ -1345,6 +1407,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 		}
 	}
@@ -1377,6 +1441,8 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -1407,6 +1473,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
 		}
 	}
@@ -1433,6 +1501,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 		}
 	}
@@ -1467,6 +1537,8 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
@@ -1499,6 +1571,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 51, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
 		}
 	}
@@ -1526,6 +1600,8 @@ func TestGetFinishResults(t *testing.T) {
 		var resp types.GetResultsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 50, resp.Count)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 		}
 	}
@@ -1584,6 +1660,8 @@ func TestGetFinishResults(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 0, resp.Count)
 			assert.Equal(t, 0, len(resp.Results))
+			event := variables.events["event2"]
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// Test valid key with restricted event
@@ -1716,6 +1794,8 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
@@ -1767,6 +1847,8 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event1"].Type, resp.Event.Type)
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)

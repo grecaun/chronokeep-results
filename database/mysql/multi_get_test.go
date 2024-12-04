@@ -43,6 +43,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -51,6 +52,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -98,6 +100,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -106,6 +109,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -173,6 +177,7 @@ func TestGetEventAndYear(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -181,6 +186,7 @@ func TestGetEventAndYear(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,

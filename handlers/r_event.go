@@ -80,6 +80,7 @@ func (h Handler) RAddEvent(c echo.Context) error {
 	event, err := database.AddEvent(types.Event{
 		AccountIdentifier: id,
 		Name:              request.Event.Name,
+		CertificateName:   request.Event.CertificateName,
 		Slug:              request.Event.Slug,
 		Website:           request.Event.Website,
 		Image:             request.Event.Image,
@@ -129,6 +130,7 @@ func (h Handler) RUpdateEvent(c echo.Context) error {
 	err = database.UpdateEvent(types.Event{
 		Identifier:       event.Identifier,
 		Name:             request.Event.Name,
+		CertificateName:  request.Event.CertificateName,
 		Slug:             request.Event.Slug,
 		ContactEmail:     request.Event.ContactEmail,
 		Website:          request.Event.Website,

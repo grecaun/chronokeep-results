@@ -146,6 +146,7 @@ func TestGetEvent(t *testing.T) {
 		var resp types.GetEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
 			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
@@ -153,6 +154,8 @@ func TestGetEvent(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 			assert.Equal(t, len(variables.eventYears["event2"]), len(resp.EventYears))
+			event := variables.events["event2"]
+			assert.True(t, resp.Event.Equals(&event))
 			if assert.NotNil(t, resp.Year) {
 				assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 				assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
@@ -265,6 +268,8 @@ func TestGetEvents(t *testing.T) {
 		var resp types.GetEventsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 1, len(resp.Events))
+			event := variables.events["event1"]
+			assert.True(t, resp.Events[0].Equals(&event))
 		}
 	}
 	// Test valid request with account with restricted events
@@ -279,6 +284,8 @@ func TestGetEvents(t *testing.T) {
 		var resp types.GetEventsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 1, len(resp.Events))
+			event := variables.events["event1"]
+			assert.True(t, resp.Events[0].Equals(&event))
 		}
 	}
 }
@@ -370,6 +377,8 @@ func TestGetMyEvents(t *testing.T) {
 		var resp types.GetEventsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 1, len(resp.Events))
+			event := variables.events["event1"]
+			assert.True(t, resp.Events[0].Equals(&event))
 		}
 	}
 	// Test with restricted events
@@ -384,6 +393,10 @@ func TestGetMyEvents(t *testing.T) {
 		var resp types.GetEventsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 2, len(resp.Events))
+			event2 := variables.events["event2"]
+			assert.True(t, resp.Events[0].Equals(&event2) || resp.Events[1].Equals(&event2))
+			event3 := variables.events["event3"]
+			assert.True(t, resp.Events[0].Equals(&event3) || resp.Events[1].Equals(&event3))
 		}
 	}
 }
@@ -397,6 +410,7 @@ func TestAddEvent(t *testing.T) {
 	h.Setup()
 	event := types.Event{
 		Name:             "Test Event 3",
+		CertificateName:  "An Event",
 		Slug:             "event4",
 		ContactEmail:     "email@test.com",
 		AccessRestricted: false,
@@ -509,18 +523,22 @@ func TestAddEvent(t *testing.T) {
 		nEv, err := database.GetEvent("event4")
 		if assert.NoError(t, err) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// Test slug collision
@@ -756,6 +774,7 @@ func TestUpdateEvent(t *testing.T) {
 	h.Setup()
 	event := types.Event{
 		Name:             "Test Event 3",
+		CertificateName:  "Updated?",
 		Slug:             "event2",
 		ContactEmail:     "email@test2.com",
 		AccessRestricted: false,
@@ -878,18 +897,22 @@ func TestUpdateEvent(t *testing.T) {
 		nEv, err := database.GetEvent("event2")
 		if assert.NoError(t, err) {
 			assert.Equal(t, event.Name, nEv.Name)
+			assert.Equal(t, event.CertificateName, nEv.CertificateName)
 			assert.Equal(t, event.Slug, nEv.Slug)
 			assert.Equal(t, event.ContactEmail, nEv.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, nEv.AccessRestricted)
 			assert.Equal(t, event.Type, nEv.Type)
+			assert.True(t, event.Equals(nEv))
 		}
 		var resp types.ModifyEventResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, event.Name, resp.Event.Name)
+			assert.Equal(t, event.CertificateName, resp.Event.CertificateName)
 			assert.Equal(t, event.Slug, resp.Event.Slug)
 			assert.Equal(t, event.ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, event.AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, event.Type, resp.Event.Type)
+			assert.True(t, event.Equals(&resp.Event))
 		}
 	}
 	// Test unknown event

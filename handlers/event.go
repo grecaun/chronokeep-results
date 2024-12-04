@@ -202,6 +202,7 @@ func (h Handler) AddEvent(c echo.Context) error {
 	event, err := database.AddEvent(types.Event{
 		AccountIdentifier: mkey.Account.Identifier,
 		Name:              request.Event.Name,
+		CertificateName:   request.Event.CertificateName,
 		Slug:              request.Event.Slug,
 		Website:           request.Event.Website,
 		Image:             request.Event.Image,
@@ -267,6 +268,7 @@ func (h Handler) UpdateEvent(c echo.Context) error {
 	err = database.UpdateEvent(types.Event{
 		Identifier:       event.Identifier,
 		Name:             request.Event.Name,
+		CertificateName:  request.Event.CertificateName,
 		Slug:             request.Event.Slug,
 		ContactEmail:     request.Event.ContactEmail,
 		Website:          request.Event.Website,

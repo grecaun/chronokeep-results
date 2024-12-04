@@ -43,6 +43,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 	event1 := types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -51,6 +52,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 	event2 := types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -69,7 +71,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 		t.Fatal("Account or Event was nil.")
 	}
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(&event1) {
-		t.Errorf("Account expected: %+v; Found: %+v;\nEvent Expected: %+v; Found: %+v;", accounts[0], *mult.Account, event1, *mult.Event)
+		t.Errorf("Account expected: %+v;\nFound: %+v;\nEvent Expected: %+v;\nFound: %+v;", accounts[0], *mult.Account, event1, *mult.Event)
 	}
 	mult, err = db.GetAccountAndEvent(event2.Slug)
 	if err != nil {
@@ -82,7 +84,7 @@ func TestGetAccountAndEvent(t *testing.T) {
 		t.Fatal("Account or Event was nil.")
 	}
 	if !mult.Account.Equals(&accounts[1]) || !mult.Event.Equals(&event2) {
-		t.Errorf("Account expected: %+v; Found: %+v;\nEvent Expected: %+v; Found: %+v;", accounts[1], *mult.Account, event2, *mult.Event)
+		t.Errorf("Account expected: %+v;\nFound: %+v;\nEvent Expected: %+v;\nFound: %+v;", accounts[1], *mult.Account, event2, *mult.Event)
 	}
 }
 
@@ -98,6 +100,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -106,6 +109,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -137,7 +141,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		t.Fatal("Account, Event, or EventYear was nil.")
 	}
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
-		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
+		t.Errorf("Account expected: %+v;\nFound: %+v;\nEvent expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
 	mult, err = db.GetAccountEventAndYear(event1.Slug, "")
 	if err != nil {
@@ -147,7 +151,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		t.Fatal("Account, Event, or EventYear was nil.")
 	}
 	if !mult.Account.Equals(&accounts[0]) || !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
-		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
+		t.Errorf("Account expected: %+v;\nFound: %+v;\nEvent expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", accounts[0], *mult.Account, *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
 	mult, err = db.GetAccountEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
@@ -157,7 +161,7 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		t.Fatal("Account, Event, or EventYear was nil.")
 	}
 	if !mult.Account.Equals(&accounts[1]) || !mult.Event.Equals(event2) || !mult.EventYear.Equals(&eventYear2) {
-		t.Errorf("Account expected: %+v; Found: %+v;\nEvent expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", accounts[1], *mult.Account, *event2, *mult.Event, eventYear2, *mult.EventYear)
+		t.Errorf("Account expected: %+v;\nFound: %+v;\nEvent expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", accounts[1], *mult.Account, *event2, *mult.Event, eventYear2, *mult.EventYear)
 	}
 }
 
@@ -173,6 +177,7 @@ func TestGetEventAndYear(t *testing.T) {
 	event1 := &types.Event{
 		AccountIdentifier: account1.Identifier,
 		Name:              "Event 1",
+		CertificateName:   "An Event",
 		Slug:              "event1",
 		ContactEmail:      "event1@test.com",
 		AccessRestricted:  false,
@@ -181,6 +186,7 @@ func TestGetEventAndYear(t *testing.T) {
 	event2 := &types.Event{
 		AccountIdentifier: account2.Identifier,
 		Name:              "Event 2",
+		CertificateName:   "Another Event",
 		Slug:              "event2",
 		ContactEmail:      "event2@test.com",
 		AccessRestricted:  true,
@@ -212,7 +218,7 @@ func TestGetEventAndYear(t *testing.T) {
 		t.Fatal("Event or EventYear was nil.")
 	}
 	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
-		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
+		t.Errorf("Event expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
 	mult, err = db.GetEventAndYear(event1.Slug, "")
 	if err != nil {
@@ -222,7 +228,7 @@ func TestGetEventAndYear(t *testing.T) {
 		t.Fatal("Event or EventYear was nil.")
 	}
 	if !mult.Event.Equals(event1) || !mult.EventYear.Equals(&eventYear1) {
-		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
+		t.Errorf("Event expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", *event1, *mult.Event, eventYear1, *mult.EventYear)
 	}
 	mult, err = db.GetEventAndYear(event2.Slug, eventYear2.Year)
 	if err != nil {
@@ -232,7 +238,7 @@ func TestGetEventAndYear(t *testing.T) {
 		t.Fatal("Event or EventYear was nil.")
 	}
 	if !mult.Event.Equals(event2) || !mult.EventYear.Equals(&eventYear2) {
-		t.Errorf("Event expected: %+v; Found: %+v;\nEventYear expected: %+v; Found %+v;", *event2, *mult.Event, eventYear2, *mult.EventYear)
+		t.Errorf("Event expected: %+v;\nFound: %+v;\nEventYear expected: %+v; Found %+v;", *event2, *mult.Event, eventYear2, *mult.EventYear)
 	}
 }
 

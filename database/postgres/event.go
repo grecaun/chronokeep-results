@@ -163,6 +163,7 @@ func (p *Postgres) AddEvent(event types.Event) (*types.Event, error) {
 		Identifier:        id,
 		AccountIdentifier: event.AccountIdentifier,
 		Name:              event.Name,
+		CertificateName:   event.CertificateName,
 		Slug:              event.Slug,
 		Website:           event.Website,
 		Image:             event.Image,
