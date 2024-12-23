@@ -277,6 +277,7 @@ func (s *SQLite) createTables() error {
 				"age_group VARCHAR(200), " +
 				"distance VARCHAR(200) NOT NULL, " +
 				"anonymous SMALLINT NOT NULL DEFAULT 0, " +
+				"division VARCHAR(500) NOT NULL DEFAULT '', " +
 				"CONSTRAINT one_person UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 				");",
@@ -299,6 +300,7 @@ func (s *SQLite) createTables() error {
 				"finish BOOL DEFAULT TRUE, " +
 				"result_type INT DEFAULT 0, " +
 				"local_time VARCHAR(100) NOT NULL DEFAULT '', " +
+				"division_ranking INT NOT NULL DEFAULT -1, " +
 				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
 				"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +
@@ -950,6 +952,29 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 					"CONSTRAINT unique_distance UNIQUE (event_year_id, distance_name), " +
 					"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
 					");",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 18 && newVersion >= 18 {
+		log.Info("Updating to database version 18.")
+		queries := []myQuery{
+			{
+				name:  "AlterResultTable",
+				query: "ALTER TABLE result ADD COLUMN division_ranking INT NOT NULL DEFAULT -1;",
+			},
+			{
+				name:  "AlterPersonTable",
+				query: "ALTER TABLE person ADD COLUMN division VARCHAR(500) NOT NULL DEFAULT '';",
 			},
 		}
 		for _, q := range queries {

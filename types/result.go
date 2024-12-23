@@ -29,6 +29,8 @@ type Result struct {
 	Type             int    `json:"type"`
 	Anonymous        bool   `json:"anonymous"`
 	LocalTime        string `json:"local_time"`
+	Division         string `json:"division"`
+	DivisionRanking  int    `json:"division_ranking"`
 }
 
 // Validate Ensures valid data in the struct.
@@ -56,7 +58,10 @@ func (one *Result) Equals(two *Result) bool {
 		one.GenderRanking == two.GenderRanking &&
 		one.Finish == two.Finish &&
 		one.Type == two.Type &&
-		one.Anonymous == two.Anonymous
+		one.Anonymous == two.Anonymous &&
+		one.PersonId == two.PersonId &&
+		one.Division == two.Division &&
+		one.DivisionRanking == two.DivisionRanking
 }
 
 func (one *Result) SamePerson(two *Result) bool {
@@ -67,7 +72,8 @@ func (one *Result) SamePerson(two *Result) bool {
 		one.Gender == two.Gender &&
 		one.AgeGroup == two.AgeGroup &&
 		one.Distance == two.Distance &&
-		one.Anonymous == two.Anonymous
+		one.Anonymous == two.Anonymous &&
+		one.Division == two.Division
 }
 
 func (r *Result) AnonyInt() int {
