@@ -118,6 +118,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, 500, resp.Count)
 			// number of distances
 			assert.Equal(t, 2, len(resp.Results))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			assert.Equal(t, variables.events["event1"].Slug, resp.Event.Slug)
 			assert.Equal(t, variables.events["event1"].Website, resp.Event.Website)
 			assert.Equal(t, variables.events["event1"].Image, resp.Event.Image)
@@ -165,6 +178,19 @@ func TestGetResults(t *testing.T) {
 			testCorrect = resp.Results["Marathon"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -196,6 +222,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -237,6 +276,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -270,6 +322,19 @@ func TestGetResults(t *testing.T) {
 			testCorrect = resp.Results["2 Mile"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -302,6 +367,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -343,6 +421,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2020"]), len(resp.Distances))
 		}
@@ -376,6 +467,19 @@ func TestGetResults(t *testing.T) {
 			testCorrect = resp.Results["Marathon"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -408,6 +512,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -451,6 +568,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2020"]), len(resp.Distances))
 		}
@@ -486,6 +616,19 @@ func TestGetResults(t *testing.T) {
 			testCorrect = resp.Results["2 Mile"][50]
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -519,6 +662,19 @@ func TestGetResults(t *testing.T) {
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 			// Distances
 			assert.Equal(t, len(variables.distances["event1"]["2021"]), len(resp.Distances))
 		}
@@ -722,6 +878,19 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, limits
@@ -750,6 +919,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -777,6 +959,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, distance
@@ -814,6 +1009,19 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, distance, limits
@@ -843,6 +1051,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -871,6 +1092,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug and year
@@ -908,6 +1142,19 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year and limits
@@ -937,6 +1184,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -965,6 +1225,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year, distance
@@ -1004,6 +1277,19 @@ func TestGetAllResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year, distance, limits
@@ -1035,6 +1321,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -1064,6 +1363,19 @@ func TestGetAllResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test invalid event
@@ -1261,6 +1573,19 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, limits
@@ -1289,6 +1614,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -1316,6 +1654,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, distance
@@ -1353,6 +1704,19 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, distance, limits
@@ -1382,6 +1746,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -1410,6 +1787,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug and year
@@ -1447,6 +1837,19 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year and limits
@@ -1476,6 +1879,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["Marathon"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -1504,6 +1920,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["Marathon"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year, distance
@@ -1543,6 +1972,19 @@ func TestGetFinishResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2020"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test with slug, year, distance, limits
@@ -1574,6 +2016,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			testCorrect = resp.Results["2 Mile"][50]
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// verify pages work properly
@@ -1603,6 +2058,19 @@ func TestGetFinishResults(t *testing.T) {
 			event := variables.events["event1"]
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, testCorrect, resp.Results["2 Mile"][0])
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event1"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
 		}
 	}
 	// Test invalid event
@@ -1800,10 +2268,17 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.NotNil(t, resp.Person)
-			// first result
-			assert.Equal(t, variables.results["event1"]["2021"][0], resp.Results[0])
-			// second result
-			assert.Equal(t, variables.results["event1"]["2021"][300], resp.Results[1])
+			// verify the actual results returned
+			for _, outer := range resp.Results {
+				found := false
+				for _, inner := range variables.results["event1"]["2021"] {
+					if inner.Equals(&outer) {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found)
+			}
 			// segments
 			assert.Equal(t, 3, len(resp.Segments))
 			for _, outer := range resp.Segments {
@@ -1859,6 +2334,17 @@ func TestGetBibResults(t *testing.T) {
 			assert.Equal(t, 0, len(resp.Segments))
 			// No distance uploaded for 2 Mile
 			assert.Nil(t, resp.Distance)
+			// verify the actual results returned
+			for _, outer := range resp.Results {
+				found := false
+				for _, inner := range variables.results["event1"]["2021"] {
+					if inner.Equals(&outer) {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found)
+			}
 		}
 	}
 	// Test invalid event
