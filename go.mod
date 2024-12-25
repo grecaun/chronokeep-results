@@ -5,19 +5,19 @@ go 1.23
 toolchain go1.23.4
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20241208230723-d1c7de7e5dd2
+	github.com/chromedp/cdproto v0.0.0-20241222144035-c16d098c0fb6
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
-	github.com/labstack/echo/v4 v4.13.1
+	github.com/labstack/echo/v4 v4.13.3
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.9.0
-	github.com/twilio/twilio-go v1.23.7
+	github.com/stretchr/testify v1.10.0
+	github.com/twilio/twilio-go v1.23.8
 	golang.org/x/crypto v0.31.0
 )
 
@@ -28,7 +28,7 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mailru/easyjson v0.9.0 // indirect
 )
 
 require (
@@ -53,7 +53,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
