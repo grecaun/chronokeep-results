@@ -29,12 +29,6 @@ func setupEventTests() {
 				Type:     "free",
 				Password: testHashPassword("password"),
 			},
-			{
-				Name:     "Registration",
-				Email:    "registration@test.com",
-				Type:     "registration",
-				Password: testHashPassword("password"),
-			},
 		}
 	}
 }
@@ -149,6 +143,36 @@ func TestGetEvent(t *testing.T) {
 	if testEvent != nil {
 		t.Errorf("Unexpected event found: %+v;", *testEvent)
 	}
+	// Verify that we don't get a deleted event year when pulling up an event.
+	eventYear2 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2023",
+		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	testEvent, err = db.GetEvent(event1.Slug)
+	if err != nil {
+		t.Fatalf("Error getting event: %v", err)
+	}
+	if !testEvent.Equals(&event1) {
+		t.Errorf("Event expected: %+v; Event found: %+v;", event1, *testEvent)
+	}
+	if testEvent.RecentTime == nil {
+		t.Errorf("Expected time for an event but didn't find anything.")
+	} else if !testEvent.RecentTime.Equal(eventYear2.DateTime) {
+		t.Errorf("Expected time to be %v, found %v", eventYear2.DateTime, testEvent.RecentTime)
+	}
+	db.DeleteEventYear(*eventYear2)
+	testEvent, err = db.GetEvent(event1.Slug)
+	if err != nil {
+		t.Fatalf("Error getting event: %v", err)
+	}
+	if testEvent.RecentTime == nil {
+		t.Errorf("Expected time for an event but didn't find anything.")
+	} else if !testEvent.RecentTime.Equal(eventYear1.DateTime) {
+		t.Errorf("Expected time to be %v, found %v", eventYear1.DateTime, testEvent.RecentTime)
+	}
 }
 
 func TestGetEvents(t *testing.T) {
@@ -237,6 +261,31 @@ func TestGetEvents(t *testing.T) {
 	}
 	if found != 1 {
 		t.Errorf("Expected to find %v events with times, found %v.", 1, found)
+	}
+	// Verify that we don't get a deleted event year when pulling up events.
+	eventYear2 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2023",
+		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear2.DateTime))
+			}
+		}
+	}
+	db.DeleteEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear1.DateTime))
+			}
+		}
 	}
 }
 
@@ -327,6 +376,31 @@ func TestGetAllEvents(t *testing.T) {
 	if found != 1 {
 		t.Errorf("Expected to find %v events with times, found %v.", 1, found)
 	}
+	// Verify that we don't get a deleted event year when pulling up events.
+	eventYear2 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2023",
+		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear2.DateTime))
+			}
+		}
+	}
+	db.DeleteEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear1.DateTime))
+			}
+		}
+	}
 }
 
 func TestGetAccountEvents(t *testing.T) {
@@ -391,7 +465,7 @@ func TestGetAccountEvents(t *testing.T) {
 		assert.Equal(t, 0, len(events))
 	}
 	t.Log("Adding one event for each account.")
-	db.AddEvent(event1)
+	nEvent1, _ := db.AddEvent(event1)
 	db.AddEvent(event2)
 	t.Logf("Account email: %v", account1.Email)
 	events, err = db.GetAccountEvents(account1.Email)
@@ -423,6 +497,38 @@ func TestGetAccountEvents(t *testing.T) {
 	events, err = db.GetAccountEvents(registration.Email)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 2, len(events))
+	}
+	// Verify that we don't get a deleted event year when pulling up events.
+	eventYear1 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	db.AddEventYear(*eventYear1)
+	eventYear2 := &types.EventYear{
+		EventIdentifier: nEvent1.Identifier,
+		Year:            "2023",
+		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
+		Live:            false,
+	}
+	eventYear2, _ = db.AddEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear2.DateTime))
+			}
+		}
+	}
+	db.DeleteEventYear(*eventYear2)
+	events, err = db.GetEvents()
+	if assert.NoError(t, err) {
+		for _, ev := range events {
+			if ev.Slug == event1.Slug {
+				assert.True(t, ev.RecentTime.Equal(eventYear1.DateTime))
+			}
+		}
 	}
 }
 

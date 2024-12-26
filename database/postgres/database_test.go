@@ -126,7 +126,7 @@ func oldGetEvent(p *Postgres, slug string) (*types.Event, error) {
 		ctx,
 		"SELECT event_id, event_name, slug, website, image, account_id, contact_email, access_restricted, "+
 			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
+			"JOIN (SELECT event_id, date_time FROM event_year WHERE year_deleted=FALSE) y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
 		slug,
 	)
 	if err != nil {

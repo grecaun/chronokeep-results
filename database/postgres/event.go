@@ -22,7 +22,7 @@ func (p *Postgres) GetEvent(slug string) (*types.Event, error) {
 		ctx,
 		"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 			"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-			"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
+			"JOIN (SELECT date_time, event_id FROM event_year WHERE year_deleted=FALSE) y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE and slug=$1;",
 		slug,
 	)
 	if err != nil {
@@ -66,14 +66,14 @@ func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types
 				ctx,
 				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
+					"JOIN (SELECT date_time, event_id FROM event_year WHERE year_deleted=FALSE) y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE;",
 			)
 		} else {
 			res, err = db.Query(
 				ctx,
 				"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 					"recent_time FROM event NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-					"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
+					"JOIN (SELECT date_time, event_id FROM event_year WHERE year_deleted=FALSE) y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND access_restricted=FALSE;",
 			)
 		}
 	} else {
@@ -82,7 +82,7 @@ func (p *Postgres) getEventsInternal(email *string, restricted ...bool) ([]types
 			"SELECT event_id, event_name, cert_name, slug, website, image, account_id, contact_email, access_restricted, event_type, "+
 				"recent_time FROM event NATURAL JOIN account a "+
 				"NATURAL JOIN (SELECT e.event_id, MAX(y.date_time) AS recent_time FROM event e LEFT OUTER "+
-				"JOIN event_year y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND (account_email=$1 "+
+				"JOIN (SELECT date_time, event_id FROM event_year WHERE year_deleted=FALSE) y ON e.event_id=y.event_id GROUP BY e.event_id) AS time WHERE event_deleted=FALSE AND (account_email=$1 "+
 				"OR EXISTS (SELECT sub_account_id FROM linked_accounts JOIN account b ON b.account_id=sub_account_id WHERE "+
 				"a.account_id=main_account_id AND b.account_email=$1));",
 			email,
