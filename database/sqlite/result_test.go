@@ -264,6 +264,9 @@ func TestAddResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.AddResults(eventYear.Identifier, results)
@@ -471,6 +474,9 @@ func TestGetLastResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetLastResults(eventYear.Identifier, 0, 0)
@@ -529,6 +535,9 @@ func TestGetLastResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	db.AddResults(eventYear.EventIdentifier, results)
@@ -590,6 +599,9 @@ func TestGetDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetDistanceResults(eventYear.Identifier, "test", 0, 0)
@@ -655,6 +667,9 @@ func TestGetDistanceResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	for i := 0; i < len(results); i += 10 {
@@ -761,6 +776,9 @@ func TestGetAllDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetAllDistanceResults(eventYear.Identifier, "test", 0, 0)
@@ -826,6 +844,9 @@ func TestGetAllDistanceResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	for i := 0; i < len(results); i += 10 {
@@ -932,6 +953,9 @@ func TestGetFinishResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetFinishResults(eventYear.Identifier, "test", 0, 0)
@@ -1006,6 +1030,9 @@ func TestGetFinishResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	for i := 0; i < len(results); i += 10 {
@@ -1113,6 +1140,9 @@ func TestGetResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	res, err := db.GetResults(eventYear.Identifier, 0, 0)
@@ -1171,6 +1201,9 @@ func TestGetResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	for i := 0; i < len(results); i += 10 {
@@ -1237,6 +1270,9 @@ func TestPageNoLimit(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	db.AddResults(eventYear.EventIdentifier, results)
@@ -1302,11 +1338,17 @@ func TestDeleteResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
@@ -1355,11 +1397,17 @@ func TestDeleteEventResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
@@ -1406,11 +1454,17 @@ func TestDeleteDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event2.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
@@ -1454,6 +1508,9 @@ func TestGetBibResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	lastIX := len(results) - 1

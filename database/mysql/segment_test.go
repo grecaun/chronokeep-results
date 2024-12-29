@@ -90,6 +90,9 @@ func TestAddSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	s, err := db.GetSegments(eventYear.Identifier)
@@ -209,6 +212,9 @@ func TestDistanceGetSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	s, err := db.GetDistanceSegments(eventYear.Identifier, segments[0].DistanceName)
@@ -299,6 +305,9 @@ func TestGetSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	s, err := db.GetSegments(eventYear.Identifier)
@@ -349,6 +358,9 @@ func TestDeleteSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	s, err := db.GetSegments(eventYear.Identifier)

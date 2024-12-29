@@ -226,6 +226,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
 			Live:            false,
 			DaysAllowed:     1,
+			RankingType:     "chip",
 		},
 		{
 			EventIdentifier: output.events["event1"].Identifier,
@@ -233,6 +234,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 			Live:            false,
 			DaysAllowed:     2,
+			RankingType:     "chip",
 		},
 		{
 			EventIdentifier: output.events["event2"].Identifier,
@@ -240,6 +242,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 			DaysAllowed:     1,
+			RankingType:     "gun",
 		},
 		{
 			EventIdentifier: output.events["event2"].Identifier,
@@ -247,6 +250,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2020, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 			DaysAllowed:     3,
+			RankingType:     "gun",
 		},
 		{
 			EventIdentifier: output.events["event2"].Identifier,
@@ -254,6 +258,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Date(2019, 04, 05, 11, 0, 0, 0, time.Local),
 			Live:            false,
 			DaysAllowed:     4,
+			RankingType:     "gun",
 		},
 		{
 			EventIdentifier: output.events["event3"].Identifier,
@@ -261,6 +266,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			DateTime:        time.Now(),
 			Live:            false,
 			DaysAllowed:     2,
+			RankingType:     "chip",
 		},
 	} {
 		database.AddEventYear(eventYear)

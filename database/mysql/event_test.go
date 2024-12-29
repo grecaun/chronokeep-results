@@ -112,6 +112,8 @@ func TestGetEvent(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	db.AddEventYear(*eventYear1)
 	testEvent, err := db.GetEvent(event1.Slug)
@@ -149,6 +151,8 @@ func TestGetEvent(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	testEvent, err = db.GetEvent(event1.Slug)
@@ -230,6 +234,8 @@ func TestGetEvents(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	db.AddEventYear(*eventYear1)
 	events, err = db.GetEvents()
@@ -268,6 +274,8 @@ func TestGetEvents(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	events, err = db.GetEvents()
@@ -344,6 +352,8 @@ func TestGetAllEvents(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	db.AddEventYear(*eventYear1)
 	events, err = db.GetAllEvents()
@@ -382,6 +392,8 @@ func TestGetAllEvents(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	events, err = db.GetEvents()
@@ -505,6 +517,8 @@ func TestGetAccountEvents(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	db.AddEventYear(*eventYear1)
 	eventYear2 := &types.EventYear{
@@ -512,6 +526,8 @@ func TestGetAccountEvents(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	events, err = db.GetEvents()
@@ -564,12 +580,16 @@ func TestDeleteEvent(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear2 := &types.EventYear{
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	db.AddEventYear(*eventYear1)
 	db.AddEventYear(*eventYear2)

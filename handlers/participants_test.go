@@ -335,6 +335,8 @@ func TestAddParticipants(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
@@ -713,6 +715,8 @@ func TestDeleteParticipants(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)

@@ -405,9 +405,11 @@ func TestAddEventYear(t *testing.T) {
 	body, err := json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event1"].Slug,
 		EventYear: types.RequestYear{
-			Year:     "2022",
-			DateTime: "2022/04/05 9:00:00 -07:00",
-			Live:     false,
+			Year:        "2022",
+			DateTime:    "2022/04/05 9:00:00 -07:00",
+			Live:        false,
+			DaysAllowed: 1,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {
@@ -506,9 +508,11 @@ func TestAddEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: "unknown-event",
 		EventYear: types.RequestYear{
-			Year:     "2022",
-			DateTime: "2022/04/05 9:00:00 -07:00",
-			Live:     false,
+			Year:        "2022",
+			DateTime:    "2022/04/05 9:00:00 -07:00",
+			Live:        false,
+			DaysAllowed: 3,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {
@@ -525,9 +529,11 @@ func TestAddEventYear(t *testing.T) {
 	}
 	// Test wrong account key
 	eYear := types.RequestYear{
-		Year:     "2022",
-		DateTime: "2022/04/05 09:00:00 -07:00",
-		Live:     false,
+		Year:        "2022",
+		DateTime:    "2022/04/05 09:00:00 -07:00",
+		Live:        false,
+		DaysAllowed: 2,
+		RankingType: "chip",
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -551,6 +557,7 @@ func TestAddEventYear(t *testing.T) {
 		DateTime:    "2022/04/05 09:00:00 +00:00",
 		Live:        false,
 		DaysAllowed: 1,
+		RankingType: "chip",
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -591,9 +598,11 @@ func TestAddEventYear(t *testing.T) {
 	}
 	// Test valid request 2
 	eYear = types.RequestYear{
-		Year:     "2022-2",
-		DateTime: "2022/05/05 09:00:00 +00:00",
-		Live:     false,
+		Year:        "2022-2",
+		DateTime:    "2022/05/05 09:00:00 +00:00",
+		Live:        false,
+		DaysAllowed: 5,
+		RankingType: "chip",
 	}
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug:      variables.events["event2"].Slug,
@@ -646,9 +655,11 @@ func TestAddEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:     "invalid-year",
-			DateTime: "2022/04/05 9:00:00 +00:00",
-			Live:     false,
+			Year:        "invalid-year",
+			DateTime:    "2022/04/05 9:00:00 +00:00",
+			Live:        false,
+			DaysAllowed: 7,
+			RankingType: "gun",
 		},
 	})
 	if err != nil {
@@ -667,9 +678,11 @@ func TestAddEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:     "invalid-year$_",
-			DateTime: "2022/04/05 9:00:00 +00:00",
-			Live:     false,
+			Year:        "invalid-year$_",
+			DateTime:    "2022/04/05 9:00:00 +00:00",
+			Live:        false,
+			DaysAllowed: 1,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {
@@ -688,9 +701,11 @@ func TestAddEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:     "2025",
-			DateTime: "2025/04 9:00:00",
-			Live:     false,
+			Year:        "2025",
+			DateTime:    "2025/04 9:00:00",
+			Live:        false,
+			DaysAllowed: 1,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {
@@ -721,6 +736,7 @@ func TestUpdateEventYear(t *testing.T) {
 			DateTime:    "2022/04/05 9:00:00 -07:00",
 			Live:        false,
 			DaysAllowed: 9,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {
@@ -913,9 +929,11 @@ func TestUpdateEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:     "invalid-year$",
-			DateTime: "2022/04/05 9:00:00 -07:00",
-			Live:     false,
+			Year:        "invalid-year$",
+			DateTime:    "2022/04/05 9:00:00 -07:00",
+			Live:        false,
+			DaysAllowed: 1,
+			RankingType: "chip",
 		},
 	})
 	if err != nil {

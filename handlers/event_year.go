@@ -156,6 +156,7 @@ func (h Handler) AddEventYear(c echo.Context) error {
 		DateTime:        request.EventYear.GetDateTime(),
 		Live:            request.EventYear.Live,
 		DaysAllowed:     request.EventYear.DaysAllowed,
+		RankingType:     request.EventYear.RankingType,
 	})
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Event Year (Duplicate Year Likely)", err)
@@ -221,6 +222,7 @@ func (h Handler) UpdateEventYear(c echo.Context) error {
 		DateTime:        request.EventYear.GetDateTime(),
 		Live:            request.EventYear.Live,
 		DaysAllowed:     request.EventYear.DaysAllowed,
+		RankingType:     request.EventYear.RankingType,
 	})
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Updating Event", err)

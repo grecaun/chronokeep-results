@@ -487,6 +487,8 @@ func TestUpgrade(t *testing.T) {
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	_, _ = db.oldAddEventYear(*eventYear1)
 	eventYear1, err = db.oldGetEventYear(event1.Slug, eventYear1.Year)

@@ -97,6 +97,9 @@ func TestGetPerson(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	person, err := db.GetPerson(event.Slug, eventYear.Year, people[0].Bib)
@@ -155,6 +158,9 @@ func TestGetPeople(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	iPeople, err := db.GetPeople(event.Slug, eventYear.Year)
@@ -205,6 +211,9 @@ func TestAddPerson(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	person, err := db.AddPerson(eventYear.Identifier, people[0])
@@ -298,6 +307,9 @@ func TestAddPeople(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	p, err := db.GetPeople(event.Slug, eventYear.Year)
@@ -388,6 +400,9 @@ func TestDeletePeople(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	p, err := db.GetPeople(event.Slug, eventYear.Year)
@@ -510,6 +525,9 @@ func TestUpdatePerson(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	person, _ := db.AddPerson(eventYear.Identifier, people[0])

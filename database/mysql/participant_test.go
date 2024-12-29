@@ -135,6 +135,8 @@ func TestAddParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
@@ -352,6 +354,8 @@ func TestGetParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	iParts, err := db.GetParticipants(eventYear.Identifier, 50, 0)
@@ -466,6 +470,8 @@ func TestGetAllParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	iParts, err := db.GetParticipants(eventYear.Identifier, 0, 0)
@@ -519,6 +525,8 @@ func TestDeleteParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
@@ -597,6 +605,8 @@ func TestUpdateParticipant(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	parts, _ := db.AddParticipants(eventYear.Identifier, participants)
@@ -655,6 +665,8 @@ func TestUpdateParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
 	parts, _ := db.AddParticipants(eventYear.Identifier, participants)

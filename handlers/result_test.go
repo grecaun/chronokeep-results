@@ -2434,6 +2434,8 @@ func TestAddResults(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 11, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	assert.NoError(t, err)
 	// Test no key

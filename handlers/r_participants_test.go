@@ -476,6 +476,8 @@ func TestRAddParticipant(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
@@ -485,6 +487,8 @@ func TestRAddParticipant(t *testing.T) {
 		Year:            "2024",
 		DateTime:        time.Date(2024, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
@@ -1135,6 +1139,8 @@ func TestRDeleteParticipants(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
@@ -2764,6 +2770,8 @@ func TestRAddManyParticipantss(t *testing.T) {
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
@@ -2773,6 +2781,8 @@ func TestRAddManyParticipantss(t *testing.T) {
 		Year:            "2024",
 		DateTime:        time.Date(2024, 04, 05, 9, 0, 0, 0, time.Local),
 		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
 	})
 	if err != nil {
 		t.Fatalf("Error adding test event year to database: %v", err)
