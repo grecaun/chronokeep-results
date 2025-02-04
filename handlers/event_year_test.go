@@ -701,8 +701,8 @@ func TestAddEventYear(t *testing.T) {
 	body, err = json.Marshal(types.ModifyEventYearRequest{
 		Slug: variables.events["event2"].Slug,
 		EventYear: types.RequestYear{
-			Year:        "2025",
-			DateTime:    "2025/04 9:00:00",
+			Year:        "2027",
+			DateTime:    "2027/04 9:00:00",
 			Live:        false,
 			DaysAllowed: 1,
 			RankingType: "chip",
