@@ -695,6 +695,23 @@ func TestGetResults(t *testing.T) {
 	if assert.NoError(t, h.GetResults(c)) {
 		assert.Equal(t, http.StatusNotFound, response.Code)
 	}
+	// Test valid event deleted year
+	year = "2025"
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug: "event2",
+		Year: &year,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetResults(c)) {
+		assert.Equal(t, http.StatusNotFound, response.Code)
+	}
 	// Test valid event invalid year
 	year = "2000"
 	body, err = json.Marshal(types.GetResultsRequest{
@@ -742,8 +759,8 @@ func TestGetResults(t *testing.T) {
 			assert.Nil(t, resp.Distances)
 		}
 	}
-	// Test valid key with restricted event
-	t.Log("Testing restricted event but unauthorized key.")
+	// Test valid key with restricted event (not authorized)
+	t.Log("Testing restricted event but unauthorized key (not authorized).")
 	body, err = json.Marshal(types.GetResultsRequest{
 		Slug: variables.events["event2"].Slug,
 	})
@@ -757,6 +774,58 @@ func TestGetResults(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.GetResults(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test valid key with restricted event (authorized)
+	t.Log("Testing restricted event but unauthorized key (authorized).")
+	body, err = json.Marshal(types.GetResultsRequest{
+		Slug: variables.events["event2"].Slug,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 4, resp.Count)
+			// number of distances
+			assert.Equal(t, 2, len(resp.Results))
+			// verify the actual results returned
+			for _, res := range resp.Results {
+				for _, outer := range res {
+					found := false
+					for _, inner := range variables.results["event2"]["2021"] {
+						if inner.Equals(&outer) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found)
+				}
+			}
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			event := variables.events["event2"]
+			assert.True(t, event.Equals(&resp.Event))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.EventYear.Year)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.EventYear.Live)
+			assert.Equal(t, 3, len(resp.Years))
+			// ResultParticipants
+			assert.Equal(t, 4, len(resp.Participants))
+			// Distances
+			assert.Equal(t, len(variables.distances["event2"]["2021"]), len(resp.Distances))
+		}
 	}
 }
 

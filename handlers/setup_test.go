@@ -201,6 +201,14 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			ContactEmail:      "event3@test.com",
 			AccessRestricted:  true,
 		},
+		{ // Event to be deleted to make sure that we don't get spurious entries.
+			AccountIdentifier: output.accounts[0].Identifier,
+			Name:              "Deleted Event",
+			CertificateName:   "Del Event",
+			Slug:              "delevent",
+			ContactEmail:      "delevent@test.com",
+			AccessRestricted:  false,
+		},
 	} {
 		database.AddEvent(event)
 	}
@@ -217,6 +225,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			output.distances[event.Slug] = make(map[string][]types.Distance)
 		}
 	}
+	database.DeleteEvent(output.events["delevent"])
 	// add event years, two per event
 	t.Log("Adding event years.")
 	for _, eventYear := range []types.EventYear{
@@ -235,6 +244,14 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			Live:            false,
 			DaysAllowed:     2,
 			RankingType:     "chip",
+		},
+		{ // EventYear to be deleted to ensure we don't get errors when pulling an event.
+			EventIdentifier: output.events["event2"].Identifier,
+			Year:            "2025",
+			DateTime:        time.Date(2025, 04, 05, 11, 0, 0, 0, time.Local),
+			Live:            false,
+			DaysAllowed:     1,
+			RankingType:     "gun",
 		},
 		{
 			EventIdentifier: output.events["event2"].Identifier,
@@ -285,6 +302,8 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for _, eventYear := range evYear {
 		output.eventYears[output.events["event2"].Slug][eventYear.Year] = eventYear
 	}
+	// Delete the year we added just to delete to test for errors.
+	database.DeleteEventYear(output.eventYears["event2"]["2025"])
 	evYear, err = database.GetEventYears(output.events["event3"].Slug)
 	if err != nil {
 		t.Fatalf("Unexpected error getting event years: %v", err)
