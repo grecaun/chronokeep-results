@@ -304,6 +304,8 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	}
 	// Delete the year we added just to delete to test for errors.
 	database.DeleteEventYear(output.eventYears["event2"]["2025"])
+	// Remove eventyear from the output to ensure tests run as they did previously
+	delete(output.eventYears["event2"], "2025")
 	evYear, err = database.GetEventYears(output.events["event3"].Slug)
 	if err != nil {
 		t.Fatalf("Unexpected error getting event years: %v", err)
