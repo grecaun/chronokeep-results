@@ -71,7 +71,7 @@ func (h Handler) GetParticipants(c echo.Context) error {
 			page--
 		}
 	}
-	participants, err := database.GetParticipants(mult.EventYear.Identifier, limit, page, nil)
+	participants, err := database.GetParticipants(mult.EventYear.Identifier, limit, page, request.UpdatedAfter)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}
@@ -118,15 +118,15 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	if mkey.Key.Type != "write" && mkey.Key.Type != "delete" {
 		return getAPIError(c, http.StatusUnauthorized, "Key Not Allowed", errors.New("read key not allowed to write"))
 	}
-	mult, err := database.GetEventAndYear(request.Slug, request.Year)
+	multi, err := database.GetEventAndYear(request.Slug, request.Year)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Year", err)
 	}
-	if mult == nil || mult.Event == nil || mult.EventYear == nil {
+	if multi == nil || multi.Event == nil || multi.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
 	// Only the account owner can add.
-	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
+	if mkey.Account.Identifier != multi.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
 	// validate participants
@@ -140,12 +140,20 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	if len(partToAdd) < 1 {
 		return getAPIError(c, http.StatusBadRequest, "No Valid Participants", nil)
 	}
-	participants, err := database.AddParticipants(mult.EventYear.Identifier, partToAdd)
+	participants, err := database.AddParticipants(multi.EventYear.Identifier, partToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
-	return c.JSON(http.StatusOK, types.AddResultsResponse{
-		Count: len(participants),
+	updated := make([]types.Participant, 0)
+	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
+		updated, err = database.GetParticipants(multi.EventYear.Identifier, 0, 0, request.UpdatedAfter)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Fetching Updated Participants", err)
+		}
+	}
+	return c.JSON(http.StatusOK, types.AddParticipantsResponse{
+		Count:   len(participants),
+		Updated: updated,
 	})
 }
 

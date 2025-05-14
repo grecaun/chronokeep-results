@@ -64,7 +64,7 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 			page--
 		}
 	}
-	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page, nil)
+	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page, request.UpdatedAfter)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}
@@ -135,8 +135,16 @@ func (h Handler) RAddParticipant(c echo.Context) error {
 	if len(participants) > 1 {
 		return getAPIError(c, http.StatusInternalServerError, "Multiple Participants Added", nil)
 	}
+	updated := make([]types.Participant, 0)
+	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
+		updated, err = database.GetParticipants(multi.EventYear.Identifier, 0, 0, request.UpdatedAfter)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Fetching Updated Participants", err)
+		}
+	}
 	return c.JSON(http.StatusOK, types.UpdateParticipantResponse{
 		Participant: participants[0],
+		Updated:     updated,
 	})
 }
 
@@ -222,8 +230,16 @@ func (h Handler) RUpdateParticipant(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Updating Participant", err)
 	}
-	return c.JSON(http.StatusOK, types.UpdateParticipantRequest{
+	updated := make([]types.Participant, 0)
+	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
+		updated, err = database.GetParticipants(multi.EventYear.Identifier, 0, 0, request.UpdatedAfter)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Fetching Updated Participants", err)
+		}
+	}
+	return c.JSON(http.StatusOK, types.UpdateParticipantResponse{
 		Participant: *part,
+		Updated:     updated,
 	})
 }
 
@@ -282,8 +298,16 @@ func (h Handler) RUpdateManyParticipants(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
+	updated := make([]types.Participant, 0)
+	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
+		updated, err = database.GetParticipants(multi.EventYear.Identifier, 0, 0, request.UpdatedAfter)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Fetching Updated Participants", err)
+		}
+	}
 	return c.JSON(http.StatusOK, types.UpdateParticipantsResponse{
 		Participants: participants,
+		Updated:      updated,
 	})
 }
 
@@ -346,7 +370,15 @@ func (h Handler) RAddManyParticipants(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
+	updated := make([]types.Participant, 0)
+	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
+		updated, err = database.GetParticipants(multi.EventYear.Identifier, 0, 0, request.UpdatedAfter)
+		if err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Fetching Updated Participants", err)
+		}
+	}
 	return c.JSON(http.StatusOK, types.UpdateParticipantsResponse{
 		Participants: participants,
+		Updated:      updated,
 	})
 }

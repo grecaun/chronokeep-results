@@ -270,8 +270,8 @@ func (p *Postgres) UpdateParticipant(eventYearID int64, participant types.Partic
 			"apparel=$9, "+
 			"sms_enabled=$10, "+
 			"mobile=$11, "+
-			"updated_at=$14 "+
-			"WHERE event_year_id=$12 AND alternate_id=$13 RETURNING (participant_id);",
+			"updated_at=$12 "+
+			"WHERE event_year_id=$13 AND alternate_id=$14 RETURNING (participant_id);",
 		participant.Bib,
 		participant.First,
 		participant.Last,
@@ -283,9 +283,9 @@ func (p *Postgres) UpdateParticipant(eventYearID int64, participant types.Partic
 		participant.Apparel,
 		participant.SMSInt(),
 		participant.Mobile,
+		participant.UpdatedAt,
 		eventYearID,
 		participant.AlternateId,
-		participant.UpdatedAt,
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)
@@ -341,8 +341,8 @@ func (p *Postgres) UpdateParticipants(eventYearID int64, participants []types.Pa
 				"apparel=$9, "+
 				"sms_enabled=$10, "+
 				"mobile=$11, "+
-				"updated_at=$14 "+
-				"WHERE event_year_id=$12 AND alternate_id=$13 RETURNING (participant_id);",
+				"updated_at=$12 "+
+				"WHERE event_year_id=$13 AND alternate_id=$14 RETURNING (participant_id);",
 			participant.Bib,
 			participant.First,
 			participant.Last,
@@ -354,9 +354,9 @@ func (p *Postgres) UpdateParticipants(eventYearID int64, participants []types.Pa
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 			eventYearID,
 			participant.AlternateId,
-			participant.UpdatedAt,
 		).Scan(&tmp.Identifier)
 		if err != nil {
 			tx.Rollback(ctx)

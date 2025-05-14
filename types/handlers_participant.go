@@ -13,12 +13,20 @@ type GetParticipantsResponse struct {
 
 // UpdateParticipantResponse Struct used for the response of an Update Participants request.
 type UpdateParticipantResponse struct {
-	Participant Participant `json:"participant"`
+	Participant Participant   `json:"participant"`
+	Updated     []Participant `json:"updated_participants"`
 }
 
 // UpdateParticipantsResponse Struct used for the response of an Update Participants request.
 type UpdateParticipantsResponse struct {
 	Participants []Participant `json:"participants"`
+	Updated      []Participant `json:"updated_participants"`
+}
+
+// AddResultsResponse Struct used for the response to an Add/Update/Delete Participants request.
+type AddParticipantsResponse struct {
+	Count   int           `json:"count"`
+	Updated []Participant `json:"updated_participants"`
 }
 
 /*
@@ -53,13 +61,15 @@ type AddParticipantsRequest struct {
 	Slug         string        `json:"slug"`
 	Year         string        `json:"year"`
 	Participants []Participant `json:"participants"`
+	UpdatedAfter *int64        `json:"updated_after"`
 }
 
 // AddParticipantRequest Struct used for the request to add/update participants for an event.
 type AddParticipantRequest struct {
-	Slug        string      `json:"slug"`
-	Year        string      `json:"year"`
-	Participant Participant `json:"participant"`
+	Slug         string      `json:"slug"`
+	Year         string      `json:"year"`
+	Participant  Participant `json:"participant"`
+	UpdatedAfter *int64      `json:"updated_after"`
 }
 
 // DeleteParticipantsRequest Struct used for the request to delete participants for an event.

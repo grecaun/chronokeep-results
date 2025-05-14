@@ -195,6 +195,41 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
+	// Test valid request -- UpdatedAfter
+	t.Log("Testing valid request -- UpdatedAfter.")
+	year = variables.eventYears["event2"]["2020"].Year
+	updatedAfter := int64(100)
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         &year,
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodGet, "/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2020"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.Year.Live)
+			assert.Equal(t, 2, len(resp.Participants))
+		}
+	}
 	// Test valid request - Limit and Page defined
 	t.Log("Testing valid request. Limit and Page defined")
 	year = variables.eventYears["event1"]["2021"].Year
@@ -355,6 +390,7 @@ func TestAddParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "2034",
@@ -369,6 +405,7 @@ func TestAddParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   150,
 		},
 		{
 			AlternateId: "3521",
@@ -383,6 +420,7 @@ func TestAddParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "1364",
@@ -397,6 +435,7 @@ func TestAddParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 	}
 	body, err := json.Marshal(types.AddParticipantsRequest{
@@ -598,9 +637,61 @@ func TestAddParticipants(t *testing.T) {
 				assert.True(t, found)
 			}
 		}
-		var resp types.AddResultsResponse
+		var resp types.AddParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, len(parts), resp.Count)
+			assert.Equal(t, 0, len(resp.Updated))
+		}
+	}
+	// Test valid request - UpdatedAfter
+	t.Log("Testing valid request -- UpdatedAfter.")
+	updatedAfter := int64(50)
+	body, err = json.Marshal(types.AddParticipantsRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         year.Year,
+		Participants: parts,
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/participants/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete2"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		part, err := database.GetParticipants(year.Identifier, 0, 0, nil)
+		if assert.NoError(t, err) {
+			assert.Equal(t, len(parts), len(part))
+			for _, outer := range parts {
+				found := false
+				for _, inner := range part {
+					if outer.AlternateId == inner.AlternateId {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+		var resp types.AddParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, len(parts), resp.Count)
+			assert.Equal(t, 2, len(resp.Updated))
 		}
 	}
 	// validation -- age
@@ -735,6 +826,7 @@ func TestDeleteParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "2034",
@@ -749,6 +841,7 @@ func TestDeleteParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   150,
 		},
 		{
 			AlternateId: "3521",
@@ -763,6 +856,7 @@ func TestDeleteParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "1364",
@@ -777,6 +871,7 @@ func TestDeleteParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 	}
 	p, err := database.AddParticipants(year.Identifier, parts)

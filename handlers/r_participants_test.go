@@ -462,6 +462,52 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, 500, len(resp.Participants))
 		}
 	}
+	// Test valid request - self - UpdatedAfter set
+	t.Log("Testing valid request -- self -- UpdatedAfter set.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	year = variables.eventYears["event2"]["2021"].Year
+	updatedAfter := int64(100)
+	body, err = json.Marshal(types.GetParticipantsRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         &year,
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RGetParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, variables.events["event2"].Name, resp.Event.Name)
+			assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
+			assert.Equal(t, variables.events["event2"].Website, resp.Event.Website)
+			assert.Equal(t, variables.events["event2"].Image, resp.Event.Image)
+			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
+			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
+			assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
+			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
+			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
+			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
+			assert.Equal(t, 2, len(resp.Participants))
+		}
+	}
 }
 
 func TestRAddParticipant(t *testing.T) {
@@ -507,6 +553,7 @@ func TestRAddParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "2034",
@@ -521,6 +568,7 @@ func TestRAddParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "3521",
@@ -535,6 +583,7 @@ func TestRAddParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   70,
 		},
 		{
 			AlternateId: "1364",
@@ -549,6 +598,7 @@ func TestRAddParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 	}
 	body, err := json.Marshal(types.AddParticipantRequest{
@@ -740,6 +790,80 @@ func TestRAddParticipant(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+					assert.True(t, outer.Equals(&resp.Participant))
+					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
+					assert.Equal(t, outer.Bib, resp.Participant.Bib)
+					assert.Equal(t, outer.First, resp.Participant.First)
+					assert.Equal(t, outer.Last, resp.Participant.Last)
+					assert.Equal(t, outer.Birthdate, resp.Participant.Birthdate)
+					assert.Equal(t, outer.Gender, resp.Participant.Gender)
+					assert.Equal(t, outer.AgeGroup, resp.Participant.AgeGroup)
+					assert.Equal(t, outer.Distance, resp.Participant.Distance)
+					assert.Equal(t, outer.Anonymous, resp.Participant.Anonymous)
+					assert.Equal(t, outer.SMSEnabled, resp.Participant.SMSEnabled)
+					assert.Equal(t, outer.Mobile, resp.Participant.Mobile)
+					assert.Equal(t, outer.Apparel, resp.Participant.Apparel)
+				}
+				for _, inner := range part {
+					if outer.Bib == inner.Bib {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+	}
+	// Test valid request - self - UpdatedAfter
+	t.Log("Testing valid request -- self -- UpdatedAfter.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	updatedAfter := int64(50)
+	body, err = json.Marshal(types.AddParticipantRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         year.Year,
+		Participant:  parts[3],
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RAddParticipant(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		if assert.NoError(t, err) {
+			part, err := database.GetParticipants(year.Identifier, 0, 0, nil)
+			if assert.NoError(t, err) {
+				outer := parts[3]
+				found := false
+				var resp types.UpdateParticipantResponse
+				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+					assert.Equal(t, 1, len(resp.Updated))
 					assert.True(t, outer.Equals(&resp.Participant))
 					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participant.Bib)
@@ -1642,6 +1766,7 @@ func TestRUpdateParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "2034",
@@ -1656,6 +1781,7 @@ func TestRUpdateParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "3521",
@@ -1670,6 +1796,7 @@ func TestRUpdateParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "1364",
@@ -1684,6 +1811,7 @@ func TestRUpdateParticipant(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   100,
 		},
 	}
 	_, err := database.AddParticipants(variables.eventYears["event2"]["2020"].Identifier, parts)
@@ -1895,6 +2023,87 @@ func TestRUpdateParticipant(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, updated.AgeGroup, resp.Participant.AgeGroup)
+			assert.Equal(t, updated.AlternateId, resp.Participant.AlternateId)
+			assert.Equal(t, updated.Anonymous, resp.Participant.Anonymous)
+			assert.Equal(t, updated.Apparel, resp.Participant.Apparel)
+			assert.Equal(t, updated.Bib, resp.Participant.Bib)
+			assert.Equal(t, updated.Birthdate, resp.Participant.Birthdate)
+			assert.Equal(t, updated.Distance, resp.Participant.Distance)
+			assert.Equal(t, updated.First, resp.Participant.First)
+			assert.Equal(t, updated.Gender, resp.Participant.Gender)
+			assert.Equal(t, updated.Last, resp.Participant.Last)
+			assert.Equal(t, updated.Mobile, resp.Participant.Mobile)
+			assert.Equal(t, updated.SMSEnabled, resp.Participant.SMSEnabled)
+		}
+		found := false
+		for _, outer := range p {
+			if updated.AlternateId == outer.AlternateId {
+				assert.Equal(t, updated.AgeGroup, outer.AgeGroup)
+				assert.Equal(t, updated.AlternateId, outer.AlternateId)
+				assert.Equal(t, updated.Anonymous, outer.Anonymous)
+				assert.Equal(t, updated.Apparel, outer.Apparel)
+				assert.Equal(t, updated.Bib, outer.Bib)
+				assert.Equal(t, updated.Birthdate, outer.Birthdate)
+				assert.Equal(t, updated.Distance, outer.Distance)
+				assert.Equal(t, updated.First, outer.First)
+				assert.Equal(t, updated.Gender, outer.Gender)
+				assert.Equal(t, updated.Last, outer.Last)
+				assert.Equal(t, updated.Mobile, outer.Mobile)
+				assert.Equal(t, updated.SMSEnabled, outer.SMSEnabled)
+				found = true
+				break
+			}
+		}
+		assert.True(t, found)
+	}
+	// Test valid request - self - UpdatedAfter
+	t.Log("Testing valid request -- self -- UpdatedAfter.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	updated.Bib = "newbib2"
+	updated.AgeGroup = "testagegroup2"
+	updated.Anonymous = !updated.Anonymous
+	updated.SMSEnabled = !updated.SMSEnabled
+	updated.Apparel = "newapparel2"
+	updated.Birthdate = "new bd2"
+	updated.Distance = "testdist2"
+	updated.First = "uTom2"
+	updated.Last = "uSmith2"
+	updated.Gender = "Unkn2"
+	updated.Mobile = "notanum2"
+	updated.UpdatedAt = 2000
+	updatedAfter := int64(2000)
+	body, err = json.Marshal(types.UpdateParticipantRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         variables.eventYears["event2"]["2020"].Year,
+		Participant:  updated,
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RUpdateParticipant(c)) {
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier, 0, 0, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.UpdateParticipantResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 1, len(resp.Updated))
 			assert.Equal(t, updated.AgeGroup, resp.Participant.AgeGroup)
 			assert.Equal(t, updated.AlternateId, resp.Participant.AlternateId)
 			assert.Equal(t, updated.Anonymous, resp.Participant.Anonymous)
@@ -2210,6 +2419,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "2034",
@@ -2224,6 +2434,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "3521",
@@ -2238,6 +2449,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "1364",
@@ -2252,6 +2464,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 	}
 	_, err := database.AddParticipants(variables.eventYears["event2"]["2020"].Identifier, parts)
@@ -2464,6 +2677,87 @@ func TestRUpdateManyParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UpdateParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, updated.AgeGroup, resp.Participants[0].AgeGroup)
+			assert.Equal(t, updated.AlternateId, resp.Participants[0].AlternateId)
+			assert.Equal(t, updated.Anonymous, resp.Participants[0].Anonymous)
+			assert.Equal(t, updated.Apparel, resp.Participants[0].Apparel)
+			assert.Equal(t, updated.Bib, resp.Participants[0].Bib)
+			assert.Equal(t, updated.Birthdate, resp.Participants[0].Birthdate)
+			assert.Equal(t, updated.Distance, resp.Participants[0].Distance)
+			assert.Equal(t, updated.First, resp.Participants[0].First)
+			assert.Equal(t, updated.Gender, resp.Participants[0].Gender)
+			assert.Equal(t, updated.Last, resp.Participants[0].Last)
+			assert.Equal(t, updated.Mobile, resp.Participants[0].Mobile)
+			assert.Equal(t, updated.SMSEnabled, resp.Participants[0].SMSEnabled)
+		}
+		found := false
+		for _, outer := range p {
+			if updated.AlternateId == outer.AlternateId {
+				assert.Equal(t, updated.AgeGroup, outer.AgeGroup)
+				assert.Equal(t, updated.AlternateId, outer.AlternateId)
+				assert.Equal(t, updated.Anonymous, outer.Anonymous)
+				assert.Equal(t, updated.Apparel, outer.Apparel)
+				assert.Equal(t, updated.Bib, outer.Bib)
+				assert.Equal(t, updated.Birthdate, outer.Birthdate)
+				assert.Equal(t, updated.Distance, outer.Distance)
+				assert.Equal(t, updated.First, outer.First)
+				assert.Equal(t, updated.Gender, outer.Gender)
+				assert.Equal(t, updated.Last, outer.Last)
+				assert.Equal(t, updated.Mobile, outer.Mobile)
+				assert.Equal(t, updated.SMSEnabled, outer.SMSEnabled)
+				found = true
+				break
+			}
+		}
+		assert.True(t, found)
+	}
+	// Test valid request - self - UpdatedAfter
+	t.Log("Testing valid request -- self -- UpdatedAfter.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	updated.Bib = "newbib2"
+	updated.AgeGroup = "testagegroup2"
+	updated.Anonymous = !updated.Anonymous
+	updated.SMSEnabled = !updated.SMSEnabled
+	updated.Apparel = "newapparel2"
+	updated.Birthdate = "1/1/1992"
+	updated.Distance = "testdist2"
+	updated.First = "uTom2"
+	updated.Last = "uSmith2"
+	updated.Gender = "Unkn2"
+	updated.Mobile = "notanum2"
+	updated.UpdatedAt = 2000
+	updatedAfter := int64(2000)
+	body, err = json.Marshal(types.AddParticipantsRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         variables.eventYears["event2"]["2020"].Year,
+		Participants: []types.Participant{updated},
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/update-many", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RUpdateManyParticipants(c)) {
+		p, err := database.GetParticipants(variables.eventYears["event2"]["2020"].Identifier, 0, 0, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.UpdateParticipantsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			assert.Equal(t, 1, len(resp.Updated))
 			assert.Equal(t, updated.AgeGroup, resp.Participants[0].AgeGroup)
 			assert.Equal(t, updated.AlternateId, resp.Participants[0].AlternateId)
 			assert.Equal(t, updated.Anonymous, resp.Participants[0].Anonymous)
@@ -2801,6 +3095,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   50,
 		},
 		{
 			AlternateId: "2034",
@@ -2815,6 +3110,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   150,
 		},
 		{
 			AlternateId: "3521",
@@ -2829,6 +3125,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "1364",
@@ -2843,6 +3140,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 	}
 	body, err := json.Marshal(types.AddParticipantsRequest{
@@ -3034,6 +3332,80 @@ func TestRAddManyParticipantss(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantsResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+					assert.True(t, outer.Equals(&resp.Participants[0]))
+					assert.Equal(t, outer.AlternateId, resp.Participants[0].AlternateId)
+					assert.Equal(t, outer.Bib, resp.Participants[0].Bib)
+					assert.Equal(t, outer.First, resp.Participants[0].First)
+					assert.Equal(t, outer.Last, resp.Participants[0].Last)
+					assert.Equal(t, outer.Birthdate, resp.Participants[0].Birthdate)
+					assert.Equal(t, outer.Gender, resp.Participants[0].Gender)
+					assert.Equal(t, outer.AgeGroup, resp.Participants[0].AgeGroup)
+					assert.Equal(t, outer.Distance, resp.Participants[0].Distance)
+					assert.Equal(t, outer.Anonymous, resp.Participants[0].Anonymous)
+					assert.Equal(t, outer.SMSEnabled, resp.Participants[0].SMSEnabled)
+					assert.Equal(t, outer.Mobile, resp.Participants[0].Mobile)
+					assert.Equal(t, outer.Apparel, resp.Participants[0].Apparel)
+				}
+				for _, inner := range part {
+					if outer.Bib == inner.Bib {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+			}
+		}
+	}
+	// Test valid request - self - UpdatedAfter
+	t.Log("Testing valid request -- self -- UpdatedAfter.")
+	token, refresh, err = createTokens(variables.accounts[1].Email)
+	if err != nil {
+		t.Fatalf("Error creating test tokens: %v", err)
+	}
+	account = variables.accounts[1]
+	account.Token = *token
+	account.RefreshToken = *refresh
+	err = database.UpdateTokens(account)
+	if err != nil {
+		t.Fatalf("Error updating test tokens: %v", err)
+	}
+	updatedAfter := int64(50)
+	body, err = json.Marshal(types.AddParticipantsRequest{
+		Slug:         variables.events["event2"].Slug,
+		Year:         year.Year,
+		Participants: parts[1:2],
+		UpdatedAfter: &updatedAfter,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/r/participants/add-many", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.RAddManyParticipants(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		if assert.NoError(t, err) {
+			part, err := database.GetParticipants(year.Identifier, 0, 0, nil)
+			if assert.NoError(t, err) {
+				outer := parts[1]
+				found := false
+				var resp types.UpdateParticipantsResponse
+				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+					assert.Equal(t, 2, len(resp.Updated))
 					assert.True(t, outer.Equals(&resp.Participants[0]))
 					assert.Equal(t, outer.AlternateId, resp.Participants[0].AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participants[0].Bib)

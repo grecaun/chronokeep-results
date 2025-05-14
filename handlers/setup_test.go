@@ -355,6 +355,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		})
 		bibChips = append(bibChips, types.BibChip{
 			Bib:  tmpStr,
@@ -397,6 +398,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   int64(10 * i),
 		})
 		bibChips = append(bibChips, types.BibChip{
 			Bib:  tmpStr,
@@ -439,6 +441,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   int64(100 * i),
 		})
 		bibChips = append(bibChips, types.BibChip{
 			Bib:  tmpStr,
@@ -581,6 +584,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "106",
@@ -595,6 +599,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "209",
@@ -609,6 +614,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "287",
@@ -623,6 +629,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "",
+			UpdatedAt:   100,
 		},
 	})
 	if err != nil {
@@ -774,6 +781,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				SMSEnabled:  false,
 				Mobile:      "",
 				Apparel:     "",
+				UpdatedAt:   0,
 			},
 			{
 				AlternateId: "106",
@@ -788,6 +796,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				SMSEnabled:  false,
 				Mobile:      "",
 				Apparel:     "",
+				UpdatedAt:   0,
 			},
 			{
 				AlternateId: "209",
@@ -802,6 +811,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				SMSEnabled:  false,
 				Mobile:      "",
 				Apparel:     "",
+				UpdatedAt:   100,
 			},
 			{
 				AlternateId: "287",
@@ -816,6 +826,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 				SMSEnabled:  false,
 				Mobile:      "",
 				Apparel:     "",
+				UpdatedAt:   1000,
 			},
 		})
 		if err != nil {

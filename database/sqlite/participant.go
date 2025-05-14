@@ -292,8 +292,8 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 			"apparel=$9, "+
 			"sms_enabled=$10, "+
 			"mobile=$11, "+
-			"updated_at=$14 "+
-			"WHERE event_year_id=$12 AND alternate_id=$13;",
+			"updated_at=$12 "+
+			"WHERE event_year_id=$13 AND alternate_id=$14;",
 		participant.Bib,
 		participant.First,
 		participant.Last,
@@ -305,9 +305,9 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 		participant.Apparel,
 		participant.SMSInt(),
 		participant.Mobile,
+		participant.UpdatedAt,
 		eventYearID,
 		participant.AlternateId,
-		participant.UpdatedAt,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -382,8 +382,8 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 				"apparel=$9, "+
 				"sms_enabled=$10, "+
 				"mobile=$11, "+
-				"updated_at=$14 "+
-				"WHERE event_year_id=$12 AND alternate_id=$13;",
+				"updated_at=$12 "+
+				"WHERE event_year_id=$13 AND alternate_id=$14;",
 			participant.Bib,
 			participant.First,
 			participant.Last,
@@ -395,9 +395,9 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 			eventYearID,
 			participant.AlternateId,
-			participant.UpdatedAt,
 		)
 		if err != nil {
 			tx.Rollback()
