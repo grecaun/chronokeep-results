@@ -38,8 +38,9 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 				"alternate_id, "+
 				"apparel, "+
 				"sms_enabled, "+
-				"mobile"+
-				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "+
+				"mobile, "+
+				"updated_at"+
+				") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) "+
 				"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 				"first=$3, "+
 				"last=$4, "+
@@ -51,7 +52,8 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 				"alternate_id=$10, "+
 				"apparel=$11, "+
 				"sms_enabled=$12, "+
-				"mobile=$13 "+
+				"mobile=$13, "+
+				"updated_at=$14 "+
 				"RETURNING (participant_id);",
 			eventYearID,
 			participant.Bib,
@@ -66,6 +68,7 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 		).Scan(&id)
 		if err != nil {
 			tx.Rollback(ctx)
@@ -85,6 +88,7 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 			Apparel:     participant.Apparel,
 			SMSEnabled:  participant.SMSEnabled,
 			Mobile:      participant.Mobile,
+			UpdatedAt:   participant.UpdatedAt,
 		})
 	}
 	err = tx.Commit(ctx)
@@ -95,7 +99,7 @@ func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Parti
 	return output, nil
 }
 
-func (p *Postgres) GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error) {
+func (p *Postgres) GetParticipants(eventYearID int64, limit, page int, updated_after *int64) ([]types.Participant, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -106,21 +110,43 @@ func (p *Postgres) GetParticipants(eventYearID int64, limit, page int) ([]types.
 		res pgx.Rows
 	)
 	if limit > 0 {
-		res, err = db.Query(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
-			eventYearID,
-			limit,
-			page*limit,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 AND updated_at>=$2 ORDER BY distance ASC, last ASC, first ASC LIMIT $3 OFFSET $4;",
+				eventYearID,
+				*updated_after,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		}
 	} else {
-		res, err = db.Query(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=$1;",
-			eventYearID,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.Query(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 AND updated_at>=$2;",
+				eventYearID,
+				*updated_after,
+			)
+		} else {
+			res, err = db.Query(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1;",
+				eventYearID,
+			)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving participants: %v", err)
@@ -145,6 +171,7 @@ func (p *Postgres) GetParticipants(eventYearID int64, limit, page int) ([]types.
 			&participant.Apparel,
 			&sms,
 			&participant.Mobile,
+			&participant.UpdatedAt,
 		)
 		participant.Anonymous = anonymous != 0
 		participant.SMSEnabled = sms != 0
@@ -227,6 +254,7 @@ func (p *Postgres) UpdateParticipant(eventYearID int64, participant types.Partic
 		SMSEnabled:  participant.SMSEnabled,
 		Apparel:     participant.Apparel,
 		Mobile:      participant.Mobile,
+		UpdatedAt:   participant.UpdatedAt,
 	}
 	err = tx.QueryRow(
 		ctx,
@@ -241,7 +269,8 @@ func (p *Postgres) UpdateParticipant(eventYearID int64, participant types.Partic
 			"anonymous=$8, "+
 			"apparel=$9, "+
 			"sms_enabled=$10, "+
-			"mobile=$11 "+
+			"mobile=$11, "+
+			"updated_at=$14 "+
 			"WHERE event_year_id=$12 AND alternate_id=$13 RETURNING (participant_id);",
 		participant.Bib,
 		participant.First,
@@ -256,6 +285,7 @@ func (p *Postgres) UpdateParticipant(eventYearID int64, participant types.Partic
 		participant.Mobile,
 		eventYearID,
 		participant.AlternateId,
+		participant.UpdatedAt,
 	).Scan(&output.Identifier)
 	if err != nil {
 		tx.Rollback(ctx)
@@ -295,6 +325,7 @@ func (p *Postgres) UpdateParticipants(eventYearID int64, participants []types.Pa
 			SMSEnabled:  participant.SMSEnabled,
 			Apparel:     participant.Apparel,
 			Mobile:      participant.Mobile,
+			UpdatedAt:   participant.UpdatedAt,
 		}
 		err = tx.QueryRow(
 			ctx,
@@ -309,7 +340,8 @@ func (p *Postgres) UpdateParticipants(eventYearID int64, participants []types.Pa
 				"anonymous=$8, "+
 				"apparel=$9, "+
 				"sms_enabled=$10, "+
-				"mobile=$11 "+
+				"mobile=$11, "+
+				"updated_at=$14 "+
 				"WHERE event_year_id=$12 AND alternate_id=$13 RETURNING (participant_id);",
 			participant.Bib,
 			participant.First,
@@ -324,6 +356,7 @@ func (p *Postgres) UpdateParticipants(eventYearID int64, participants []types.Pa
 			participant.Mobile,
 			eventYearID,
 			participant.AlternateId,
+			participant.UpdatedAt,
 		).Scan(&tmp.Identifier)
 		if err != nil {
 			tx.Rollback(ctx)

@@ -40,6 +40,7 @@ func setupParticipantTests() {
 			SMSEnabled:  false,
 			Mobile:      "3555521234",
 			Apparel:     "Medium",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "106",
@@ -54,6 +55,7 @@ func setupParticipantTests() {
 			SMSEnabled:  true,
 			Mobile:      "3543421234",
 			Apparel:     "Small",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "10",
@@ -68,6 +70,7 @@ func setupParticipantTests() {
 			SMSEnabled:  false,
 			Mobile:      "3525521234",
 			Apparel:     "",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "285",
@@ -82,6 +85,7 @@ func setupParticipantTests() {
 			SMSEnabled:  false,
 			Mobile:      "",
 			Apparel:     "X-Large",
+			UpdatedAt:   0,
 		},
 		{
 			AlternateId: "132",
@@ -96,6 +100,7 @@ func setupParticipantTests() {
 			SMSEnabled:  true,
 			Mobile:      "3215521234",
 			Apparel:     "X-Small",
+			UpdatedAt:   100,
 		},
 	}
 	manyParticipants = make([]types.Participant, 0)
@@ -113,6 +118,7 @@ func setupParticipantTests() {
 			SMSEnabled:  false,
 			Mobile:      "3555521234",
 			Apparel:     "Medium",
+			UpdatedAt:   int64(i * 10),
 		})
 	}
 }
@@ -135,11 +141,12 @@ func TestAddParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err := db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
@@ -169,7 +176,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 		for _, outer := range participants {
@@ -239,7 +246,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(upd), len(p))
 		for _, outer := range upd {
@@ -308,7 +315,7 @@ func TestAddParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(upd), len(p))
 		for _, outer := range upd {
@@ -354,16 +361,17 @@ func TestGetParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	iParts, err := db.GetParticipants(eventYear.Identifier, 50, 0)
+	iParts, err := db.GetParticipants(eventYear.Identifier, 50, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(iParts))
 	}
 	db.AddParticipants(eventYear.Identifier, participants)
-	iParts, err = db.GetParticipants(eventYear.Identifier, 50, 0)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 50, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(iParts))
 		for _, outer := range participants {
@@ -389,11 +397,19 @@ func TestGetParticipants(t *testing.T) {
 			assert.True(t, found)
 		}
 	}
+	updatedAt := int64(100)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 50, 0, &updatedAt)
+	if assert.NoError(t, err) {
+		if assert.Equal(t, 1, len(iParts)) {
+			assert.True(t, participants[4].Equals(&iParts[0]))
+			assert.True(t, iParts[0].UpdatedAt >= updatedAt)
+		}
+	}
 	db.DeleteParticipants(eventYear.Identifier, nil)
 	db.AddParticipants(eventYear.Identifier, manyParticipants)
 	pulledParticipants := make([]types.Participant, 0)
 	for i := 0; i < int(math.Ceil(float64(len(manyParticipants))/50)); i++ {
-		iParts, err = db.GetParticipants(eventYear.Identifier, 50, i)
+		iParts, err = db.GetParticipants(eventYear.Identifier, 50, i, nil)
 		if assert.NoError(t, err) {
 			assert.True(t, len(iParts) > 0 && len(iParts) <= 50)
 			for _, outer := range iParts {
@@ -450,6 +466,45 @@ func TestGetParticipants(t *testing.T) {
 		}
 		assert.True(t, found)
 	}
+	pulledParticipants = make([]types.Participant, 0)
+	for i := range int(math.Ceil(float64(len(manyParticipants)) / 50)) {
+		iParts, err = db.GetParticipants(eventYear.Identifier, 50, i, &updatedAt)
+		if assert.NoError(t, err) {
+			assert.True(t, len(iParts) > 0 && len(iParts) <= 50)
+			for _, outer := range iParts {
+				assert.GreaterOrEqual(t, outer.UpdatedAt, updatedAt)
+				found := false
+				for _, inner := range manyParticipants {
+					if outer.AlternateId == inner.AlternateId {
+						assert.True(t, outer.Equals(&inner))
+						assert.Equal(t, outer.Birthdate, inner.Birthdate)
+						assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+						assert.Equal(t, outer.Bib, inner.Bib)
+						assert.Equal(t, outer.Distance, inner.Distance)
+						assert.Equal(t, outer.First, inner.First)
+						assert.Equal(t, outer.Gender, inner.Gender)
+						assert.Equal(t, outer.Last, inner.Last)
+						assert.Equal(t, outer.Anonymous, inner.Anonymous)
+						assert.Equal(t, outer.AlternateId, inner.AlternateId)
+						assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+						assert.Equal(t, outer.Mobile, inner.Mobile)
+						assert.Equal(t, outer.Apparel, inner.Apparel)
+						found = true
+					}
+				}
+				assert.True(t, found)
+				found = false
+				for _, inner := range pulledParticipants {
+					if outer.AlternateId == inner.AlternateId {
+						found = true
+					}
+				}
+				assert.False(t, found)
+			}
+			pulledParticipants = append(pulledParticipants, iParts...)
+		}
+	}
+	assert.Equal(t, len(manyParticipants)-10, len(pulledParticipants))
 }
 
 func TestGetAllParticipants(t *testing.T) {
@@ -470,21 +525,52 @@ func TestGetAllParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	iParts, err := db.GetParticipants(eventYear.Identifier, 0, 0)
+	iParts, err := db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(iParts))
 	}
 	db.AddParticipants(eventYear.Identifier, participants)
-	iParts, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(iParts))
 		for _, outer := range participants {
 			found := false
 			for _, inner := range iParts {
+				if outer.AlternateId == inner.AlternateId {
+					assert.True(t, outer.Equals(&inner))
+					assert.Equal(t, outer.Birthdate, inner.Birthdate)
+					assert.Equal(t, outer.AgeGroup, inner.AgeGroup)
+					assert.Equal(t, outer.Bib, inner.Bib)
+					assert.Equal(t, outer.Distance, inner.Distance)
+					assert.Equal(t, outer.First, inner.First)
+					assert.Equal(t, outer.Gender, inner.Gender)
+					assert.Equal(t, outer.Last, inner.Last)
+					assert.Equal(t, outer.Anonymous, inner.Anonymous)
+					assert.Equal(t, outer.AlternateId, inner.AlternateId)
+					assert.Equal(t, outer.SMSEnabled, inner.SMSEnabled)
+					assert.Equal(t, outer.Mobile, inner.Mobile)
+					assert.Equal(t, outer.Apparel, inner.Apparel)
+					found = true
+				}
+			}
+			assert.True(t, found)
+		}
+	}
+	db.DeleteParticipants(eventYear.Identifier, nil)
+	db.AddParticipants(eventYear.Identifier, manyParticipants)
+	updated_at := int64(50)
+	iParts, err = db.GetParticipants(eventYear.Identifier, 0, 0, &updated_at)
+	if assert.NoError(t, err) {
+		assert.Equal(t, len(manyParticipants)-5, len(iParts))
+		for _, outer := range iParts {
+			assert.GreaterOrEqual(t, outer.UpdatedAt, updated_at)
+			found := false
+			for _, inner := range manyParticipants {
 				if outer.AlternateId == inner.AlternateId {
 					assert.True(t, outer.Equals(&inner))
 					assert.Equal(t, outer.Birthdate, inner.Birthdate)
@@ -525,30 +611,31 @@ func TestDeleteParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
 	eventYear, _ = db.AddEventYear(*eventYear)
-	p, err := db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err := db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
 	_, err = db.AddParticipants(eventYear.Identifier, participants)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 	}
 	count, err := db.DeleteParticipants(eventYear.Identifier, nil)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, 0, len(p))
 	}
 	assert.Equal(t, count, int64(len(participants)))
 	_, err = db.AddParticipants(eventYear.Identifier, participants)
 	assert.NoError(t, err)
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants), len(p))
 	}
@@ -559,7 +646,7 @@ func TestDeleteParticipants(t *testing.T) {
 	count, err = db.DeleteParticipants(eventYear.Identifier, toDelete)
 	assert.NoError(t, err)
 	assert.Equal(t, count, int64(len(toDelete)))
-	p, err = db.GetParticipants(eventYear.Identifier, 0, 0)
+	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants)-2, len(p))
 		for _, outer := range participants[2:] {
@@ -605,6 +692,7 @@ func TestUpdateParticipant(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -665,6 +753,7 @@ func TestUpdateParticipants(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
+		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}

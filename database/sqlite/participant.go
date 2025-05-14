@@ -34,8 +34,9 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 			"alternate_id, "+
 			"apparel, "+
 			"sms_enabled, "+
-			"mobile"+
-			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) "+
+			"mobile, "+
+			"updated_at"+
+			") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) "+
 			"ON CONFLICT (event_year_id, alternate_id) DO UPDATE SET "+
 			"first=$3, "+
 			"last=$4, "+
@@ -47,7 +48,8 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 			"alternate_id=$10, "+
 			"apparel=$11, "+
 			"sms_enabled=$12, "+
-			"mobile=$13"+
+			"mobile=$13, "+
+			"updated_at=$14"+
 			";",
 	)
 	if err != nil {
@@ -69,6 +71,7 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -114,6 +117,7 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 				Apparel:     participant.Apparel,
 				SMSEnabled:  participant.SMSEnabled,
 				Mobile:      participant.Mobile,
+				UpdatedAt:   participant.UpdatedAt,
 			})
 		} else {
 			tx.Rollback()
@@ -128,7 +132,7 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 	return output, nil
 }
 
-func (s *SQLite) GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error) {
+func (s *SQLite) GetParticipants(eventYearID int64, limit, page int, updated_after *int64) ([]types.Participant, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
@@ -139,21 +143,43 @@ func (s *SQLite) GetParticipants(eventYearID int64, limit, page int) ([]types.Pa
 		res *sql.Rows
 	)
 	if limit > 0 {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
-			eventYearID,
-			limit,
-			page*limit,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 AND updated_at>=$2 ORDER BY distance ASC, last ASC, first ASC LIMIT $3 OFFSET $4;",
+				eventYearID,
+				*updated_after,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 ORDER BY distance ASC, last ASC, first ASC LIMIT $2 OFFSET $3;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		}
 	} else {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=$1;",
-			eventYearID,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1 AND updated_at>=$2;",
+				eventYearID,
+				*updated_after,
+			)
+		} else {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=$1;",
+				eventYearID,
+			)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving participants: %v", err)
@@ -178,6 +204,7 @@ func (s *SQLite) GetParticipants(eventYearID int64, limit, page int) ([]types.Pa
 			&participant.Apparel,
 			&sms,
 			&participant.Mobile,
+			&participant.UpdatedAt,
 		)
 		participant.Anonymous = anonymous != 0
 		participant.SMSEnabled = sms != 0
@@ -264,7 +291,8 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 			"anonymous=$8, "+
 			"apparel=$9, "+
 			"sms_enabled=$10, "+
-			"mobile=$11 "+
+			"mobile=$11, "+
+			"updated_at=$14 "+
 			"WHERE event_year_id=$12 AND alternate_id=$13;",
 		participant.Bib,
 		participant.First,
@@ -279,6 +307,7 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 		participant.Mobile,
 		eventYearID,
 		participant.AlternateId,
+		participant.UpdatedAt,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -308,6 +337,7 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 		SMSEnabled:  participant.SMSEnabled,
 		Apparel:     participant.Apparel,
 		Mobile:      participant.Mobile,
+		UpdatedAt:   participant.UpdatedAt,
 	}
 	if res.Next() {
 		res.Scan(
@@ -351,7 +381,8 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 				"anonymous=$8, "+
 				"apparel=$9, "+
 				"sms_enabled=$10, "+
-				"mobile=$11 "+
+				"mobile=$11, "+
+				"updated_at=$14 "+
 				"WHERE event_year_id=$12 AND alternate_id=$13;",
 			participant.Bib,
 			participant.First,
@@ -366,6 +397,7 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 			participant.Mobile,
 			eventYearID,
 			participant.AlternateId,
+			participant.UpdatedAt,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -395,6 +427,7 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 			SMSEnabled:  participant.SMSEnabled,
 			Apparel:     participant.Apparel,
 			Mobile:      participant.Mobile,
+			UpdatedAt:   participant.UpdatedAt,
 		}
 		if res.Next() {
 			res.Scan(

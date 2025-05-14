@@ -27,9 +27,10 @@ type UpdateParticipantsResponse struct {
 
 // UpdateParticipantRequest Struct used to update a participant's information.
 type UpdateParticipantRequest struct {
-	Slug        string      `json:"slug"`
-	Year        string      `json:"year"`
-	Participant Participant `json:"participant"`
+	Slug         string      `json:"slug"`
+	Year         string      `json:"year"`
+	Participant  Participant `json:"participant"`
+	UpdatedAfter *int64      `json:"updated_after"`
 }
 
 type GetParticipantRequest struct {
@@ -40,10 +41,11 @@ type GetParticipantRequest struct {
 
 // GetParticipantsRequest Struct used for the request to get participants for an event.
 type GetParticipantsRequest struct {
-	Slug  string  `json:"slug"`
-	Year  *string `json:"year"`
-	Limit *int    `json:"limit"`
-	Page  *int    `json:"page"`
+	Slug         string  `json:"slug"`
+	Year         *string `json:"year"`
+	Limit        *int    `json:"limit"`
+	Page         *int    `json:"page"`
+	UpdatedAfter *int64  `json:"updated_after"`
 }
 
 // AddParticipantsRequest Struct used for the request to add/update participants for an event.

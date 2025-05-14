@@ -71,7 +71,7 @@ func (h Handler) GetParticipants(c echo.Context) error {
 			page--
 		}
 	}
-	participants, err := database.GetParticipants(mult.EventYear.Identifier, limit, page)
+	participants, err := database.GetParticipants(mult.EventYear.Identifier, limit, page, nil)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}

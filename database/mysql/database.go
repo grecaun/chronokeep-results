@@ -369,6 +369,7 @@ func (m *MySQL) createTables() error {
 				"sms_enabled SMALLINT NOT NULL DEFAULT 0, " +
 				"apparel VARCHAR(150) NOT NULL DEFAULT '', " +
 				"mobile VARCHAR(15) NOT NULL DEFAULT '', " +
+				"updated_at BIGINT NOT NULL DEFAULT 0, " +
 				"CONSTRAINT one_participant UNIQUE (event_year_id, alternate_id), " +
 				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id), " +
 				"PRIMARY KEY (participant_id)" +
@@ -997,6 +998,25 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "AlterPersonTable",
 				query: "ALTER TABLE person ADD COLUMN division VARCHAR(500) NOT NULL DEFAULT '';",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.ExecContext(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback()
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 19 && newVersion >= 19 {
+		log.Info("Updating to database version 19.")
+		queries := []myQuery{
+			{
+				name:  "AlterParticipantTable",
+				query: "ALTER TABLE participant ADD COLUMN updated_at BIGINT NOT NULL DEFAULT 0;",
 			},
 		}
 		for _, q := range queries {

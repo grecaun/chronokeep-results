@@ -64,7 +64,7 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 			page--
 		}
 	}
-	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page)
+	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page, nil)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}

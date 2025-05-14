@@ -22,6 +22,7 @@ type Participant struct {
 	SMSEnabled  bool   `json:"sms_enabled"`
 	Mobile      string `json:"mobile"`
 	Apparel     string `json:"apparel"`
+	UpdatedAt   int64  `json:"updated_at"`
 }
 
 // ResultParticipant Describes the information we want publicly available.
@@ -62,7 +63,8 @@ func (one *Participant) Equals(two *Participant) bool {
 		one.Anonymous == two.Anonymous &&
 		one.SMSEnabled == two.SMSEnabled &&
 		one.Mobile == two.Mobile &&
-		one.Apparel == two.Apparel
+		one.Apparel == two.Apparel &&
+		one.UpdatedAt == two.UpdatedAt
 }
 
 func (p *Participant) AnonyInt() int {

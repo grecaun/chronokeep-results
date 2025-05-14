@@ -74,7 +74,7 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
-	parts, err := database.GetParticipants(mult.EventYear.Identifier, 0, 0)
+	parts, err := database.GetParticipants(mult.EventYear.Identifier, 0, 0, nil)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}

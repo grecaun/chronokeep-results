@@ -34,8 +34,9 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 			"alternate_id, "+
 			"apparel, "+
 			"sms_enabled, "+
-			"mobile"+
-			") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) "+
+			"mobile, "+
+			"updated_at"+
+			") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) "+
 			"ON DUPLICATE KEY UPDATE "+
 			"first=VALUES(first), "+
 			"last=VALUES(last), "+
@@ -47,7 +48,8 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 			"alternate_id=VALUES(alternate_id), "+
 			"apparel=VALUES(apparel), "+
 			"sms_enabled=VALUES(sms_enabled), "+
-			"mobile=VALUES(mobile)"+
+			"mobile=VALUES(mobile), "+
+			"updated_at=VALUES(updated_at)"+
 			";",
 	)
 	if err != nil {
@@ -69,6 +71,7 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -114,6 +117,7 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 				Apparel:     participant.Apparel,
 				SMSEnabled:  participant.SMSEnabled,
 				Mobile:      participant.Mobile,
+				UpdatedAt:   participant.UpdatedAt,
 			})
 		} else {
 			tx.Rollback()
@@ -128,7 +132,7 @@ func (m *MySQL) AddParticipants(eventYearID int64, participants []types.Particip
 	return output, nil
 }
 
-func (m *MySQL) GetParticipants(eventYearID int64, limit, page int) ([]types.Participant, error) {
+func (m *MySQL) GetParticipants(eventYearID int64, limit, page int, updated_after *int64) ([]types.Participant, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -139,21 +143,43 @@ func (m *MySQL) GetParticipants(eventYearID int64, limit, page int) ([]types.Par
 		res *sql.Rows
 	)
 	if limit > 0 {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=? ORDER BY distance ASC, last ASC, first ASC LIMIT ? OFFSET ?;",
-			eventYearID,
-			limit,
-			page*limit,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=? AND updated_at >=? ORDER BY distance ASC, last ASC, first ASC LIMIT ? OFFSET ?;",
+				eventYearID,
+				*updated_after,
+				limit,
+				page*limit,
+			)
+		} else {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=? ORDER BY distance ASC, last ASC, first ASC LIMIT ? OFFSET ?;",
+				eventYearID,
+				limit,
+				page*limit,
+			)
+		}
 	} else {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile "+
-				"FROM participant WHERE event_year_id=?;",
-			eventYearID,
-		)
+		if updated_after != nil && *updated_after >= 0 {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=? AND updated_at >=?;",
+				eventYearID,
+				*updated_after,
+			)
+		} else {
+			res, err = db.QueryContext(
+				ctx,
+				"SELECT participant_id, bib, first, last, birthdate, gender, age_group, distance, anonymous, alternate_id, apparel, sms_enabled, mobile, updated_at "+
+					"FROM participant WHERE event_year_id=?;",
+				eventYearID,
+			)
+		}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving participants: %v", err)
@@ -178,6 +204,7 @@ func (m *MySQL) GetParticipants(eventYearID int64, limit, page int) ([]types.Par
 			&participant.Apparel,
 			&sms,
 			&participant.Mobile,
+			&participant.UpdatedAt,
 		)
 		participant.Anonymous = anonymous != 0
 		participant.SMSEnabled = sms != 0
@@ -264,7 +291,8 @@ func (m *MySQL) UpdateParticipant(eventYearID int64, participant types.Participa
 			"anonymous=?, "+
 			"apparel=?, "+
 			"sms_enabled=?, "+
-			"mobile=? "+
+			"mobile=?, "+
+			"updated_at=? "+
 			"WHERE event_year_id=? AND alternate_id=?;",
 		participant.Bib,
 		participant.First,
@@ -277,6 +305,7 @@ func (m *MySQL) UpdateParticipant(eventYearID int64, participant types.Participa
 		participant.Apparel,
 		participant.SMSInt(),
 		participant.Mobile,
+		participant.UpdatedAt,
 		eventYearID,
 		participant.AlternateId,
 	)
@@ -308,6 +337,7 @@ func (m *MySQL) UpdateParticipant(eventYearID int64, participant types.Participa
 		SMSEnabled:  participant.SMSEnabled,
 		Apparel:     participant.Apparel,
 		Mobile:      participant.Mobile,
+		UpdatedAt:   participant.UpdatedAt,
 	}
 	if res.Next() {
 		res.Scan(
@@ -351,7 +381,8 @@ func (m *MySQL) UpdateParticipants(eventYearID int64, participants []types.Parti
 				"anonymous=?, "+
 				"apparel=?, "+
 				"sms_enabled=?, "+
-				"mobile=? "+
+				"mobile=?, "+
+				"updated_at=? "+
 				"WHERE event_year_id=? AND alternate_id=?;",
 			participant.Bib,
 			participant.First,
@@ -364,6 +395,7 @@ func (m *MySQL) UpdateParticipants(eventYearID int64, participants []types.Parti
 			participant.Apparel,
 			participant.SMSInt(),
 			participant.Mobile,
+			participant.UpdatedAt,
 			eventYearID,
 			participant.AlternateId,
 		)
@@ -395,6 +427,7 @@ func (m *MySQL) UpdateParticipants(eventYearID int64, participants []types.Parti
 			SMSEnabled:  participant.SMSEnabled,
 			Apparel:     participant.Apparel,
 			Mobile:      participant.Mobile,
+			UpdatedAt:   participant.UpdatedAt,
 		}
 		if res.Next() {
 			res.Scan(
