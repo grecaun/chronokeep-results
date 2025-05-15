@@ -790,7 +790,7 @@ func TestRAddParticipant(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.True(t, outer.Equals(&resp.Participant))
+					assert.True(t, outer.TestEquals(&resp.Participant))
 					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participant.Bib)
 					assert.Equal(t, outer.First, resp.Participant.First)
@@ -806,7 +806,7 @@ func TestRAddParticipant(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -863,8 +863,8 @@ func TestRAddParticipant(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.Equal(t, 1, len(resp.Updated))
-					assert.True(t, outer.Equals(&resp.Participant))
+					assert.Equal(t, 2, len(resp.Updated))
+					assert.True(t, outer.TestEquals(&resp.Participant))
 					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participant.Bib)
 					assert.Equal(t, outer.First, resp.Participant.First)
@@ -880,7 +880,7 @@ func TestRAddParticipant(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -931,7 +931,7 @@ func TestRAddParticipant(t *testing.T) {
 			found := false
 			var resp types.UpdateParticipantResponse
 			if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-				assert.True(t, outer.Equals(&resp.Participant))
+				assert.True(t, outer.TestEquals(&resp.Participant))
 				assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
 				assert.Equal(t, outer.Bib, resp.Participant.Bib)
 				assert.Equal(t, outer.First, resp.Participant.First)
@@ -947,7 +947,7 @@ func TestRAddParticipant(t *testing.T) {
 			}
 			for _, inner := range part {
 				if outer.Bib == inner.Bib {
-					assert.True(t, outer.Equals(&inner))
+					assert.True(t, outer.TestEquals(&inner))
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
 					assert.Equal(t, outer.Bib, inner.Bib)
 					assert.Equal(t, outer.First, inner.First)
@@ -1213,7 +1213,7 @@ func TestRAddParticipant(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.True(t, outer.Equals(&resp.Participant))
+					assert.True(t, outer.TestEquals(&resp.Participant))
 					assert.Equal(t, outer.AlternateId, resp.Participant.AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participant.Bib)
 					assert.Equal(t, outer.First, resp.Participant.First)
@@ -1229,7 +1229,7 @@ func TestRAddParticipant(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -1981,6 +1981,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	}
 	// Test valid request - self
 	t.Log("Testing valid request -- self.")
+	updatedAfter := time.Now().UTC().Unix()
 	token, refresh, err = createTokens(variables.accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
@@ -2081,8 +2082,6 @@ func TestRUpdateParticipant(t *testing.T) {
 	updated.Last = "uSmith2"
 	updated.Gender = "Unkn2"
 	updated.Mobile = "notanum2"
-	updated.UpdatedAt = 2000
-	updatedAfter := int64(2000)
 	body, err = json.Marshal(types.UpdateParticipantRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         variables.eventYears["event2"]["2020"].Year,
@@ -2104,6 +2103,7 @@ func TestRUpdateParticipant(t *testing.T) {
 		var resp types.UpdateParticipantResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 1, len(resp.Updated))
+			assert.True(t, updated.TestEquals(&resp.Participant))
 			assert.Equal(t, updated.AgeGroup, resp.Participant.AgeGroup)
 			assert.Equal(t, updated.AlternateId, resp.Participant.AlternateId)
 			assert.Equal(t, updated.Anonymous, resp.Participant.Anonymous)
@@ -2635,6 +2635,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	}
 	// Test valid request - self
 	t.Log("Testing valid request -- self.")
+	updatedAfter := time.Now().UTC().Unix()
 	token, refresh, err = createTokens(variables.accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
@@ -2735,8 +2736,6 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	updated.Last = "uSmith2"
 	updated.Gender = "Unkn2"
 	updated.Mobile = "notanum2"
-	updated.UpdatedAt = 2000
-	updatedAfter := int64(2000)
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         variables.eventYears["event2"]["2020"].Year,
@@ -2758,6 +2757,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 		var resp types.UpdateParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 1, len(resp.Updated))
+			assert.True(t, updated.TestEquals(&resp.Participants[0]))
 			assert.Equal(t, updated.AgeGroup, resp.Participants[0].AgeGroup)
 			assert.Equal(t, updated.AlternateId, resp.Participants[0].AlternateId)
 			assert.Equal(t, updated.Anonymous, resp.Participants[0].Anonymous)
@@ -3052,7 +3052,7 @@ func TestRUpdateManyParticipants(t *testing.T) {
 	}
 }
 
-func TestRAddManyParticipantss(t *testing.T) {
+func TestRAddManyParticipants(t *testing.T) {
 	// POST, /r/participants/add-many
 	variables, finalize := setupTests(t)
 	defer finalize(t)
@@ -3299,6 +3299,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 	}
 	// Test valid request - self
 	t.Log("Testing valid request -- self.")
+	updatedAfter := time.Now().UTC().Unix()
 	token, refresh, err = createTokens(variables.accounts[1].Email)
 	if err != nil {
 		t.Fatalf("Error creating test tokens: %v", err)
@@ -3332,7 +3333,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantsResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.True(t, outer.Equals(&resp.Participants[0]))
+					assert.True(t, outer.TestEquals(&resp.Participants[0]))
 					assert.Equal(t, outer.AlternateId, resp.Participants[0].AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participants[0].Bib)
 					assert.Equal(t, outer.First, resp.Participants[0].First)
@@ -3348,7 +3349,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -3381,7 +3382,6 @@ func TestRAddManyParticipantss(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating test tokens: %v", err)
 	}
-	updatedAfter := int64(50)
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         year.Year,
@@ -3405,8 +3405,8 @@ func TestRAddManyParticipantss(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantsResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.Equal(t, 2, len(resp.Updated))
-					assert.True(t, outer.Equals(&resp.Participants[0]))
+					assert.Equal(t, len(parts[0:2]), len(resp.Updated))
+					assert.True(t, outer.TestEquals(&resp.Participants[0]))
 					assert.Equal(t, outer.AlternateId, resp.Participants[0].AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participants[0].Bib)
 					assert.Equal(t, outer.First, resp.Participants[0].First)
@@ -3422,7 +3422,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -3478,7 +3478,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				outerFound := false
 				secondFound := false
 				for _, part := range resp.Participants {
-					if outer.Equals(&part) {
+					if outer.TestEquals(&part) {
 						outerFound = true
 						assert.Equal(t, outer.AlternateId, part.AlternateId)
 						assert.Equal(t, outer.Bib, part.Bib)
@@ -3492,7 +3492,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 						assert.Equal(t, outer.SMSEnabled, part.SMSEnabled)
 						assert.Equal(t, outer.Mobile, part.Mobile)
 						assert.Equal(t, outer.Apparel, part.Apparel)
-					} else if second.Equals(&part) {
+					} else if second.TestEquals(&part) {
 						secondFound = true
 						assert.Equal(t, second.AlternateId, part.AlternateId)
 						assert.Equal(t, second.Bib, part.Bib)
@@ -3513,7 +3513,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 			}
 			for _, inner := range part {
 				if outer.Bib == inner.Bib {
-					assert.True(t, outer.Equals(&inner))
+					assert.True(t, outer.TestEquals(&inner))
 					assert.Equal(t, outer.AlternateId, inner.AlternateId)
 					assert.Equal(t, outer.Bib, inner.Bib)
 					assert.Equal(t, outer.First, inner.First)
@@ -3529,7 +3529,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 					found = true
 				}
 				if second.Bib == inner.Bib {
-					assert.True(t, second.Equals(&inner))
+					assert.True(t, second.TestEquals(&inner))
 					assert.Equal(t, second.AlternateId, inner.AlternateId)
 					assert.Equal(t, second.Bib, inner.Bib)
 					assert.Equal(t, second.First, inner.First)
@@ -3796,7 +3796,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				found := false
 				var resp types.UpdateParticipantsResponse
 				if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-					assert.True(t, outer.Equals(&resp.Participants[0]))
+					assert.True(t, outer.TestEquals(&resp.Participants[0]))
 					assert.Equal(t, outer.AlternateId, resp.Participants[0].AlternateId)
 					assert.Equal(t, outer.Bib, resp.Participants[0].Bib)
 					assert.Equal(t, outer.First, resp.Participants[0].First)
@@ -3812,7 +3812,7 @@ func TestRAddManyParticipantss(t *testing.T) {
 				}
 				for _, inner := range part {
 					if outer.Bib == inner.Bib {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)

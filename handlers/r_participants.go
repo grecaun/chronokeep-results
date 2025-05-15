@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -128,6 +129,7 @@ func (h Handler) RAddParticipant(c echo.Context) error {
 	if len(partToAdd[0].AlternateId) < 1 {
 		partToAdd[0].AlternateId = fmt.Sprintf("new%s%s", partToAdd[0].First, partToAdd[0].Last)
 	}
+	partToAdd[0].UpdatedAt = time.Now().UTC().Unix()
 	participants, err := database.AddParticipants(multi.EventYear.Identifier, partToAdd)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
@@ -226,6 +228,8 @@ func (h Handler) RUpdateParticipant(c echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
+	// set the updated at field on the participant
+	request.Participant.UpdatedAt = time.Now().UTC().Unix()
 	part, err := database.UpdateParticipant(multi.EventYear.Identifier, request.Participant)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Updating Participant", err)
@@ -286,8 +290,10 @@ func (h Handler) RUpdateManyParticipants(c echo.Context) error {
 	// validate participants
 	var partsToAdd []types.Participant
 	// Validate, only add if it passes validation.
+	updatedAt := time.Now().UTC().Unix()
 	for _, part := range request.Participants {
 		if err := part.Validate(h.validate); err == nil {
+			part.UpdatedAt = updatedAt // update the value for UpdatedAt
 			partsToAdd = append(partsToAdd, part)
 		}
 	}
@@ -354,12 +360,14 @@ func (h Handler) RAddManyParticipants(c echo.Context) error {
 	// validate participants
 	var partsToAdd []types.Participant
 	// Validate, only add if it passes validation.
+	updatedAt := time.Now().UTC().Unix()
 	for _, part := range request.Participants {
 		if err := part.Validate(h.validate); err == nil {
 			// create random alternate id if none is set
 			if len(part.AlternateId) < 1 || part.AlternateId == "-1" || part.AlternateId == "0" {
 				part.AlternateId = fmt.Sprintf("new%s%s", part.First, part.Last)
 			}
+			part.UpdatedAt = updatedAt
 			partsToAdd = append(partsToAdd, part)
 		}
 	}

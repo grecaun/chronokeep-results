@@ -67,6 +67,20 @@ func (one *Participant) Equals(two *Participant) bool {
 		one.UpdatedAt == two.UpdatedAt
 }
 
+func (one *Participant) TestEquals(two *Participant) bool {
+	return one.Bib == two.Bib &&
+		one.First == two.First &&
+		one.Last == two.Last &&
+		one.Birthdate == two.Birthdate &&
+		one.Gender == two.Gender &&
+		one.AgeGroup == two.AgeGroup &&
+		one.Distance == two.Distance &&
+		one.Anonymous == two.Anonymous &&
+		one.SMSEnabled == two.SMSEnabled &&
+		one.Mobile == two.Mobile &&
+		one.Apparel == two.Apparel
+}
+
 func (p *Participant) AnonyInt() int {
 	if p.Anonymous {
 		return 1

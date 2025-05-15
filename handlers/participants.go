@@ -4,6 +4,7 @@ import (
 	"chronokeep/results/types"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -131,9 +132,11 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	}
 	// validate participants
 	var partToAdd []types.Participant
+	updatedAt := time.Now().UTC().Unix()
 	for _, part := range request.Participants {
 		// Validate all results, only add the results that pass validation.
 		if err := part.Validate(h.validate); err == nil {
+			part.UpdatedAt = updatedAt
 			partToAdd = append(partToAdd, part)
 		}
 	}

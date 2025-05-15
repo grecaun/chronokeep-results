@@ -598,7 +598,7 @@ func TestAddParticipants(t *testing.T) {
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         year.Year,
-		Participants: parts,
+		Participants: parts[0:2],
 	})
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
@@ -613,12 +613,12 @@ func TestAddParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		part, err := database.GetParticipants(year.Identifier, 0, 0, nil)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(parts), len(part))
-			for _, outer := range parts {
+			assert.Equal(t, len(parts[0:2]), len(part))
+			for _, outer := range parts[0:2] {
 				found := false
 				for _, inner := range part {
 					if outer.AlternateId == inner.AlternateId {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -639,17 +639,18 @@ func TestAddParticipants(t *testing.T) {
 		}
 		var resp types.AddParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(parts), resp.Count)
+			assert.Equal(t, len(parts[0:2]), resp.Count)
 			assert.Equal(t, 0, len(resp.Updated))
 		}
 	}
 	// Test valid request - UpdatedAfter
 	t.Log("Testing valid request -- UpdatedAfter.")
-	updatedAfter := int64(50)
+	database.DeleteParticipants(year.Identifier, []string{})
+	updatedAfter := time.Now().UTC().Unix()
 	body, err = json.Marshal(types.AddParticipantsRequest{
 		Slug:         variables.events["event2"].Slug,
 		Year:         year.Year,
-		Participants: parts,
+		Participants: parts[2:4],
 		UpdatedAfter: &updatedAfter,
 	})
 	if err != nil {
@@ -664,12 +665,12 @@ func TestAddParticipants(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		part, err := database.GetParticipants(year.Identifier, 0, 0, nil)
 		if assert.NoError(t, err) {
-			assert.Equal(t, len(parts), len(part))
-			for _, outer := range parts {
+			assert.Equal(t, len(parts[2:4]), len(part))
+			for _, outer := range parts[2:4] {
 				found := false
 				for _, inner := range part {
 					if outer.AlternateId == inner.AlternateId {
-						assert.True(t, outer.Equals(&inner))
+						assert.True(t, outer.TestEquals(&inner))
 						assert.Equal(t, outer.AlternateId, inner.AlternateId)
 						assert.Equal(t, outer.Bib, inner.Bib)
 						assert.Equal(t, outer.First, inner.First)
@@ -690,8 +691,8 @@ func TestAddParticipants(t *testing.T) {
 		}
 		var resp types.AddParticipantsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, len(parts), resp.Count)
-			assert.Equal(t, 2, len(resp.Updated))
+			assert.Equal(t, len(parts[2:4]), resp.Count)
+			assert.Equal(t, len(parts[2:4]), len(resp.Updated))
 		}
 	}
 	// validation -- age
