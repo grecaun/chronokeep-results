@@ -5,10 +5,10 @@ go 1.24
 toolchain go1.24.1
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20250429231605-6ed5b53462d4
+	github.com/chromedp/cdproto v0.0.0-20250518235601-40b4c35ec9fe
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/go-sql-driver/mysql v1.9.2
-	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
@@ -17,13 +17,13 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	github.com/twilio/twilio-go v1.26.0
+	github.com/twilio/twilio-go v1.26.1
 	golang.org/x/crypto v0.38.0
 )
 
 require (
 	github.com/chromedp/sysutil v1.1.0 // indirect
-	github.com/go-json-experiment/json v0.0.0-20250417205406-170dfdcf87d1 // indirect
+	github.com/go-json-experiment/json v0.0.0-20250517221953-25912455fbc8 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
