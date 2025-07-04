@@ -24,6 +24,28 @@ type Event struct {
 	RecentTime        *time.Time `json:"recent_time"`
 }
 
+type EventVers1 struct {
+	Name             string `json:"name"`
+	Slug             string `json:"slug"`
+	Website          string `json:"website"`
+	Image            string `json:"image"`
+	ContactEmail     string `json:"contact_email"`
+	AccessRestricted bool   `json:"access_restricted"`
+	Type             string `json:"type"`
+}
+
+func (e *Event) ConvertToVers1() EventVers1 {
+	return EventVers1{
+		Name:             e.Name,
+		Slug:             e.Slug,
+		Website:          e.Website,
+		Image:            e.Image,
+		ContactEmail:     e.ContactEmail,
+		AccessRestricted: e.AccessRestricted,
+		Type:             e.Type,
+	}
+}
+
 // Equals Returns true if all fields other than the Identifier fields are equal.
 func (e *Event) Equals(other *Event) bool {
 	return e.Name == other.Name &&

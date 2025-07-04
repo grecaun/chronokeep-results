@@ -78,6 +78,25 @@ func (h Handler) GetResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
 	}
+	if request.Version != nil && *request.Version == 1 {
+		outRes := make(map[string][]types.ResultVers1)
+		for _, result := range results {
+			if _, ok := outRes[result.Distance]; !ok {
+				outRes[result.Distance] = make([]types.ResultVers1, 0, 1)
+			}
+			outRes[result.Distance] = append(outRes[result.Distance], result.ConvertToVers1())
+		}
+		outYears := make([]types.EventYearVers1, 0, 1)
+		for _, year := range years {
+			outYears = append(outYears, year.ConvertToVers1())
+		}
+		return c.JSON(http.StatusOK, types.GetResultsResponseVers1{
+			Event:   mult.Event.ConvertToVers1(),
+			Years:   outYears,
+			Results: outRes,
+			Count:   len(results),
+		})
+	}
 	outRes := make(map[string][]types.Result)
 	for _, result := range results {
 		if _, ok := outRes[result.Distance]; !ok {
@@ -176,6 +195,25 @@ func (h Handler) GetFinishResults(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 	}
+	if request.Version != nil && *request.Version == 1 {
+		outRes := make(map[string][]types.ResultVers1)
+		for _, result := range results {
+			if _, ok := outRes[result.Distance]; !ok {
+				outRes[result.Distance] = make([]types.ResultVers1, 0, 1)
+			}
+			outRes[result.Distance] = append(outRes[result.Distance], result.ConvertToVers1())
+		}
+		outYears := make([]types.EventYearVers1, 0, 1)
+		for _, year := range years {
+			outYears = append(outYears, year.ConvertToVers1())
+		}
+		return c.JSON(http.StatusOK, types.GetResultsResponseVers1{
+			Event:   mult.Event.ConvertToVers1(),
+			Years:   outYears,
+			Results: outRes,
+			Count:   len(results),
+		})
+	}
 	outRes := make(map[string][]types.Result)
 	for _, result := range results {
 		if _, ok := outRes[result.Distance]; !ok {
@@ -258,6 +296,25 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	results, err := database.GetAllDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
+	}
+	if request.Version != nil && *request.Version == 1 {
+		outRes := make(map[string][]types.ResultVers1)
+		for _, result := range results {
+			if _, ok := outRes[result.Distance]; !ok {
+				outRes[result.Distance] = make([]types.ResultVers1, 0, 1)
+			}
+			outRes[result.Distance] = append(outRes[result.Distance], result.ConvertToVers1())
+		}
+		outYears := make([]types.EventYearVers1, 0, 1)
+		for _, year := range years {
+			outYears = append(outYears, year.ConvertToVers1())
+		}
+		return c.JSON(http.StatusOK, types.GetResultsResponseVers1{
+			Event:   mult.Event.ConvertToVers1(),
+			Years:   outYears,
+			Results: outRes,
+			Count:   len(results),
+		})
 	}
 	outRes := make(map[string][]types.Result)
 	for _, result := range results {

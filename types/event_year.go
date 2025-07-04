@@ -19,6 +19,11 @@ type EventYear struct {
 	RankingType     string    `json:"ranking_type"`
 }
 
+type EventYearVers1 struct {
+	Year     string    `json:"year"`
+	DateTime time.Time `json:"date_time"`
+}
+
 type RequestYear struct {
 	Year        string `json:"year" validate:"required"`
 	DateTime    string `json:"date_time"`
@@ -35,6 +40,13 @@ type AllEventYear struct {
 	Live        bool      `json:"live"`
 	DaysAllowed int       `json:"days_allowed"`
 	RankingType string    `json:"ranking_type"`
+}
+
+func (e *EventYear) ConvertToVers1() EventYearVers1 {
+	return EventYearVers1{
+		Year:     e.Year,
+		DateTime: e.DateTime,
+	}
 }
 
 func (e *EventYear) Equals(other *EventYear) bool {

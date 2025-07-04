@@ -33,6 +33,54 @@ type Result struct {
 	DivisionRanking  int    `json:"division_ranking"`
 }
 
+type ResultVers1 struct {
+	Bib              string `json:"bib"`
+	First            string `json:"first"`
+	Last             string `json:"last"`
+	Age              int    `json:"age"`
+	Gender           string `json:"gender"`
+	AgeGroup         string `json:"age_group"`
+	Distance         string `json:"distance"`
+	Seconds          int    `json:"seconds"`
+	Milliseconds     int    `json:"milliseconds"`
+	ChipSeconds      int    `json:"chip_seconds"`
+	ChipMilliseconds int    `json:"chip_milliseconds"`
+	Segment          string `json:"segment"`
+	Location         string `json:"location"`
+	Occurence        int    `json:"occurence"`
+	Ranking          int    `json:"ranking"`
+	AgeRanking       int    `json:"age_ranking"`
+	GenderRanking    int    `json:"gender_ranking"`
+	Finish           bool   `json:"finish"`
+	Type             int    `json:"type"`
+	Anonymous        bool   `json:"anonymous"`
+}
+
+func (r *Result) ConvertToVers1() ResultVers1 {
+	return ResultVers1{
+		Bib:              r.Bib,
+		First:            r.First,
+		Last:             r.Last,
+		Age:              r.Age,
+		Gender:           r.Gender,
+		AgeGroup:         r.AgeGroup,
+		Distance:         r.Distance,
+		Seconds:          r.Seconds,
+		Milliseconds:     r.Milliseconds,
+		ChipSeconds:      r.ChipSeconds,
+		ChipMilliseconds: r.ChipMilliseconds,
+		Segment:          r.Segment,
+		Location:         r.Location,
+		Occurence:        r.Occurence,
+		Ranking:          r.Ranking,
+		AgeRanking:       r.AgeRanking,
+		GenderRanking:    r.GenderRanking,
+		Finish:           r.Finish,
+		Type:             r.Type,
+		Anonymous:        r.Anonymous,
+	}
+}
+
 // Validate Ensures valid data in the struct.
 func (r *Result) Validate(validate *validator.Validate) error {
 	return validate.Struct(r)

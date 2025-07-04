@@ -15,6 +15,13 @@ type GetResultsResponse struct {
 	Distances    []Distance          `json:"distances"`
 }
 
+type GetResultsResponseVers1 struct {
+	Count   int                      `json:"count"`
+	Event   EventVers1               `json:"event"`
+	Years   []EventYearVers1         `json:"years"`
+	Results map[string][]ResultVers1 `json:"results"`
+}
+
 // AddResultsResponse Struct used for the response to an Add/Update/Delete Results request.
 type AddResultsResponse struct {
 	Count int `json:"count"`
@@ -42,6 +49,7 @@ type GetResultsRequest struct {
 	Distance *string `json:"distance"`
 	Limit    *int    `json:"limit"`
 	Page     *int    `json:"page"`
+	Version  *int    `json:"version"`
 }
 
 // AddResultsRequest Struct used to add/update Results.
