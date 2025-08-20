@@ -27,6 +27,7 @@ func (h Handler) Bind(group *echo.Group) {
 	// Result handlers
 	group.POST("/results", h.GetResults)
 	group.POST("/results/all", h.GetAllResults)
+	group.POST("/results/multi", h.GetMultiResults)
 	group.POST("/results/finish", h.GetFinishResults)
 	group.POST("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)

@@ -15,6 +15,12 @@ type GetResultsResponse struct {
 	Distances    []Distance          `json:"distances"`
 }
 
+// GetResultsResponse Struct used for the response of a GetResults request.
+type GetMultiResultsResponse struct {
+	Event   Event                          `json:"event"`
+	Results map[string]map[string][]Result `json:"results"`
+}
+
 type GetResultsResponseVers1 struct {
 	Count   int                      `json:"count"`
 	Event   EventVers1               `json:"event"`
@@ -50,6 +56,12 @@ type GetResultsRequest struct {
 	Limit    *int    `json:"limit"`
 	Page     *int    `json:"page"`
 	Version  *int    `json:"version"`
+}
+
+// GetMultiResultsRequest Struct used for the request of results for many years for an Event.
+type GetMultiResultsRequest struct {
+	Slug  string   `json:"slug"`
+	Years []string `json:"years"`
 }
 
 // AddResultsRequest Struct used to add/update Results.
