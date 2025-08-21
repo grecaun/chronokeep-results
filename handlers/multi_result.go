@@ -57,18 +57,20 @@ func (h Handler) GetMultiResults(c echo.Context) error {
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Year", err)
 		}
-		results, err := database.GetResults(eYear.Identifier, 0, 0)
-		if err != nil {
-			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
-		}
 		if _, ok := outRes[year]; !ok {
 			outRes[year] = make(map[string][]types.Result)
 		}
-		for _, res := range results {
-			if _, ok := outRes[year][res.Distance]; !ok {
-				outRes[year][res.Distance] = make([]types.Result, 0, 1)
+		if eYear != nil {
+			results, err := database.GetResults(eYear.Identifier, 0, 0)
+			if err != nil {
+				return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Results", err)
 			}
-			outRes[year][res.Distance] = append(outRes[year][res.Distance], res)
+			for _, res := range results {
+				if _, ok := outRes[year][res.Distance]; !ok {
+					outRes[year][res.Distance] = make([]types.Result, 0, 1)
+				}
+				outRes[year][res.Distance] = append(outRes[year][res.Distance], res)
+			}
 		}
 	}
 	return c.JSON(http.StatusOK, types.GetMultiResultsResponse{

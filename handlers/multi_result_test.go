@@ -170,4 +170,28 @@ func TestGetMultiResults(t *testing.T) {
 			assert.Equal(t, 2, len(resp.Results))
 		}
 	}
+	// Test a valid request. -- one year invalid
+	t.Log("Testing valid request -- one year doesn't exist.")
+	body, err = json.Marshal(types.GetMultiResultsRequest{
+		Slug:  variables.events["event1"].Slug,
+		Years: []string{"2021", "2020", "2000"},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/results/multi", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.GetMultiResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		var resp types.GetMultiResultsResponse
+		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
+			event := variables.events["event1"]
+			assert.True(t, event.Equals(&resp.Event))
+			assert.Equal(t, 3, len(resp.Results))
+			assert.Equal(t, 0, len(resp.Results["2000"]))
+		}
+	}
 }
