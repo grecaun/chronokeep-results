@@ -3,15 +3,15 @@ module chronokeep/results
 go 1.26
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20260321001828-e3e3800016bc
-	github.com/go-playground/validator/v10 v10.30.1
+	github.com/chromedp/cdproto v0.0.0-20260328224638-b7b298a31867
+	github.com/go-playground/validator/v10 v10.30.2
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.15.1
-	github.com/mattn/go-sqlite3 v1.14.37
+	github.com/mattn/go-sqlite3 v1.14.39
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
