@@ -2,21 +2,16 @@ package handlers
 
 import (
 	"chronokeep/results/types"
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/chromedp/cdproto/page"
-	"github.com/chromedp/chromedp"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
-
-const CERTIFICATE_DOWNLOAD_SLEEP_MILLISECONDS = 150
 
 // APIError holds information on an error from the API
 type APIError struct {
@@ -98,52 +93,4 @@ func createTokens(email string) (*string, *string, error) {
 		return nil, nil, err
 	}
 	return &token, &refresh, nil
-}
-
-func CreateCertificate(name string, event string, timeString string, date string) ([]byte, error) {
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	var buf []byte
-	if err := chromedp.Run(
-		ctx,
-		chromedp.Tasks{
-			chromedp.Navigate("about:blank"),
-			chromedp.ActionFunc(
-				func(ctx context.Context) error {
-					frameTree, err := page.GetFrameTree().Do(ctx)
-					if err != nil {
-						return err
-					}
-					return page.SetDocumentContent(frameTree.Frame.ID, GetCertificateHTML(name, event, timeString, date)).Do(ctx)
-				},
-			),
-			chromedp.Sleep(CERTIFICATE_DOWNLOAD_SLEEP_MILLISECONDS * time.Millisecond),
-			chromedp.FullScreenshot(&buf, 90),
-		}); err != nil {
-		return nil, err
-	}
-	return buf, nil
-}
-
-func GetCertificateHTML(name string, event string, time string, date string) string {
-	return fmt.Sprintf(
-		"<html>"+
-			"<head></head>"+
-			"<body style='width:800;height:565;padding:0px;background-image:url(\"%s\");background-size:cover;'>"+
-			"<div style='margin:0px;width:800px;height:565px;position:relative;'>"+
-			"<div style='width:100%%;margin:0;position:absolute;top:50%%;-ms-transform:translateY(-50%%);transform:translateY(-50%%);'>"+
-			"<div style='font-size:60px;text-align:center;font-weight:bold;'>%s</div>"+
-			"<div style='font-size:30px;text-align:center;margin-left:100px;width:600px;'>finished the %s with a time of</div>"+
-			"<div style='font-size:60px;text-align:center;font-weight:bold;'>%s</div>"+
-			"<div style='font-size:30px;text-align:center;'>on this day of %s</div>"+
-			"</div>"+
-			"</div>"+
-			"</body>"+
-			"</html>",
-		config.CertificateURL,
-		name,
-		event,
-		time,
-		date,
-	)
 }
