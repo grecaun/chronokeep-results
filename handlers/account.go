@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ const (
 	refreshWindow    = time.Hour * 24 * 7
 )
 
-func (h Handler) GetAccount(c echo.Context) error {
+func (h Handler) GetAccount(c *echo.Context) error {
 	var request types.GetAccountRequest
 	err := c.Bind(&request)
 	if err != nil {
@@ -76,7 +76,7 @@ func (h Handler) GetAccount(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetAccounts(c echo.Context) error {
+func (h Handler) GetAccounts(c *echo.Context) error {
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
@@ -96,7 +96,7 @@ func (h Handler) GetAccounts(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddAccount(c echo.Context) error {
+func (h Handler) AddAccount(c *echo.Context) error {
 	var request types.AddAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -131,7 +131,7 @@ func (h Handler) AddAccount(c echo.Context) error {
 	})
 }
 
-func (h Handler) UpdateAccount(c echo.Context) error {
+func (h Handler) UpdateAccount(c *echo.Context) error {
 	var request types.UpdateAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -179,7 +179,7 @@ func (h Handler) UpdateAccount(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteAccount(c echo.Context) error {
+func (h Handler) DeleteAccount(c *echo.Context) error {
 	var request types.DeleteAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -213,7 +213,7 @@ func (h Handler) DeleteAccount(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) ChangePassword(c echo.Context) error {
+func (h Handler) ChangePassword(c *echo.Context) error {
 	var request types.ChangePasswordRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -270,7 +270,7 @@ func (h Handler) ChangePassword(c echo.Context) error {
 	return getAPIError(c, http.StatusUnauthorized, "Unauthorized", nil)
 }
 
-func (h Handler) ChangeEmail(c echo.Context) error {
+func (h Handler) ChangeEmail(c *echo.Context) error {
 	var request types.ChangeEmailRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -303,7 +303,7 @@ func (h Handler) ChangeEmail(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) Login(c echo.Context) error {
+func (h Handler) Login(c *echo.Context) error {
 	log.Info("Logging in.")
 	var request types.LoginRequest
 	if err := c.Bind(&request); err != nil {
@@ -353,7 +353,7 @@ func (h Handler) Login(c echo.Context) error {
 	})
 }
 
-func (h Handler) Logout(c echo.Context) error {
+func (h Handler) Logout(c *echo.Context) error {
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
@@ -367,7 +367,7 @@ func (h Handler) Logout(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) Refresh(c echo.Context) error {
+func (h Handler) Refresh(c *echo.Context) error {
 	request := types.RefreshTokenRequest{}
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -428,7 +428,7 @@ func (h Handler) Refresh(c echo.Context) error {
 	})
 }
 
-func (h Handler) Unlock(c echo.Context) error {
+func (h Handler) Unlock(c *echo.Context) error {
 	var request types.DeleteAccountRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -459,7 +459,7 @@ func (h Handler) Unlock(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) LinkAccounts(c echo.Context) error {
+func (h Handler) LinkAccounts(c *echo.Context) error {
 	var request types.DeleteAccountRequest
 	err := c.Bind(&request)
 	if err != nil {
@@ -494,7 +494,7 @@ func (h Handler) LinkAccounts(c echo.Context) error {
 	})
 }
 
-func (h Handler) UnlinkAccounts(c echo.Context) error {
+func (h Handler) UnlinkAccounts(c *echo.Context) error {
 	var request types.DeleteAccountRequest
 	err := c.Bind(&request)
 	if err != nil {

@@ -4,10 +4,10 @@ import (
 	"chronokeep/results/types"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetResults(c echo.Context) error {
+func (h Handler) GetResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -128,7 +128,7 @@ func (h Handler) GetResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetFinishResults(c echo.Context) error {
+func (h Handler) GetFinishResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -230,7 +230,7 @@ func (h Handler) GetFinishResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetAllResults(c echo.Context) error {
+func (h Handler) GetAllResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -332,7 +332,7 @@ func (h Handler) GetAllResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) GetBibResults(c echo.Context) error {
+func (h Handler) GetBibResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -402,7 +402,7 @@ func (h Handler) GetBibResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddResults(c echo.Context) error {
+func (h Handler) AddResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -466,7 +466,7 @@ func (h Handler) AddResults(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteResults(c echo.Context) error {
+func (h Handler) DeleteResults(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

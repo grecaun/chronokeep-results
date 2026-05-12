@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetParticipants(c echo.Context) error {
+func (h Handler) GetParticipants(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -83,7 +83,7 @@ func (h Handler) GetParticipants(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddParticipants(c echo.Context) error {
+func (h Handler) AddParticipants(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -160,7 +160,7 @@ func (h Handler) AddParticipants(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteParticipants(c echo.Context) error {
+func (h Handler) DeleteParticipants(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

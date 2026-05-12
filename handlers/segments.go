@@ -4,10 +4,10 @@ import (
 	"chronokeep/results/types"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetSegments(c echo.Context) error {
+func (h Handler) GetSegments(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -60,7 +60,7 @@ func (h Handler) GetSegments(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddSegments(c echo.Context) error {
+func (h Handler) AddSegments(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -119,7 +119,7 @@ func (h Handler) AddSegments(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteSegments(c echo.Context) error {
+func (h Handler) DeleteSegments(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

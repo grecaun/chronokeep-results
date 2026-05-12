@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +25,7 @@ var (
 	}
 )
 
-func (h Handler) Twilio(c echo.Context) error {
+func (h Handler) Twilio(c *echo.Context) error {
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)

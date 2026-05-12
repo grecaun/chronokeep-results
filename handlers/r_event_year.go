@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) RGetEventYears(c echo.Context) error {
+func (h Handler) RGetEventYears(c *echo.Context) error {
 	var request types.GetEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -46,7 +46,7 @@ func (h Handler) RGetEventYears(c echo.Context) error {
 	})
 }
 
-func (h Handler) RGetAllEventYears(c echo.Context) error {
+func (h Handler) RGetAllEventYears(c *echo.Context) error {
 	// Get Key from Authorization Header
 	account, err := verifyToken(c.Request())
 	if err != nil {
@@ -93,7 +93,7 @@ func (h Handler) RGetAllEventYears(c echo.Context) error {
 	})
 }
 
-func (h Handler) RAddEventYear(c echo.Context) error {
+func (h Handler) RAddEventYear(c *echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -141,7 +141,7 @@ func (h Handler) RAddEventYear(c echo.Context) error {
 	})
 }
 
-func (h Handler) RUpdateEventYear(c echo.Context) error {
+func (h Handler) RUpdateEventYear(c *echo.Context) error {
 	var request types.ModifyEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -194,7 +194,7 @@ func (h Handler) RUpdateEventYear(c echo.Context) error {
 	})
 }
 
-func (h Handler) RDeleteEventYear(c echo.Context) error {
+func (h Handler) RDeleteEventYear(c *echo.Context) error {
 	var request types.DeleteEventYearRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

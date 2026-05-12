@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 var reg = regexp.MustCompile(`[-\(\)+]`)
 
-func (h Handler) GetSmsSubscriptions(c echo.Context) error {
+func (h Handler) GetSmsSubscriptions(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -64,7 +64,7 @@ func (h Handler) GetSmsSubscriptions(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddSmsSubscription(c echo.Context) error {
+func (h Handler) AddSmsSubscription(c *echo.Context) error {
 	var request types.AddSmsSubscriptionRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -150,7 +150,7 @@ func (h Handler) AddSmsSubscription(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) RemoveSmsSubscription(c echo.Context) error {
+func (h Handler) RemoveSmsSubscription(c *echo.Context) error {
 	var request types.RemoveSmsSubscriptionRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

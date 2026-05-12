@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) RGetParticipants(c echo.Context) error {
+func (h Handler) RGetParticipants(c *echo.Context) error {
 	var request types.GetParticipantsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -76,7 +76,7 @@ func (h Handler) RGetParticipants(c echo.Context) error {
 	})
 }
 
-func (h Handler) RAddParticipant(c echo.Context) error {
+func (h Handler) RAddParticipant(c *echo.Context) error {
 	var request types.AddParticipantRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -150,7 +150,7 @@ func (h Handler) RAddParticipant(c echo.Context) error {
 	})
 }
 
-func (h Handler) RDeleteParticipants(c echo.Context) error {
+func (h Handler) RDeleteParticipants(c *echo.Context) error {
 	var request types.DeleteParticipantsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -188,7 +188,7 @@ func (h Handler) RDeleteParticipants(c echo.Context) error {
 	})
 }
 
-func (h Handler) RUpdateParticipant(c echo.Context) error {
+func (h Handler) RUpdateParticipant(c *echo.Context) error {
 	var request types.UpdateParticipantRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -247,7 +247,7 @@ func (h Handler) RUpdateParticipant(c echo.Context) error {
 	})
 }
 
-func (h Handler) RUpdateManyParticipants(c echo.Context) error {
+func (h Handler) RUpdateManyParticipants(c *echo.Context) error {
 	var request types.AddParticipantsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -317,7 +317,7 @@ func (h Handler) RUpdateManyParticipants(c echo.Context) error {
 	})
 }
 
-func (h Handler) RAddManyParticipants(c echo.Context) error {
+func (h Handler) RAddManyParticipants(c *echo.Context) error {
 	var request types.AddParticipantsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

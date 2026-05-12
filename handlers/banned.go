@@ -5,11 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) AddBannedPhone(c echo.Context) error {
-	if c.Request().Method != echo.POST {
+func (h Handler) AddBannedPhone(c *echo.Context) error {
+	if c.Request().Method != http.MethodPost {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	// No need for keys for any of these calls
@@ -28,8 +28,8 @@ func (h Handler) AddBannedPhone(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) GetBannedPhones(c echo.Context) error {
-	if c.Request().Method != echo.GET {
+func (h Handler) GetBannedPhones(c *echo.Context) error {
+	if c.Request().Method != http.MethodGet {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	phones, err := database.GetBlockedPhones()
@@ -41,7 +41,7 @@ func (h Handler) GetBannedPhones(c echo.Context) error {
 	})
 }
 
-func (h Handler) RemoveBannedPhone(c echo.Context) error {
+func (h Handler) RemoveBannedPhone(c *echo.Context) error {
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
@@ -55,7 +55,7 @@ func (h Handler) RemoveBannedPhone(c echo.Context) error {
 	if account.Type != "admin" {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not admin"))
 	}
-	if c.Request().Method != echo.POST {
+	if c.Request().Method != http.MethodPost {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	var request types.ModifyBannedPhoneRequest
@@ -73,8 +73,8 @@ func (h Handler) RemoveBannedPhone(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) AddBannedEmail(c echo.Context) error {
-	if c.Request().Method != echo.POST {
+func (h Handler) AddBannedEmail(c *echo.Context) error {
+	if c.Request().Method != http.MethodPost {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	// No need for keys for any of these calls
@@ -93,8 +93,8 @@ func (h Handler) AddBannedEmail(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) GetBannedEmails(c echo.Context) error {
-	if c.Request().Method != echo.GET {
+func (h Handler) GetBannedEmails(c *echo.Context) error {
+	if c.Request().Method != http.MethodGet {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	emails, err := database.GetBlockedEmails()
@@ -106,8 +106,8 @@ func (h Handler) GetBannedEmails(c echo.Context) error {
 	})
 }
 
-func (h Handler) RemoveBannedEmail(c echo.Context) error {
-	if c.Request().Method != echo.POST {
+func (h Handler) RemoveBannedEmail(c *echo.Context) error {
+	if c.Request().Method != http.MethodPost {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Method", nil)
 	}
 	// No need for keys for any of these calls

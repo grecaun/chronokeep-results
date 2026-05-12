@@ -4,10 +4,10 @@ import (
 	"chronokeep/results/types"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetDistances(c echo.Context) error {
+func (h Handler) GetDistances(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -69,7 +69,7 @@ func (h Handler) GetDistances(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddDistances(c echo.Context) error {
+func (h Handler) AddDistances(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -128,7 +128,7 @@ func (h Handler) AddDistances(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteDistances(c echo.Context) error {
+func (h Handler) DeleteDistances(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
-	github.com/labstack/echo/v4 v4.15.2
+	github.com/labstack/echo/v5 v5.1.1
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
@@ -34,13 +34,8 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgtype v1.14.4 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
-	github.com/labstack/gommon v0.5.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect

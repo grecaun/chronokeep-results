@@ -5,11 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // RGetEvents Used with a JWT for the website to get an account events.
-func (h Handler) RGetEvents(c echo.Context) error {
+func (h Handler) RGetEvents(c *echo.Context) error {
 	var request types.GetREventsRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -43,7 +43,7 @@ func (h Handler) RGetEvents(c echo.Context) error {
 }
 
 // RAddEvent Used with a JWT for the website to add an event.
-func (h Handler) RAddEvent(c echo.Context) error {
+func (h Handler) RAddEvent(c *echo.Context) error {
 	var request types.AddEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -97,7 +97,7 @@ func (h Handler) RAddEvent(c echo.Context) error {
 }
 
 // RUpdateEvent Used with a JWT for the website to update an event.
-func (h Handler) RUpdateEvent(c echo.Context) error {
+func (h Handler) RUpdateEvent(c *echo.Context) error {
 	var request types.UpdateEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -151,7 +151,7 @@ func (h Handler) RUpdateEvent(c echo.Context) error {
 }
 
 // RDeleteEvent Used with a JWT for the website to delete an event.
-func (h Handler) RDeleteEvent(c echo.Context) error {
+func (h Handler) RDeleteEvent(c *echo.Context) error {
 	var request types.DeleteEventRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

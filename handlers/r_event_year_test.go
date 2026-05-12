@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -497,9 +497,6 @@ func TestRGetAllEventYears(t *testing.T) {
 	}
 	// test invalid content type
 	t.Log("Testing invalid content type.")
-	if err != nil {
-		t.Fatalf("Error encoding request into json object: %v", err)
-	}
 	request = httptest.NewRequest(http.MethodPost, "/r/event-year/all", strings.NewReader(string("")))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+*token)

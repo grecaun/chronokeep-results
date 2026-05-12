@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetBibChips(c echo.Context) error {
+func (h Handler) GetBibChips(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -60,7 +60,7 @@ func (h Handler) GetBibChips(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddBibChips(c echo.Context) error {
+func (h Handler) AddBibChips(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -116,7 +116,7 @@ func (h Handler) AddBibChips(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteBibChips(c echo.Context) error {
+func (h Handler) DeleteBibChips(c *echo.Context) error {
 	// Get Key from Auth Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
