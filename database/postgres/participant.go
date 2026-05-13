@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 func (p *Postgres) AddParticipants(eventYearID int64, participants []types.Participant) ([]types.Participant, error) {

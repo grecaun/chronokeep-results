@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 func (p *Postgres) getAccountInternal(email, key *string, id *int64) (*types.Account, error) {
