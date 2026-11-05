@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package handlers
 
 import (
-	"chronokeep/results/auth"
 	"chronokeep/results/database/sqlite"
 	"chronokeep/results/types"
 	"chronokeep/results/util"
@@ -28,6 +27,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
@@ -983,9 +984,11 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	}
 }
 
+// testHashPassword hashes with the minimum bcrypt cost to keep tests fast. Verification
+// works the same regardless of cost.
 func testHashPassword(pass string) string {
-	hash, _ := auth.HashPassword(pass)
-	return hash
+	hash, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.MinCost)
+	return string(hash)
 }
 
 type SetupVariables struct {

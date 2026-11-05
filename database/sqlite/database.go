@@ -1049,6 +1049,9 @@ func (s *SQLite) updateDB(newdb *sql.DB) {
 
 // Close Closes database.
 func (s *SQLite) Close() {
-	s.db.Close()
+	if s.db != nil {
+		s.db.Close()
+		s.db = nil
+	}
 }
 

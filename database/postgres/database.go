@@ -1161,6 +1161,9 @@ func (p *Postgres) updateDB(newdb *pgxpool.Pool) {
 
 // Close Closes database.
 func (p *Postgres) Close() {
-	p.db.Close()
+	if p.db != nil {
+		p.db.Close()
+		p.db = nil
+	}
 }
 

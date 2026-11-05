@@ -1071,6 +1071,9 @@ func (m *MySQL) updateDB(newdb *sql.DB) {
 
 // Close Closes database.
 func (m *MySQL) Close() {
-	m.db.Close()
+	if m.db != nil {
+		m.db.Close()
+		m.db = nil
+	}
 }
 

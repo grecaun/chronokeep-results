@@ -138,16 +138,7 @@ func (h Handler) GetEvent(c *echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
-	var recent *types.EventYear
-	now := time.Now()
-	if len(eventYears) > 0 {
-		recent = &eventYears[0]
-		for _, y := range eventYears[1:] {
-			if recent.DateTime.Before(y.DateTime) && y.DateTime.Before(now) {
-				recent = &y
-			}
-		}
-	}
+	recent := mostRecentYear(eventYears, time.Now())
 	var res []types.Result
 	var parts []types.Participant
 	if recent != nil {

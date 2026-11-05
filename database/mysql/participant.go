@@ -249,8 +249,7 @@ func (m *MySQL) DeleteParticipants(eventYearID int64, alternateIds []string) (in
 	if len(alternateIds) > 0 {
 		count = 0
 		for _, altId := range alternateIds {
-			count++
-			_, err = tx.ExecContext(
+			res, err := tx.ExecContext(
 				ctx,
 				"DELETE FROM participant WHERE event_year_id=? AND alternate_id=?;",
 				eventYearID,
@@ -260,6 +259,12 @@ func (m *MySQL) DeleteParticipants(eventYearID int64, alternateIds []string) (in
 				tx.Rollback()
 				return 0, fmt.Errorf("error deleting participant: %v", err)
 			}
+			affected, err := res.RowsAffected()
+			if err != nil {
+				tx.Rollback()
+				return 0, fmt.Errorf("error fetching rows affected from participant deletion: %v", err)
+			}
+			count += affected
 		}
 	} else {
 		res, err := tx.ExecContext(

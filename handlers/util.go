@@ -113,3 +113,41 @@ func createTokens(email string) (*string, *string, error) {
 	return &token, &refresh, nil
 }
 
+
+// getLimit returns the limit requested, or 0 (no limit) if it is unset or negative.
+func getLimit(limit *int) int {
+	if limit == nil || *limit < 0 {
+		return 0
+	}
+	return *limit
+}
+
+// getPage converts the 1-indexed page from a request into the 0-indexed page used
+// by the database. Unset, zero, or negative pages all map to the first page.
+func getPage(page *int) int {
+	if page == nil || *page < 1 {
+		return 0
+	}
+	return *page - 1
+}
+
+// mostRecentYear returns the latest event year that has already started. If every
+// year is in the future it returns the earliest upcoming year. Returns nil when no
+// years are given.
+func mostRecentYear(years []types.EventYear, now time.Time) *types.EventYear {
+	var recent, upcoming *types.EventYear
+	for i := range years {
+		y := &years[i]
+		if y.DateTime.Before(now) {
+			if recent == nil || recent.DateTime.Before(y.DateTime) {
+				recent = y
+			}
+		} else if upcoming == nil || y.DateTime.Before(upcoming.DateTime) {
+			upcoming = y
+		}
+	}
+	if recent != nil {
+		return recent
+	}
+	return upcoming
+}

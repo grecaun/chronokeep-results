@@ -35,7 +35,7 @@ type GetBannedEmailsResponse struct {
 */
 
 type ModifyBannedPhoneRequest struct {
-	Phone string `json:"phone" validate:"numeric,required"`
+	Phone string `json:"phone" validate:"required"`
 }
 
 type ModifyBannedEmailRequest struct {

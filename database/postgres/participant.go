@@ -216,8 +216,7 @@ func (p *Postgres) DeleteParticipants(eventYearID int64, alternateIds []string) 
 	if len(alternateIds) > 0 {
 		count = 0
 		for _, altId := range alternateIds {
-			count++
-			_, err = tx.Exec(
+			res, err := tx.Exec(
 				ctx,
 				"DELETE FROM participant WHERE event_year_id=$1 AND alternate_id=$2;",
 				eventYearID,
@@ -227,6 +226,7 @@ func (p *Postgres) DeleteParticipants(eventYearID int64, alternateIds []string) 
 				tx.Rollback(ctx)
 				return 0, fmt.Errorf("error deleting participant: %v", err)
 			}
+			count += res.RowsAffected()
 		}
 	} else {
 		res, err := tx.Exec(

@@ -94,7 +94,7 @@ func (k *Key) Validate(validate *validator.Validate) error {
 }
 
 // Validate Ensures valid data in the structure.
-func (k RequestKey) Validate(validate *validator.Validate) error {
+func (k *RequestKey) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
 	case "default":
@@ -131,7 +131,7 @@ func (k Key) IsAllowed(host string) bool {
 	if len(match) >= 2 {
 		allowed := strings.Split(k.AllowedHosts, ",")
 		for _, a := range allowed {
-			if match[1] == a {
+			if strings.EqualFold(match[1], strings.TrimSpace(a)) {
 				return true
 			}
 		}

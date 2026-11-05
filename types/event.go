@@ -36,7 +36,7 @@ type Event struct {
 	Slug              string     `json:"slug" validate:"required"`
 	Website           string     `json:"website"`
 	Image             string     `json:"image"`
-	ContactEmail      string     `json:"contact_email" validate:"email"`
+	ContactEmail      string     `json:"contact_email" validate:"omitempty,email"`
 	AccessRestricted  bool       `json:"access_restricted"`
 	Type              string     `json:"type"`
 	RecentTime        *time.Time `json:"recent_time"`

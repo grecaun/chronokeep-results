@@ -2017,7 +2017,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	updated.Anonymous = !updated.Anonymous
 	updated.SMSEnabled = !updated.SMSEnabled
 	updated.Apparel = "newapparel"
-	updated.Birthdate = "new bd"
+	updated.Birthdate = "2/3/1999" // must be a valid birthdate now that updates are validated
 	updated.Distance = "testdist"
 	updated.First = "uTom"
 	updated.Last = "uSmith"
@@ -2094,7 +2094,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	updated.Anonymous = !updated.Anonymous
 	updated.SMSEnabled = !updated.SMSEnabled
 	updated.Apparel = "newapparel2"
-	updated.Birthdate = "new bd2"
+	updated.Birthdate = "3/4/1998"
 	updated.Distance = "testdist2"
 	updated.First = "uTom2"
 	updated.Last = "uSmith2"
@@ -2355,7 +2355,7 @@ func TestRUpdateParticipant(t *testing.T) {
 	updated.Anonymous = !updated.Anonymous
 	updated.SMSEnabled = !updated.SMSEnabled
 	updated.Apparel = "newapparel"
-	updated.Birthdate = "new bd"
+	updated.Birthdate = "2/3/1999"
 	updated.Distance = "testdist"
 	updated.First = "uTom"
 	updated.Last = "uSmith"

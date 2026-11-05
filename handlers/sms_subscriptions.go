@@ -21,13 +21,10 @@ package handlers
 import (
 	"chronokeep/results/types"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/labstack/echo/v5"
 )
-
-var reg = regexp.MustCompile(`[-\(\)+]`)
 
 func (h Handler) GetSmsSubscriptions(c *echo.Context) error {
 	// Get Key from Authorization Header
@@ -137,8 +134,8 @@ func (h Handler) AddSmsSubscription(c *echo.Context) error {
 	if (request.Bib == nil) && (request.First == nil || request.Last == nil) {
 		return getAPIError(c, http.StatusBadRequest, "No Participant Identified", nil)
 	}
-	var phone = reg.ReplaceAllString(request.Phone, "")
-	if len(phone) != 10 {
+	phone, ok := normalizePhone(request.Phone)
+	if !ok {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Phone Number", nil)
 	}
 	bib := ""
@@ -160,7 +157,7 @@ func (h Handler) AddSmsSubscription(c *echo.Context) error {
 		Bib:   bib,
 		First: first,
 		Last:  last,
-		Phone: request.Phone,
+		Phone: phone,
 	})
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Subscription", err)
@@ -185,8 +182,8 @@ func (h Handler) RemoveSmsSubscription(c *echo.Context) error {
 	if mult == nil || mult.Event == nil || mult.EventYear == nil {
 		return getAPIError(c, http.StatusNotFound, "Event/Year Not Found", nil)
 	}
-	var phone = reg.ReplaceAllString(request.Phone, "")
-	if len(phone) != 10 {
+	phone, ok := normalizePhone(request.Phone)
+	if !ok {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Phone Number", nil)
 	}
 	err = database.RemoveSubscribedPhone(mult.EventYear.Identifier, phone)

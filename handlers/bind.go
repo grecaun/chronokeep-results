@@ -116,8 +116,8 @@ func (h Handler) BindRestricted(group *echo.Group) {
 	group.POST("/r/participants/add", h.RAddParticipant)
 	group.POST("/r/participants/add-many", h.RAddManyParticipants)
 	group.DELETE("/r/participants/delete", h.RDeleteParticipants)
-	group.POST("r/participants/update", h.RUpdateParticipant)
-	group.POST("r/participants/update-many", h.RUpdateManyParticipants)
+	group.POST("/r/participants/update", h.RUpdateParticipant)
+	group.POST("/r/participants/update-many", h.RUpdateManyParticipants)
 	// Unblock phone should be restricted to admins only
 	group.POST("/blocked/phones/unblock", h.RemoveBannedPhone)
 }

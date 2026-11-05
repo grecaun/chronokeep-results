@@ -74,19 +74,10 @@ func (h Handler) GetResults(c *echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	distance := ""
-	limit := 0
-	page := 0
+	limit := getLimit(request.Limit)
+	page := getPage(request.Page)
 	if request.Distance != nil {
 		distance = *request.Distance
-	}
-	if request.Limit != nil {
-		limit = *request.Limit
-	}
-	if request.Page != nil {
-		page = *request.Page
-		if page > 0 {
-			page--
-		}
 	}
 	results, err := database.GetDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
@@ -195,19 +186,10 @@ func (h Handler) GetFinishResults(c *echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	distance := ""
-	limit := 0
-	page := 0
+	limit := getLimit(request.Limit)
+	page := getPage(request.Page)
 	if request.Distance != nil {
 		distance = *request.Distance
-	}
-	if request.Limit != nil {
-		limit = *request.Limit
-	}
-	if request.Page != nil {
-		page = *request.Page
-		if page > 0 {
-			page--
-		}
 	}
 	results, err := database.GetFinishResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
@@ -297,19 +279,10 @@ func (h Handler) GetAllResults(c *echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Event Years", err)
 	}
 	distance := ""
-	limit := 0
-	page := 0
+	limit := getLimit(request.Limit)
+	page := getPage(request.Page)
 	if request.Distance != nil {
 		distance = *request.Distance
-	}
-	if request.Limit != nil {
-		limit = *request.Limit
-	}
-	if request.Page != nil {
-		page = *request.Page
-		if page > 0 {
-			page--
-		}
 	}
 	results, err := database.GetAllDistanceResults(mult.EventYear.Identifier, distance, limit, page)
 	if err != nil {
@@ -414,7 +387,7 @@ func (h Handler) GetBibResults(c *echo.Context) error {
 		EventYear:      *mult.EventYear,
 		Results:        results,
 		Person:         person,
-		SingleDistance: *mult.DistanceCount == 1,
+		SingleDistance: mult.DistanceCount != nil && *mult.DistanceCount == 1,
 		Segments:       segments,
 		Distance:       distance,
 	})

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"unicode"
 
 	"github.com/labstack/echo/v5"
 	log "github.com/sirupsen/logrus"
@@ -52,12 +53,21 @@ func (h Handler) Twilio(c *echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	from := values["From"][0]
-	message := values["Body"][0]
-	twilio_signature := c.Request().Header["X-Twilio-Signature"][0]
+	from := values.Get("From")
+	message := values.Get("Body")
+	twilio_signature := c.Request().Header.Get("X-Twilio-Signature")
+	if from == "" || twilio_signature == "" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	// Store and compare numbers in one format so a number can be blocked and unblocked
+	// no matter which format it was originally added in.
+	phone, ok := canonicalPhone(from)
+	if !ok {
+		phone = from
+	}
 	params := make(map[string]string)
-	for key, pArray := range values {
-		params[key] = pArray[0]
+	for key := range values {
+		params[key] = values.Get(key)
 	}
 	valid_request := twilioRequestValidator.Validate(config.TwilioResponseWebhookURL, params, twilio_signature)
 	log.WithFields(log.Fields{
@@ -71,14 +81,15 @@ func (h Handler) Twilio(c *echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 	lowerCaseMessage := strings.ToLower(strings.TrimSpace(message))
+	words := messageWords(lowerCaseMessage)
 	// check if told to unstop
-	// do this before the stop check because stop is a substring of unstop
 	for _, keyword := range startKeywords {
-		if strings.Contains(lowerCaseMessage, keyword) {
+		if words[keyword] {
 			// remove from do not contact list
-			err = database.UnblockPhone(from)
-			if err != nil {
-				return c.NoContent(http.StatusInternalServerError)
+			for _, variant := range phoneVariants(phone) {
+				if err = database.UnblockPhone(variant); err != nil {
+					return c.NoContent(http.StatusInternalServerError)
+				}
 			}
 			// check if it's already being handled by twilio
 			// and don't send message if so
@@ -91,9 +102,9 @@ func (h Handler) Twilio(c *echo.Context) error {
 	}
 	// check if told to stop
 	for _, keyword := range stopKeywords {
-		if strings.Contains(lowerCaseMessage, keyword) {
+		if words[keyword] {
 			// add to do not contact list
-			err = database.AddBlockedPhone(from)
+			err = database.AddBlockedPhone(phone)
 			if err != nil {
 				return c.NoContent(http.StatusInternalServerError)
 			}
@@ -111,14 +122,25 @@ func (h Handler) Twilio(c *echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	for _, phone := range phones {
-		if strings.Contains(from, phone) {
+	for _, blocked := range phones {
+		if blocked == phone || samePhone(blocked, phone) {
 			return c.NoContent(http.StatusOK)
 		}
 	}
-	if strings.Contains(lowerCaseMessage, "help") {
+	if words["help"] {
 		return c.String(http.StatusOK, "Reply STOP to stop receiving texts from this number.")
 	}
 	return c.NoContent(http.StatusOK)
 }
 
+// messageWords splits a message into the set of words it contains so keywords are only
+// matched as whole words (e.g. "send" must not match the "end" stop keyword).
+func messageWords(message string) map[string]bool {
+	words := make(map[string]bool)
+	for _, word := range strings.FieldsFunc(message, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	}) {
+		words[word] = true
+	}
+	return words
+}

@@ -249,8 +249,7 @@ func (s *SQLite) DeleteParticipants(eventYearID int64, alternateIds []string) (i
 	if len(alternateIds) > 0 {
 		count = 0
 		for _, altId := range alternateIds {
-			count++
-			_, err = tx.ExecContext(
+			res, err := tx.ExecContext(
 				ctx,
 				"DELETE FROM participant WHERE event_year_id=$1 AND alternate_id=$2;",
 				eventYearID,
@@ -260,6 +259,12 @@ func (s *SQLite) DeleteParticipants(eventYearID int64, alternateIds []string) (i
 				tx.Rollback()
 				return 0, fmt.Errorf("error deleting participant: %v", err)
 			}
+			affected, err := res.RowsAffected()
+			if err != nil {
+				tx.Rollback()
+				return 0, fmt.Errorf("error fetching rows affected from participant deletion: %v", err)
+			}
+			count += affected
 		}
 	} else {
 		res, err := tx.ExecContext(

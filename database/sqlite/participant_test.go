@@ -664,6 +664,10 @@ func TestDeleteParticipants(t *testing.T) {
 	count, err = db.DeleteParticipants(eventYear.Identifier, toDelete)
 	assert.NoError(t, err)
 	assert.Equal(t, count, int64(len(toDelete)))
+	// Identifiers that don't exist (or were already deleted) must not be counted.
+	count, err = db.DeleteParticipants(eventYear.Identifier, append(toDelete, "does-not-exist"))
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
 	p, err = db.GetParticipants(eventYear.Identifier, 0, 0, nil)
 	if assert.NoError(t, err) {
 		assert.Equal(t, len(participants)-2, len(p))

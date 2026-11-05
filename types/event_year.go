@@ -31,7 +31,7 @@ type EventYear struct {
 	Identifier      int64     `json:"-"`
 	EventIdentifier int64     `json:"-"`
 	Year            string    `json:"year"`
-	DateTime        time.Time `json:"date_time" validate:"datetime"`
+	DateTime        time.Time `json:"date_time"`
 	Live            bool      `json:"live"`
 	DaysAllowed     int       `json:"days_allowed"`
 	RankingType     string    `json:"ranking_type"`
@@ -54,7 +54,7 @@ type AllEventYear struct {
 	Name        string    `json:"name"`
 	Slug        string    `json:"slug"`
 	Year        string    `json:"year"`
-	DateTime    time.Time `json:"date_time" validate:"datetime"`
+	DateTime    time.Time `json:"date_time"`
 	Live        bool      `json:"live"`
 	DaysAllowed int       `json:"days_allowed"`
 	RankingType string    `json:"ranking_type"`
@@ -101,44 +101,26 @@ func (e *RequestYear) Validate(validate *validator.Validate) error {
 
 // ToYear Turns a RequestYear into a year object.
 func (e RequestYear) ToYear() EventYear {
-	out := EventYear{
+	return EventYear{
 		Year:        e.Year,
+		DateTime:    e.GetDateTime(),
 		Live:        e.Live,
 		DaysAllowed: e.DaysAllowed,
 		RankingType: e.RankingType,
 	}
-	d, err := time.Parse(time.RFC3339, e.DateTime)
-	if err == nil {
-		out.DateTime = d
-		return out
-	}
-	d, err = time.Parse("2006/01/02 15:04:05 -07:00", e.DateTime)
-	if err == nil {
-		out.DateTime = d
-		return out
-	}
-	d, err = time.Parse("2006/01/02 15:04:05", e.DateTime)
-	if err != nil {
-		out.DateTime = d
-		return out
-	}
-	out.DateTime = time.Now()
-	return out
 }
 
-// GetDateTime Gets a time.Time object from the RequestKey
+// GetDateTime Gets a time.Time object from the RequestYear. Falls back to the current time
+// if the DateTime value cannot be parsed.
 func (e RequestYear) GetDateTime() time.Time {
-	d, err := time.Parse(time.RFC3339, e.DateTime)
-	if err == nil {
-		return d
-	}
-	d, err = time.Parse("2006/01/02 15:04:05 -07:00", e.DateTime)
-	if err == nil {
-		return d
-	}
-	d, err = time.Parse("2006/01/02 15:04:05", e.DateTime)
-	if err != nil {
-		return d
+	for _, layout := range []string{
+		time.RFC3339,
+		"2006/01/02 15:04:05 -07:00",
+		"2006/01/02 15:04:05",
+	} {
+		if d, err := time.Parse(layout, e.DateTime); err == nil {
+			return d
+		}
 	}
 	return time.Now()
 }

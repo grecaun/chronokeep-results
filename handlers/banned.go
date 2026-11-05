@@ -35,11 +35,11 @@ func (h Handler) AddBannedPhone(c *echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	err := h.validate.Struct(request)
-	if len(request.Phone) < 10 || err != nil {
+	phone, ok := canonicalPhone(request.Phone)
+	if !ok {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Phone Field", nil)
 	}
-	err = database.AddBlockedPhone(request.Phone)
+	err := database.AddBlockedPhone(phone)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Phone", err)
 	}
@@ -80,13 +80,15 @@ func (h Handler) RemoveBannedPhone(c *echo.Context) error {
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	err = h.validate.Struct(request)
-	if len(request.Phone) < 10 || err != nil {
+	phone, ok := canonicalPhone(request.Phone)
+	if !ok {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Phone Field", nil)
 	}
-	err = database.UnblockPhone(request.Phone)
-	if err != nil {
-		return getAPIError(c, http.StatusInternalServerError, "Error Unblocking Phone", err)
+	// Remove every format the number may have been stored in.
+	for _, variant := range phoneVariants(phone) {
+		if err = database.UnblockPhone(variant); err != nil {
+			return getAPIError(c, http.StatusInternalServerError, "Error Unblocking Phone", err)
+		}
 	}
 	return c.NoContent(http.StatusOK)
 }

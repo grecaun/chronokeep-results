@@ -62,12 +62,12 @@ func GetConfig() (*Config, error) {
 	}
 
 	recordInterval, err := strconv.Atoi(os.Getenv("RECORD_INTERVAL"))
-	if err != nil && recordInterval < 60 {
+	if err != nil || recordInterval < 60 {
 		recordInterval = 300
 	}
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil && port < 200 {
+	if err != nil || port <= 0 || port > 65535 {
 		port = 8181
 	}
 

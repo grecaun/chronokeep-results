@@ -48,10 +48,10 @@ func GetTokenAndEmail(r *http.Request) (tokenStr, email *string, err error) {
 	if !ok || !token.Valid {
 		return nil, nil, errors.New("claims not set or token is not valid")
 	}
-	*email, ok = claims["email"].(string)
+	emailStr, ok := claims["email"].(string)
 	if !ok {
 		return nil, nil, errors.New("email not found in token claims")
 	}
-	return tokenStr, email, nil
+	return tokenStr, &emailStr, nil
 }
 

@@ -72,17 +72,8 @@ func (h Handler) RGetParticipants(c *echo.Context) error {
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
 	}
-	limit := 0
-	page := 0
-	if request.Limit != nil {
-		limit = *request.Limit
-	}
-	if request.Page != nil {
-		page = *request.Page
-		if page > 0 {
-			page--
-		}
-	}
+	limit := getLimit(request.Limit)
+	page := getPage(request.Page)
 	participants, err := database.GetParticipants(multi.EventYear.Identifier, limit, page, request.UpdatedAfter)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)
@@ -152,8 +143,8 @@ func (h Handler) RAddParticipant(c *echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Participants", err)
 	}
-	if len(participants) > 1 {
-		return getAPIError(c, http.StatusInternalServerError, "Multiple Participants Added", nil)
+	if len(participants) != 1 {
+		return getAPIError(c, http.StatusInternalServerError, "Unexpected Number of Participants Added", nil)
 	}
 	updated := make([]types.Participant, 0)
 	if request.UpdatedAfter != nil && *request.UpdatedAfter >= 0 {
@@ -245,6 +236,9 @@ func (h Handler) RUpdateParticipant(c *echo.Context) error {
 	// Verify they're allowed to pull these identifiers
 	if account.Type != "admin" && account.Identifier != multi.Event.AccountIdentifier && !is_linked {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("ownership error"))
+	}
+	if err := request.Participant.Validate(h.validate); err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Invalid Participant", err)
 	}
 	// set the updated at field on the participant
 	request.Participant.UpdatedAt = time.Now().UTC().Unix()

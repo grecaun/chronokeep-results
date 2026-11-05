@@ -79,17 +79,8 @@ func (h Handler) GetParticipants(c *echo.Context) error {
 	if mkey.Account.Identifier != mult.Event.AccountIdentifier {
 		return getAPIError(c, http.StatusUnauthorized, "Restricted Event", nil)
 	}
-	limit := 0
-	page := 0
-	if request.Limit != nil {
-		limit = *request.Limit
-	}
-	if request.Page != nil {
-		page = *request.Page
-		if page > 0 {
-			page--
-		}
-	}
+	limit := getLimit(request.Limit)
+	page := getPage(request.Page)
 	participants, err := database.GetParticipants(mult.EventYear.Identifier, limit, page, request.UpdatedAfter)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Participants", err)

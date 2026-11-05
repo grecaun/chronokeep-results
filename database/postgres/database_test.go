@@ -92,6 +92,8 @@ func setupTests(t *testing.T) (*Postgres, func(t *testing.T), error) {
 			return
 		}
 		t.Log("Database successfully deleted.")
+		// Close the connection pool so tests don't exhaust the server's connections.
+		o.Close()
 	}, nil
 }
 
