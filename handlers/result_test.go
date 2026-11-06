@@ -3222,3 +3222,67 @@ func TestDeleteResults(t *testing.T) {
 	}
 }
 
+
+func TestAddResultsSortsDnfAndDnsLast(t *testing.T) {
+	// POST, /results/add
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
+	eventYear, err := database.AddEventYear(types.EventYear{
+		EventIdentifier: variables.events["event2"].Identifier,
+		Year:            "2024",
+		DateTime:        time.Date(2024, 04, 05, 11, 0, 0, 0, time.Local),
+		Live:            false,
+		DaysAllowed:     1,
+		RankingType:     "chip",
+	})
+	assert.NoError(t, err)
+	result := func(bib string, resultType int, seconds int) types.Result {
+		return types.Result{
+			PersonId:    "person-" + bib,
+			Bib:         bib,
+			First:       "Runner",
+			Last:        bib,
+			Distance:    "5K",
+			Seconds:     seconds,
+			ChipSeconds: seconds,
+			Segment:     "Finish",
+			Location:    "Finish",
+			Occurence:   1,
+			Finish:      true,
+			Type:        resultType,
+		}
+	}
+	results := []types.Result{
+		result("dns", 31, 0),
+		result("dnf", 30, 0),
+		result("old-dnf", 3, 0),
+		result("finisher", 0, 1500),
+	}
+	body, err := json.Marshal(types.AddResultsRequest{
+		Slug:    variables.events["event2"].Slug,
+		Year:    "2024",
+		Results: results,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/results/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write2"])
+	response := httptest.NewRecorder()
+	c := e.NewContext(request, response)
+	if assert.NoError(t, h.AddResults(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+	}
+	uploaded, err := database.GetResults(eventYear.Identifier, 0, 0)
+	if assert.NoError(t, err) && assert.Len(t, uploaded, len(results)) {
+		// Results come back ordered by seconds, so the finisher must be first.
+		assert.Equal(t, "finisher", uploaded[0].Bib)
+		for _, res := range uploaded[1:] {
+			assert.Equal(t, 1000000, res.Seconds, "result %s should sort last", res.Bib)
+		}
+	}
+}

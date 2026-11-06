@@ -410,8 +410,8 @@ func (h Handler) AddResults(c *echo.Context) error {
 	for _, res := range request.Results {
 		// Validate all results, only add the results that pass validation.
 		if err := res.Validate(h.validate); err == nil {
-			// we want seconds to be high if the type is DNF
-			if res.Type == 3 || res.Type == 30 {
+			// we want seconds to be high if the type is DNF (3 or 30) or DNS (31) so they sort last
+			if res.Type == 3 || res.Type >= 30 {
 				res.Seconds = 1000000
 			}
 			resToAdd = append(resToAdd, res)
