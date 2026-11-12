@@ -23,6 +23,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	log "github.com/sirupsen/logrus"
 )
 
 func (h Handler) GetResults(c *echo.Context) error {
@@ -452,6 +453,13 @@ func (h Handler) AddResults(c *echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Results", err)
 	}
+	if len(request.Results) > 0 {
+		// receiving reads keeps the event year live for database.LiveWindow
+		if err := database.SetResultsReceived(mult.EventYear.Identifier); err != nil {
+			log.Errorf("Error setting results received for event year %d: %v", mult.EventYear.Identifier, err)
+		}
+		broker.notify(mult.EventYear.Identifier)
+	}
 	return c.JSON(http.StatusOK, types.AddResultsResponse{
 		Count: len(results),
 	})
@@ -518,6 +526,7 @@ func (h Handler) DeleteResults(c *echo.Context) error {
 			return getAPIError(c, http.StatusInternalServerError, "Error Deleting Results", err)
 		}
 	}
+	broker.notify(mult.EventYear.Identifier)
 	return c.JSON(http.StatusOK, types.AddResultsResponse{
 		Count: int(count),
 	})

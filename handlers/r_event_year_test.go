@@ -1302,7 +1302,8 @@ func TestRUpdateEventYear(t *testing.T) {
 				assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 				assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 				assert.Equal(t, eYear.Year, resp.EventYear.Year)
-				assert.Equal(t, eYear.Live, resp.EventYear.Live)
+				// live can't be set by an update, it only comes from recently received results
+				assert.False(t, resp.EventYear.Live)
 				assert.Equal(t, 2020, resp.EventYear.DateTime.Year())
 				assert.Equal(t, time.Month(12), resp.EventYear.DateTime.Month())
 				assert.Equal(t, 31, resp.EventYear.DateTime.Day())

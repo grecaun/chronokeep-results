@@ -49,6 +49,7 @@ func (h Handler) Bind(group *echo.Group) {
 	group.POST("/results/finish", h.GetFinishResults)
 	group.POST("/results/bib", h.GetBibResults)
 	group.POST("/results/add", h.AddResults)
+	group.GET("/results/stream", h.StreamResults)
 	group.DELETE("/results/delete", h.DeleteResults)
 	// Participants handlers
 	group.POST("/participants", h.GetParticipants)

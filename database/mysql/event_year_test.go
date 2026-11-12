@@ -556,6 +556,8 @@ func TestUpdateEventYear(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error updating event year: %v", err)
 	}
+	// live can't be set by an update, it only comes from recently received results
+	eventYear1.Live = false
 	event, _ := db.GetEventYear(event1.Slug, eventYear1.Year)
 	if !event.Equals(eventYear1) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *event)

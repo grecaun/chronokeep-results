@@ -884,7 +884,8 @@ func TestUpdateEventYear(t *testing.T) {
 		nEv, err := database.GetEventYear(variables.events["event2"].Slug, variables.eventYears["event2"]["2021"].Year)
 		if assert.NoError(t, err) {
 			assert.Equal(t, eYear.Year, nEv.Year)
-			assert.Equal(t, eYear.Live, nEv.Live)
+			// live can't be set by an update, it only comes from recently received results
+			assert.False(t, nEv.Live)
 			assert.Equal(t, eYear.DaysAllowed, nEv.DaysAllowed)
 			assert.Equal(t, eYear.DateTime, nEv.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}
@@ -898,7 +899,7 @@ func TestUpdateEventYear(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].AccessRestricted, resp.Event.AccessRestricted)
 			assert.Equal(t, variables.events["event2"].ContactEmail, resp.Event.ContactEmail)
 			assert.Equal(t, eYear.Year, resp.EventYear.Year)
-			assert.Equal(t, eYear.Live, resp.EventYear.Live)
+			assert.False(t, resp.EventYear.Live)
 			assert.Equal(t, eYear.DaysAllowed, resp.EventYear.DaysAllowed)
 			assert.Equal(t, eYear.DateTime, resp.EventYear.DateTime.Format("2006/01/02 15:04:05 -07:00"))
 		}

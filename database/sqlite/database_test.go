@@ -556,6 +556,15 @@ func TestUpgrade(t *testing.T) {
 	if version != 19 {
 		t.Fatalf("Version set to '%v' expected '19'.", version)
 	}
+	// Verify version 20
+	err = db.updateTables(version, 20)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 20, err)
+	}
+	version = db.checkVersion()
+	if version != 20 {
+		t.Fatalf("Version set to '%v' expected '20'.", version)
+	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()
 	if err != nil {

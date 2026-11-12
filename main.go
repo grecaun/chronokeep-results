@@ -110,7 +110,10 @@ func main() {
 				log.Info("Response Log: ", string(res))
 				log.Info("Response Error: ", err)
 			},
-			Skipper: healthEndpointSkipper,
+			// the results stream never finishes, so there's no body to dump
+			Skipper: func(c *echo.Context) bool {
+				return healthEndpointSkipper(c) || c.Path() == "/results/stream"
+			},
 		}))
 	}
 	if !config.AutoTLS {

@@ -292,6 +292,7 @@ func (p *Postgres) createTables() error {
 				"year VARCHAR(20) NOT NULL, " +
 				"date_time TIMESTAMPTZ NOT NULL, " +
 				"live BOOL DEFAULT FALSE, " +
+				"results_received_at TIMESTAMPTZ DEFAULT NULL, " +
 				"days_allowed INT NOT NULL DEFAULT 1, " +
 				"ranking_type VARCHAR(20) DEFAULT 'gun', " +
 				"year_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
@@ -1125,6 +1126,25 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 			{
 				name:  "AlterParticipantTable",
 				query: "ALTER TABLE participant ADD COLUMN updated_at BIGINT NOT NULL DEFAULT 0;",
+			},
+		}
+		for _, q := range queries {
+			_, err := tx.Exec(
+				ctx,
+				q.query,
+			)
+			if err != nil {
+				tx.Rollback(ctx)
+				return fmt.Errorf("error updating from version %d to %d in query %s: %v", oldVersion, newVersion, q.name, err)
+			}
+		}
+	}
+	if oldVersion < 20 && newVersion >= 20 {
+		log.Info("Updating to database version 20.")
+		queries := []myQuery{
+			{
+				name:  "AlterEventYearTable",
+				query: "ALTER TABLE event_year ADD COLUMN results_received_at TIMESTAMPTZ DEFAULT NULL;",
 			},
 		}
 		for _, q := range queries {

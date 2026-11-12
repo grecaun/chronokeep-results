@@ -71,7 +71,7 @@ func (m *MySQL) GetEventYear(event_slug, year string) (*types.EventYear, error) 
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, "+liveColumn+", days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year=? AND year_deleted=FALSE;",
 		event_slug,
 		year,
 	)
@@ -109,7 +109,7 @@ func (m *MySQL) GetEventYears(event_slug string) ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, "+liveColumn+", days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE slug=? AND year_deleted=FALSE;",
 		event_slug,
 	)
 	if err != nil {
@@ -146,7 +146,7 @@ func (m *MySQL) GetAllEventYears() ([]types.EventYear, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT event_year_id, event_id, year, date_time, live, days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
+		"SELECT event_year_id, event_id, year, date_time, "+liveColumn+", days_allowed, ranking_type FROM event_year NATURAL JOIN event WHERE year_deleted=FALSE;",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving event years: %v", err)
