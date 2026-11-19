@@ -129,6 +129,8 @@ func (m *MySQL) AddCallRecords(records []types.CallRecord) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO call_record(account_id, time, count) VALUES (?,  ?, ?) ON DUPLICATE KEY UPDATE count=VALUES(count);",

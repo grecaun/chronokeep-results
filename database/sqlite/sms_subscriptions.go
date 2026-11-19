@@ -36,6 +36,8 @@ func (s *SQLite) AddSubscribedPhone(eventYearID int64, subscription types.SmsSub
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING;",
@@ -68,6 +70,8 @@ func (s *SQLite) RemoveSubscribedPhone(eventYearID int64, phone string) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"DELETE FROM sms_subscriptions WHERE event_year_id=? AND phone=?;",

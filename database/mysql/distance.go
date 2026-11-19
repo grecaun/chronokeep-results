@@ -36,6 +36,8 @@ func (m *MySQL) AddDistances(eventYearID int64, distances []types.Distance) ([]t
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	distancestmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO distances("+
@@ -154,6 +156,8 @@ func (m *MySQL) DeleteDistances(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	res, err := tx.ExecContext(
 		ctx,
 		"DELETE FROM distances WHERE event_year_id=?",

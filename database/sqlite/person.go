@@ -120,6 +120,8 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	_, err = tx.ExecContext(
@@ -171,6 +173,7 @@ func (s *SQLite) AddPerson(eventYearID int64, person types.Person) (*types.Perso
 		tx.Rollback()
 		return nil, fmt.Errorf("error retrieving person_id: %v", err)
 	}
+	defer res.Close()
 	output := types.Person{
 		Bib:         person.Bib,
 		First:       person.First,
@@ -207,6 +210,8 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	personstmt, err := tx.PrepareContext(
@@ -266,6 +271,7 @@ func (s *SQLite) AddPeople(eventYearID int64, people []types.Person) ([]types.Pe
 	if err != nil {
 		return nil, fmt.Errorf("error querying database for person ids: %v", err)
 	}
+	defer res.Close()
 	for res.Next() {
 		var id int64
 		var altId string
@@ -315,6 +321,8 @@ func (s *SQLite) DeletePeople(eventYearId int64, alternateIds []string) (int64, 
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var count int64
@@ -368,6 +376,8 @@ func (s *SQLite) UpdatePerson(eventYearID int64, person types.Person) (*types.Pe
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE person SET "+

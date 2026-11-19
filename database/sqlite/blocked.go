@@ -59,6 +59,8 @@ func (s *SQLite) AddBlockedPhones(phones []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO banned_phones(banned_phone) VALUES (?) ON CONFLICT DO NOTHING;",
@@ -170,6 +172,8 @@ func (s *SQLite) AddBlockedEmails(emails []string) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO banned_emails(banned_email) VALUES (?) ON CONFLICT DO NOTHING;",

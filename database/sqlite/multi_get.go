@@ -22,6 +22,7 @@ import (
 	"chronokeep/results/types"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -45,6 +46,7 @@ func (s *SQLite) GetAccountAndEvent(slug string) (*types.MultiGet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiGet{
 			Account: &types.Account{},
@@ -90,7 +92,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				"WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=?",
@@ -102,7 +104,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
 			slug,
 			year,
@@ -111,6 +113,7 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 	if err != nil {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiGet{
 			Account:   &types.Account{},
@@ -134,7 +137,6 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 			&outVal.EventYear.Identifier,
 			&outVal.EventYear.Year,
 			&outVal.EventYear.DateTime,
-			&outVal.EventYear.Live,
 			&outVal.EventYear.DaysAllowed,
 			&outVal.Event.CertificateName,
 			&outVal.EventYear.RankingType,
@@ -150,6 +152,8 @@ func (s *SQLite) GetAccountEventAndYear(slug, year string) (*types.MultiGet, err
 }
 
 // GetEventAndYear Gets an event and eventyear.
+// Each query is read with QueryRowContext so its connection goes back to the pool before the
+// next query asks for one, instead of holding the first query's rows open while waiting.
 func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 	db, err := s.GetDB()
 	if err != nil {
@@ -157,23 +161,61 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	var res *sql.Rows
-	var countRes *sql.Rows
+	var eventRow, countRow *sql.Row
 	if year == "" {
-		res, err = db.QueryContext(
+		eventRow = db.QueryRowContext(
 			ctx,
 			"SELECT "+
 				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				" WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=?",
 			slug,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting account and event from database: %v", err)
-		}
-		countRes, err = db.QueryContext(
+	} else {
+		eventRow = db.QueryRowContext(
+			ctx,
+			"SELECT "+
+				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
+				"FROM event NATURAL JOIN event_year WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
+			slug,
+			year,
+		)
+	}
+	var distCount = 0
+	outVal := types.MultiGet{
+		Event:         &types.Event{},
+		EventYear:     &types.EventYear{},
+		DistanceCount: &distCount,
+	}
+	err = eventRow.Scan(
+		&outVal.Event.AccountIdentifier,
+		&outVal.Event.Identifier,
+		&outVal.Event.Name,
+		&outVal.Event.Slug,
+		&outVal.Event.Website,
+		&outVal.Event.Image,
+		&outVal.Event.ContactEmail,
+		&outVal.Event.AccessRestricted,
+		&outVal.Event.Type,
+		&outVal.EventYear.Identifier,
+		&outVal.EventYear.Year,
+		&outVal.EventYear.DateTime,
+		&outVal.EventYear.DaysAllowed,
+		&outVal.Event.CertificateName,
+		&outVal.EventYear.RankingType,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error getting values for account and event: %v", err)
+	}
+	outVal.EventYear.EventIdentifier = outVal.Event.Identifier
+	if year == "" {
+		countRow = db.QueryRowContext(
 			ctx,
 			"SELECT COUNT(DISTINCT distance) AS dist_count FROM event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
@@ -181,23 +223,8 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 				" WHERE event_deleted=FALSE AND year_deleted=FALSE and slug=?",
 			slug,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
 	} else {
-		res, err = db.QueryContext(
-			ctx,
-			"SELECT "+
-				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
-				"FROM event NATURAL JOIN event_year WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=? AND year=?",
-			slug,
-			year,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting account and event from database: %v", err)
-		}
-		countRes, err = db.QueryContext(
+		countRow = db.QueryRowContext(
 			ctx,
 			"SELECT COUNT(DISTINCT distance) AS dist_count "+
 				"FROM person NATURAL JOIN event_year "+
@@ -206,50 +233,11 @@ func (s *SQLite) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			slug,
 			year,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
 	}
-	var distCount = 0
-	if countRes.Next() {
-		err := countRes.Scan(
-			&distCount,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
+	if err = countRow.Scan(&distCount); err != nil {
+		return nil, fmt.Errorf("error getting distance count from database: %v", err)
 	}
-	if res.Next() {
-		outVal := types.MultiGet{
-			Event:         &types.Event{},
-			EventYear:     &types.EventYear{},
-			DistanceCount: &distCount,
-		}
-		err := res.Scan(
-			&outVal.Event.AccountIdentifier,
-			&outVal.Event.Identifier,
-			&outVal.Event.Name,
-			&outVal.Event.Slug,
-			&outVal.Event.Website,
-			&outVal.Event.Image,
-			&outVal.Event.ContactEmail,
-			&outVal.Event.AccessRestricted,
-			&outVal.Event.Type,
-			&outVal.EventYear.Identifier,
-			&outVal.EventYear.Year,
-			&outVal.EventYear.DateTime,
-			&outVal.EventYear.Live,
-			&outVal.EventYear.DaysAllowed,
-			&outVal.Event.CertificateName,
-			&outVal.EventYear.RankingType,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting values for account and event: %v", err)
-		}
-		outVal.EventYear.EventIdentifier = outVal.Event.Identifier
-		return &outVal, nil
-	}
-	return nil, nil
+	return &outVal, nil
 }
 
 // GetKeyAndAccount Gets an account and key based upon the key value.
@@ -271,6 +259,7 @@ func (s *SQLite) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiKey{
 			Key:     &types.Key{},

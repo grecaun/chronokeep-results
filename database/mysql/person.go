@@ -122,6 +122,8 @@ func (m *MySQL) AddPerson(eventYearID int64, person types.Person) (*types.Person
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"INSERT INTO person("+
@@ -208,6 +210,8 @@ func (m *MySQL) AddPeople(eventYearID int64, people []types.Person) ([]types.Per
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	personstmt, err := tx.PrepareContext(
@@ -317,6 +321,8 @@ func (m *MySQL) DeletePeople(eventYearId int64, alternateIds []string) (int64, e
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
 	var count int64
@@ -370,6 +376,8 @@ func (m *MySQL) UpdatePerson(eventYearID int64, person types.Person) (*types.Per
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE person SET "+

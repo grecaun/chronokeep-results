@@ -108,7 +108,6 @@ func TestAddSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -230,7 +229,6 @@ func TestDistanceGetSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -323,7 +321,6 @@ func TestGetSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -376,7 +373,6 @@ func TestDeleteSegments(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}

@@ -172,7 +172,6 @@ func (h Handler) AddEventYear(c *echo.Context) error {
 		EventIdentifier: event.Identifier,
 		Year:            request.EventYear.Year,
 		DateTime:        request.EventYear.GetDateTime(),
-		Live:            request.EventYear.Live,
 		DaysAllowed:     request.EventYear.DaysAllowed,
 		RankingType:     request.EventYear.RankingType,
 	})
@@ -238,7 +237,6 @@ func (h Handler) UpdateEventYear(c *echo.Context) error {
 		Identifier:      mult.EventYear.Identifier,
 		Year:            mult.EventYear.Year,
 		DateTime:        request.EventYear.GetDateTime(),
-		Live:            request.EventYear.Live,
 		DaysAllowed:     request.EventYear.DaysAllowed,
 		RankingType:     request.EventYear.RankingType,
 	})

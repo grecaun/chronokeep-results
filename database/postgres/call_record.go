@@ -128,6 +128,8 @@ func (p *Postgres) AddCallRecords(records []types.CallRecord) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, record := range records {
 		_, err = tx.Exec(
 			ctx,

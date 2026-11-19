@@ -476,6 +476,8 @@ func (m *MySQL) createTables() error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	for _, single := range queries {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := tx.ExecContext(ctx, single.query)
@@ -538,6 +540,8 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	if oldVersion < 3 && newVersion >= 3 {
 		log.Info("Updating to database version 3.")
 		queries := []myQuery{

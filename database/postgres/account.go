@@ -150,6 +150,8 @@ func (p *Postgres) LinkAccounts(main types.Account, sub types.Account) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	_, err = tx.Exec(
 		ctx,
 		"INSERT INTO linked_accounts(main_account_id, sub_account_id) VALUES ($1,$2) "+
@@ -287,6 +289,8 @@ func (p *Postgres) DeleteAccount(id int64) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	res, err := tx.Exec(
 		ctx,
 		"UPDATE account SET account_deleted=TRUE WHERE account_id=$1",

@@ -161,7 +161,7 @@ func (h Handler) StreamResults(c *echo.Context) error {
 		return rc.Flush() == nil
 	}
 	// the ready event says which year is being watched, since the year can be left out
-	ready, _ := json.Marshal(map[string]any{"year": mult.EventYear.Year, "live": mult.EventYear.Live})
+	ready, _ := json.Marshal(map[string]any{"year": mult.EventYear.Year})
 	if !send(fmt.Sprintf("retry: 5000\nevent: ready\ndata: %s\n\n", ready)) {
 		return nil
 	}

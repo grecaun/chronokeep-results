@@ -231,7 +231,6 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -273,7 +272,6 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -317,7 +315,6 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -476,7 +473,6 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event1"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 500, len(resp.Participants))
 		}
 	}
@@ -522,7 +518,6 @@ func TestRGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 2, len(resp.Participants))
 		}
 	}
@@ -539,7 +534,6 @@ func TestRAddParticipant(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -550,7 +544,6 @@ func TestRAddParticipant(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2024",
 		DateTime:        time.Date(2024, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -1280,7 +1273,6 @@ func TestRDeleteParticipants(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -3081,7 +3073,6 @@ func TestRAddManyParticipants(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -3092,7 +3083,6 @@ func TestRAddManyParticipants(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2024",
 		DateTime:        time.Date(2024, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})

@@ -203,6 +203,8 @@ func (m *MySQL) DeleteEvent(event types.Event) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	res, err := tx.ExecContext(
 		ctx,
 		"UPDATE event SET event_deleted=TRUE WHERE event_id=?;",
@@ -250,6 +252,8 @@ func (m *MySQL) RealDeleteEvent(event types.Event) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p NATURAL JOIN event_year y WHERE r.person_id=p.person_id AND y.event_id=?);",

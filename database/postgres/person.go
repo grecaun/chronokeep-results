@@ -122,6 +122,8 @@ func (p *Postgres) AddPerson(eventYearID int64, person types.Person) (*types.Per
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	output := types.Person{
 		Bib:         person.Bib,
 		First:       person.First,
@@ -191,6 +193,8 @@ func (p *Postgres) AddPeople(eventYearID int64, people []types.Person) ([]types.
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	output := make([]types.Person, 0)
 	for _, person := range people {
 		var id int64
@@ -265,6 +269,8 @@ func (p *Postgres) DeletePeople(eventYearId int64, alternateIds []string) (int64
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	var count int64
 	if len(alternateIds) > 0 {
 		count = 0
@@ -312,6 +318,8 @@ func (p *Postgres) UpdatePerson(eventYearID int64, person types.Person) (*types.
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	output := types.Person{
 		Bib:         person.Bib,
 		First:       person.First,

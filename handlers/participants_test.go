@@ -209,7 +209,6 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2020"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -244,7 +243,6 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2020"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2020"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2020"].Live, resp.Year.Live)
 			assert.Equal(t, 2, len(resp.Participants))
 		}
 	}
@@ -283,7 +281,6 @@ func TestGetParticipants(t *testing.T) {
 				assert.Equal(t, variables.events["event1"].RecentTime, resp.Event.RecentTime)
 				assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.Year.Year)
 				assert.True(t, variables.eventYears["event1"]["2021"].DateTime.Equal(resp.Year.DateTime))
-				assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.Year.Live)
 				assert.True(t, len(resp.Participants) == 50 || len(resp.Participants) == 0)
 				for _, outer := range resp.Participants {
 					found := false
@@ -334,7 +331,6 @@ func TestGetParticipants(t *testing.T) {
 			assert.Equal(t, variables.events["event2"].RecentTime, resp.Event.RecentTime)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
 			assert.True(t, variables.eventYears["event2"]["2021"].DateTime.Equal(resp.Year.DateTime))
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 			assert.Equal(t, 4, len(resp.Participants))
 		}
 	}
@@ -387,7 +383,6 @@ func TestAddParticipants(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -824,7 +819,6 @@ func TestDeleteParticipants(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})

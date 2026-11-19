@@ -221,7 +221,6 @@ func TestAddBibChips(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -451,7 +450,6 @@ func TestDeleteBibChips(t *testing.T) {
 		EventIdentifier: variables.events["event1"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})

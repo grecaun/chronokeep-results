@@ -30,9 +30,8 @@ const (
 	MaxConnectionLifetime = time.Minute * 5
 	CurrentVersion        = 20
 	MaxLoginAttempts      = 4
-	// LiveWindow is how recently an event year must have received results to count as live.
-	LiveWindow = 6 * time.Hour
 )
+
 
 type Database interface {
 	// Database Base Functions
@@ -94,8 +93,6 @@ type Database interface {
 	DeleteDistanceResults(eventYearId int64, distance string) (int64, error)
 	DeleteEventResults(eventYearID int64) (int64, error)
 	AddResults(eventYearID int64, results []types.Result) ([]types.Result, error)
-	// SetResultsReceived records that results were just received for an event year, which makes it live.
-	SetResultsReceived(eventYearID int64) error
 	// Multi-Get Functions
 	GetAccountAndEvent(slug string) (*types.MultiGet, error)
 	GetAccountEventAndYear(slug, year string) (*types.MultiGet, error)

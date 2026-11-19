@@ -282,7 +282,6 @@ func TestAddResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -492,7 +491,6 @@ func TestGetLastResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -553,7 +551,6 @@ func TestGetLastResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -617,7 +614,6 @@ func TestGetDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -685,7 +681,6 @@ func TestGetDistanceResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -794,7 +789,6 @@ func TestGetAllDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -862,7 +856,6 @@ func TestGetAllDistanceResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -971,7 +964,6 @@ func TestGetFinishResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1048,7 +1040,6 @@ func TestGetFinishResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1158,7 +1149,6 @@ func TestGetResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1219,7 +1209,6 @@ func TestGetResultsPage(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1288,7 +1277,6 @@ func TestPageNoLimit(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1356,7 +1344,6 @@ func TestDeleteResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1364,7 +1351,6 @@ func TestDeleteResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1415,7 +1401,6 @@ func TestDeleteEventResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1423,7 +1408,6 @@ func TestDeleteEventResults(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1472,7 +1456,6 @@ func TestDeleteDistanceResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1480,7 +1463,6 @@ func TestDeleteDistanceResults(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2022",
 		DateTime:        time.Date(2022, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -1526,7 +1508,6 @@ func TestGetBibResults(t *testing.T) {
 		EventIdentifier: event.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 20, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}

@@ -324,6 +324,8 @@ func (s *SQLite) DeleteResults(eventYearID int64, results []types.Result) (int64
 	if err != nil {
 		return 0, fmt.Errorf("unable to begin transaction to delete results: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	stmt, err := tx.PrepareContext(
 		ctx,
 		"DELETE FROM result AS r WHERE location=$1 AND occurence=$2 AND EXISTS (SELECT * FROM person AS p WHERE event_year_id=$3 AND bib=$4 AND p.person_id=r.person_id);",
@@ -365,6 +367,8 @@ func (s *SQLite) DeleteDistanceResults(eventYearID int64, distance string) (int6
 	if err != nil {
 		return 0, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	res, err := tx.ExecContext(
 		ctx,
 		"DELETE FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=$1 AND p.distance=$2 AND p.person_id=r.person_id);",
@@ -409,6 +413,8 @@ func (s *SQLite) DeleteEventResults(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	res, err := tx.ExecContext(
 		ctx,
 		"DELETE FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=$1 AND p.person_id=r.person_id);",
@@ -450,6 +456,8 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancelfunc()
 	personstmt, err := tx.PrepareContext(
@@ -532,6 +540,7 @@ func (s *SQLite) AddResults(eventYearID int64, results []types.Result) ([]types.
 	if err != nil {
 		return nil, fmt.Errorf("error querying database for person ids: %v", err)
 	}
+	defer res.Close()
 	for res.Next() {
 		var id int64
 		var bib string

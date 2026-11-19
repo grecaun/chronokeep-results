@@ -268,7 +268,6 @@ func TestAddDistances(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})

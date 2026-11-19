@@ -224,7 +224,6 @@ func TestRGetEventYears(t *testing.T) {
 					if outer.Year == inner.Year {
 						found = true
 						assert.Equal(t, outer.DateTime.Local(), inner.DateTime.Local())
-						assert.Equal(t, outer.Live, inner.Live)
 					}
 				}
 				assert.True(t, found)
@@ -266,7 +265,6 @@ func TestRGetEventYears(t *testing.T) {
 					if outer.Year == inner.Year {
 						found = true
 						assert.Equal(t, outer.DateTime.Local(), inner.DateTime.Local())
-						assert.Equal(t, outer.Live, inner.Live)
 					}
 				}
 				assert.True(t, found)
@@ -365,7 +363,6 @@ func TestRGetEventYears(t *testing.T) {
 					if outer.Year == inner.Year {
 						found = true
 						assert.Equal(t, outer.DateTime.Local(), inner.DateTime.Local())
-						assert.Equal(t, outer.Live, inner.Live)
 					}
 				}
 				assert.True(t, found)
@@ -759,7 +756,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear := types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 09:00:00 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -794,7 +790,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 9:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -824,7 +819,6 @@ func TestRAddEventYear(t *testing.T) {
 				assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 				assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 				assert.Equal(t, eYear.Year, resp.EventYear.Year)
-				assert.Equal(t, eYear.Live, resp.EventYear.Live)
 				assert.Equal(t, 2022, resp.EventYear.DateTime.Year())
 				assert.Equal(t, time.Month(4), resp.EventYear.DateTime.Month())
 				assert.Equal(t, 6, resp.EventYear.DateTime.Day())
@@ -850,7 +844,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2023",
 		DateTime:    "2023/07/12 6:03:02 -07:00",
-		Live:        true,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -877,7 +870,6 @@ func TestRAddEventYear(t *testing.T) {
 				assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 				assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 				assert.Equal(t, eYear.Year, resp.EventYear.Year)
-				assert.Equal(t, eYear.Live, resp.EventYear.Live)
 				assert.Equal(t, 2023, resp.EventYear.DateTime.Year())
 				assert.Equal(t, time.Month(7), resp.EventYear.DateTime.Month())
 				assert.Equal(t, 12, resp.EventYear.DateTime.Day())
@@ -903,7 +895,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2024",
 		DateTime:    "2024/07/12 06:03:02 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -938,7 +929,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 09:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -973,7 +963,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 09:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1008,7 +997,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "invalid$",
 		DateTime:    "2022/04/06 09:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1043,7 +1031,6 @@ func TestRAddEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2052",
 		DateTime:    "2022/04 09:01:15",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1240,7 +1227,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear := types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 09:00:00 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1275,7 +1261,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        variables.eventYears["event2"]["2020"].Year,
 		DateTime:    "2020/12/31 9:01:15 -07:00",
-		Live:        true,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1302,8 +1287,6 @@ func TestRUpdateEventYear(t *testing.T) {
 				assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 				assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 				assert.Equal(t, eYear.Year, resp.EventYear.Year)
-				// live can't be set by an update, it only comes from recently received results
-				assert.False(t, resp.EventYear.Live)
 				assert.Equal(t, 2020, resp.EventYear.DateTime.Year())
 				assert.Equal(t, time.Month(12), resp.EventYear.DateTime.Month())
 				assert.Equal(t, 31, resp.EventYear.DateTime.Day())
@@ -1329,7 +1312,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        variables.eventYears["event2"]["2020"].Year,
 		DateTime:    "2023/07/12 6:03:02 +00:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1356,7 +1338,6 @@ func TestRUpdateEventYear(t *testing.T) {
 				assert.Equal(t, variables.events["event2"].Slug, resp.Event.Slug)
 				assert.Equal(t, variables.events["event2"].Type, resp.Event.Type)
 				assert.Equal(t, eYear.Year, resp.EventYear.Year)
-				assert.Equal(t, eYear.Live, resp.EventYear.Live)
 				assert.Equal(t, 2023, resp.EventYear.DateTime.Year())
 				assert.Equal(t, time.Month(7), resp.EventYear.DateTime.Month())
 				assert.Equal(t, 12, resp.EventYear.DateTime.Day())
@@ -1382,7 +1363,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        variables.eventYears["event2"]["2020"].Year,
 		DateTime:    "2024/07/12 06:03:02 -07:00",
-		Live:        true,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1417,7 +1397,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2022",
 		DateTime:    "2022/04/06 09:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1452,7 +1431,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        "2024",
 		DateTime:    "2022/04/06 09:01:15 -07:00",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1487,7 +1465,6 @@ func TestRUpdateEventYear(t *testing.T) {
 	eYear = types.RequestYear{
 		Year:        variables.eventYears["event2"]["2020"].Year,
 		DateTime:    "2022/04 09:01:15",
-		Live:        false,
 		DaysAllowed: 1,
 		RankingType: "chip",
 	}
@@ -1744,7 +1721,6 @@ func TestRDeleteEventYear(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 12, 4, 6, 9, 1, 15, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}

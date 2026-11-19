@@ -129,7 +129,6 @@ func TestGetEvent(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -168,7 +167,6 @@ func TestGetEvent(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -251,7 +249,6 @@ func TestGetEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -291,7 +288,6 @@ func TestGetEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -369,7 +365,6 @@ func TestGetAllEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -409,7 +404,6 @@ func TestGetAllEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -533,7 +527,6 @@ func TestGetAccountEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -542,7 +535,6 @@ func TestGetAccountEvents(t *testing.T) {
 		EventIdentifier: nEvent1.Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -596,7 +588,6 @@ func TestDeleteEvent(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -604,7 +595,6 @@ func TestDeleteEvent(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}

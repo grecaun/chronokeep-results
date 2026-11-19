@@ -32,7 +32,6 @@ type EventYear struct {
 	EventIdentifier int64     `json:"-"`
 	Year            string    `json:"year"`
 	DateTime        time.Time `json:"date_time"`
-	Live            bool      `json:"live"`
 	DaysAllowed     int       `json:"days_allowed"`
 	RankingType     string    `json:"ranking_type"`
 }
@@ -42,10 +41,11 @@ type EventYearVers1 struct {
 	DateTime time.Time `json:"date_time"`
 }
 
+// RequestYear is an event year sent to the API. A "live" value may still be sent by older
+// clients; it's ignored, since pages work out whether a race is live from its results.
 type RequestYear struct {
 	Year        string `json:"year" validate:"required"`
 	DateTime    string `json:"date_time"`
-	Live        bool   `json:"live"`
 	DaysAllowed int    `json:"days_allowed"`
 	RankingType string `json:"ranking_type"`
 }
@@ -55,7 +55,6 @@ type AllEventYear struct {
 	Slug        string    `json:"slug"`
 	Year        string    `json:"year"`
 	DateTime    time.Time `json:"date_time"`
-	Live        bool      `json:"live"`
 	DaysAllowed int       `json:"days_allowed"`
 	RankingType string    `json:"ranking_type"`
 }
@@ -70,7 +69,6 @@ func (e *EventYear) ConvertToVers1() EventYearVers1 {
 func (e *EventYear) Equals(other *EventYear) bool {
 	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
-		e.Live == other.Live &&
 		e.DaysAllowed == other.DaysAllowed &&
 		e.RankingType == other.RankingType
 }
@@ -78,7 +76,6 @@ func (e *EventYear) Equals(other *EventYear) bool {
 func (e *EventYear) EqualsAll(other *AllEventYear) bool {
 	return e.Year == other.Year &&
 		e.DateTime.Equal(other.DateTime) &&
-		e.Live == other.Live &&
 		e.DaysAllowed == other.DaysAllowed &&
 		e.RankingType == other.RankingType
 }
@@ -104,7 +101,6 @@ func (e RequestYear) ToYear() EventYear {
 	return EventYear{
 		Year:        e.Year,
 		DateTime:    e.GetDateTime(),
-		Live:        e.Live,
 		DaysAllowed: e.DaysAllowed,
 		RankingType: e.RankingType,
 	}

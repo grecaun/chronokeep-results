@@ -36,6 +36,8 @@ func (s *SQLite) AddBibChips(eventYearID int64, bibChips []types.BibChip) ([]typ
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	chipstmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO chips("+
@@ -119,6 +121,8 @@ func (s *SQLite) DeleteBibChips(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	var count int64
 	res, err := tx.ExecContext(
 		ctx,

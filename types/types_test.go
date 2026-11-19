@@ -46,13 +46,11 @@ func TestRequestYearToYearCopiesFields(t *testing.T) {
 	req := RequestYear{
 		Year:        "2024-half",
 		DateTime:    "2024/05/06 07:08:09",
-		Live:        true,
 		DaysAllowed: 3,
 		RankingType: "chip",
 	}
 	year := req.ToYear()
 	assert.Equal(t, "2024-half", year.Year)
-	assert.True(t, year.Live)
 	assert.Equal(t, 3, year.DaysAllowed)
 	assert.Equal(t, "chip", year.RankingType)
 }

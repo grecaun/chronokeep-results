@@ -139,7 +139,6 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -147,7 +146,6 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "chip",
 	}
@@ -218,7 +216,6 @@ func TestGetEventAndYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -226,7 +223,6 @@ func TestGetEventAndYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "chip",
 	}

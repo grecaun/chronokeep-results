@@ -72,7 +72,6 @@ func TestAddEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -80,7 +79,6 @@ func TestAddEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
@@ -88,7 +86,6 @@ func TestAddEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     3,
 		RankingType:     "chip",
 	}
@@ -96,7 +93,6 @@ func TestAddEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     4,
 		RankingType:     "gun",
 	}
@@ -159,7 +155,6 @@ func TestGetEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -167,7 +162,6 @@ func TestGetEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
@@ -175,7 +169,6 @@ func TestGetEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     3,
 		RankingType:     "chip",
 	}
@@ -183,7 +176,6 @@ func TestGetEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     4,
 		RankingType:     "gun",
 	}
@@ -272,7 +264,6 @@ func TestGetEventYears(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -280,7 +271,6 @@ func TestGetEventYears(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
@@ -288,7 +278,6 @@ func TestGetEventYears(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     3,
 		RankingType:     "chip",
 	}
@@ -296,7 +285,6 @@ func TestGetEventYears(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     4,
 		RankingType:     "gun",
 	}
@@ -364,7 +352,6 @@ func TestGetAllEventYears(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -372,7 +359,6 @@ func TestGetAllEventYears(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
@@ -380,7 +366,6 @@ func TestGetAllEventYears(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     3,
 		RankingType:     "chip",
 	}
@@ -388,7 +373,6 @@ func TestGetAllEventYears(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     4,
 		RankingType:     "gun",
 	}
@@ -451,7 +435,6 @@ func TestDeleteEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -459,7 +442,6 @@ func TestDeleteEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
@@ -467,7 +449,6 @@ func TestDeleteEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     3,
 		RankingType:     "chip",
 	}
@@ -475,7 +456,6 @@ func TestDeleteEventYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     4,
 		RankingType:     "gun",
 	}
@@ -534,7 +514,6 @@ func TestUpdateEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 1, 15, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -542,22 +521,18 @@ func TestUpdateEventYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2020",
 		DateTime:        time.Date(2020, 10, 05, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "gun",
 	}
 	eventYear1, _ = db.AddEventYear(*eventYear1)
 	eventYear2, _ = db.AddEventYear(*eventYear2)
 	eventYear1.DateTime = time.Date(2000, 10, 05, 10, 10, 0, 0, time.Local)
-	eventYear1.Live = true
 	eventYear1.DaysAllowed = 4
 	eventYear1.RankingType = "gun"
 	err = db.UpdateEventYear(*eventYear1)
 	if err != nil {
 		t.Fatalf("Error updating event year: %v", err)
 	}
-	// live can't be set by an update, it only comes from recently received results
-	eventYear1.Live = false
 	event, _ := db.GetEventYear(event1.Slug, eventYear1.Year)
 	if !event.Equals(eventYear1) {
 		t.Errorf("Expected event year %+v, found %+v.", *eventYear1, *event)

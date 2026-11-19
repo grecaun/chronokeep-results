@@ -36,6 +36,8 @@ func (p *Postgres) AddBibChips(eventYearID int64, bibChips []types.BibChip) ([]t
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, bc := range bibChips {
 		_, err = tx.Exec(
 			ctx,
@@ -114,6 +116,8 @@ func (p *Postgres) DeleteBibChips(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	var count int64
 	res, err := tx.Exec(
 		ctx,

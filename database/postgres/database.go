@@ -64,7 +64,15 @@ func (p *Postgres) GetDatabase(inCfg *util.Config) (*pgxpool.Pool, error) {
 	if !inCfg.Development {
 		conString = conString + "?sslmode=require"
 	}
-	dbCon, err := pgxpool.New(context.Background(), conString)
+	poolCfg, err := pgxpool.ParseConfig(conString)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse database connection string: %v", err)
+	}
+	// Without these the pool falls back to the greater of 4 and the number of CPUs, which
+	// a few concurrent requests can use up.
+	poolCfg.MaxConns = database.MaxOpenConnections
+	poolCfg.MaxConnLifetime = database.MaxConnectionLifetime
+	dbCon, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database connection: %v", err)
 	}
@@ -563,6 +571,8 @@ func (p *Postgres) createTables() error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, single := range queries {
 		log.Info(fmt.Sprintf("Executing query for: %s", single.name))
 		_, err := tx.Exec(ctx, single.query)
@@ -616,6 +626,8 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	if oldVersion < 2 && newVersion >= 2 {
 		log.Debug("Updating to database version 2.")
 		_, err := tx.Exec(

@@ -19,7 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package postgres
 
 import (
+	"chronokeep/results/database"
 	"chronokeep/results/types"
+	"sync"
 	"testing"
 	"time"
 )
@@ -139,7 +141,6 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -147,7 +148,6 @@ func TestGetAccountEventAndYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "chip",
 	}
@@ -218,7 +218,6 @@ func TestGetEventAndYear(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
@@ -226,7 +225,6 @@ func TestGetEventAndYear(t *testing.T) {
 		EventIdentifier: event2.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     2,
 		RankingType:     "chip",
 	}
@@ -357,3 +355,64 @@ func TestNoDatabaseMultiGet(t *testing.T) {
 	}
 }
 
+// TestGetEventAndYearConcurrent makes sure many concurrent calls can't take every pooled
+// connection and wait on each other, and that every connection goes back to the pool.
+func TestGetEventAndYearConcurrent(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up test. %v", err)
+	}
+	defer finalize(t)
+	setupMultiTests()
+	account, _ := db.AddAccount(accounts[0])
+	event, _ := db.AddEvent(types.Event{
+		AccountIdentifier: account.Identifier,
+		Name:              "Event 1",
+		CertificateName:   "An Event",
+		Slug:              "event1",
+		ContactEmail:      "event1@test.com",
+		Type:              "time",
+	})
+	db.AddEventYear(types.EventYear{
+		EventIdentifier: event.Identifier,
+		Year:            "2021",
+		DateTime:        time.Date(2021, 10, 06, 9, 0, 0, 0, time.Local),
+		DaysAllowed:     1,
+		RankingType:     "chip",
+	})
+	calls := database.MaxOpenConnections * 4
+	start := make(chan struct{})
+	errs := make(chan error, calls)
+	var wg sync.WaitGroup
+	for i := 0; i < calls; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			<-start
+			slug, year := event.Slug, "2021"
+			switch i % 3 {
+			case 1:
+				year = ""
+			case 2:
+				slug = "missing"
+			}
+			mult, err := db.GetEventAndYear(slug, year)
+			if err != nil {
+				errs <- err
+				return
+			}
+			if slug == event.Slug && (mult == nil || mult.EventYear == nil) {
+				t.Errorf("Expected event year for %s/%s.", slug, year)
+			}
+		}(i)
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Errorf("Error getting event and year concurrently: %v", err)
+	}
+	if acquired := db.db.Stat().AcquiredConns(); acquired != 0 {
+		t.Errorf("Expected every connection back in the pool, %d still acquired.", acquired)
+	}
+}

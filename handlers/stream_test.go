@@ -186,13 +186,11 @@ func TestStreamResultsSendsReadyThenResultChanges(t *testing.T) {
 	assert.Equal(t, "ready", name)
 	var ready struct {
 		Year string `json:"year"`
-		Live bool   `json:"live"`
 	}
 	assert.NoError(t, json.Unmarshal([]byte(data), &ready))
 	assert.Equal(t, "2021", ready.Year)
-	assert.False(t, ready.Live)
 
-	// adding results notifies the stream and makes the event year live
+	// adding results notifies the stream
 	body, _ := json.Marshal(types.AddResultsRequest{
 		Slug:    "event2",
 		Year:    "2021",
@@ -221,7 +219,6 @@ func TestStreamResultsSendsReadyThenResultChanges(t *testing.T) {
 	year, err := database.GetEventYear("event2", "2021")
 	if assert.NoError(t, err) && assert.NotNil(t, year) {
 		assert.Equal(t, eventYear.Identifier, year.Identifier)
-		assert.True(t, year.Live)
 	}
 
 	// closing the stream stops watching
@@ -250,7 +247,7 @@ func TestStreamResultsWithoutYearWatchesTheLatestYear(t *testing.T) {
 	assert.Contains(t, data, `"year":"`+latest.EventYear.Year+`"`)
 }
 
-func TestAddResultsWithNoResultsDoesNotMakeEventLive(t *testing.T) {
+func TestAddResultsWithNoResults(t *testing.T) {
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	body, _ := json.Marshal(types.AddResultsRequest{Slug: "event2", Year: "2021", Results: []types.Result{}})
@@ -262,9 +259,8 @@ func TestAddResultsWithNoResultsDoesNotMakeEventLive(t *testing.T) {
 	h.Setup()
 	if assert.NoError(t, h.AddResults(echo.New().NewContext(request, response))) {
 		assert.Equal(t, http.StatusOK, response.Code)
-	}
-	year, err := database.GetEventYear("event2", "2021")
-	if assert.NoError(t, err) && assert.NotNil(t, year) {
-		assert.False(t, year.Live)
+		var resp types.AddResultsResponse
+		assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp))
+		assert.Equal(t, 0, resp.Count)
 	}
 }

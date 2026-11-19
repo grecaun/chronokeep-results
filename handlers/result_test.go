@@ -160,7 +160,6 @@ func TestGetResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -290,7 +289,6 @@ func TestGetResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 500, len(resp.Participants))
@@ -435,7 +433,6 @@ func TestGetResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
@@ -582,7 +579,6 @@ func TestGetResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
@@ -837,7 +833,6 @@ func TestGetResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event2"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 3, len(resp.Years))
 			// ResultParticipants
 			assert.Equal(t, 4, len(resp.Participants))
@@ -963,7 +958,6 @@ func TestGetAllResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1094,7 +1088,6 @@ func TestGetAllResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1227,7 +1220,6 @@ func TestGetAllResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1362,7 +1354,6 @@ func TestGetAllResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1658,7 +1649,6 @@ func TestGetFinishResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1789,7 +1779,6 @@ func TestGetFinishResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -1922,7 +1911,6 @@ func TestGetFinishResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -2057,7 +2045,6 @@ func TestGetFinishResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2020"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2020"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2020"].Live, resp.EventYear.Live)
 			assert.Equal(t, 2, len(resp.Years))
 			// verify the actual results returned
 			for _, res := range resp.Results {
@@ -2353,7 +2340,6 @@ func TestGetBibResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.NotNil(t, resp.Person)
 			// verify the actual results returned
 			for _, outer := range resp.Results {
@@ -2413,7 +2399,6 @@ func TestGetBibResults(t *testing.T) {
 			assert.True(t, event.Equals(&resp.Event))
 			assert.Equal(t, variables.eventYears["event1"]["2021"].Year, resp.EventYear.Year)
 			assert.Equal(t, variables.eventYears["event1"]["2021"].DateTime.Local(), resp.EventYear.DateTime)
-			assert.Equal(t, variables.eventYears["event1"]["2021"].Live, resp.EventYear.Live)
 			assert.NotNil(t, resp.Person)
 			// first result
 			assert.Equal(t, variables.results["event1"]["2021"][601], resp.Results[0])
@@ -2520,7 +2505,6 @@ func TestAddResults(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2023",
 		DateTime:        time.Date(2023, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})
@@ -3234,7 +3218,6 @@ func TestAddResultsSortsDnfAndDnsLast(t *testing.T) {
 		EventIdentifier: variables.events["event2"].Identifier,
 		Year:            "2024",
 		DateTime:        time.Date(2024, 04, 05, 11, 0, 0, 0, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	})

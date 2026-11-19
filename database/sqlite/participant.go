@@ -22,6 +22,7 @@ import (
 	"chronokeep/results/types"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -37,6 +38,8 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	participantstmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT INTO participant("+
@@ -106,6 +109,7 @@ func (s *SQLite) AddParticipants(eventYearID int64, participants []types.Partici
 	if err != nil {
 		return nil, fmt.Errorf("error querying database for participant ids: %v", err)
 	}
+	defer res.Close()
 	for res.Next() {
 		var id int64
 		var altId string
@@ -245,6 +249,8 @@ func (s *SQLite) DeleteParticipants(eventYearID int64, alternateIds []string) (i
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	var count int64
 	if len(alternateIds) > 0 {
 		count = 0
@@ -301,6 +307,8 @@ func (s *SQLite) UpdateParticipant(eventYearID int64, participant types.Particip
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE participant SET "+
@@ -389,6 +397,8 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback()
 	output := make([]types.Participant, 0)
 	for _, participant := range participants {
 		_, err = tx.ExecContext(
@@ -426,17 +436,6 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 			tx.Rollback()
 			return nil, fmt.Errorf("error adding participant to database: %v", err)
 		}
-		res, err := tx.QueryContext(
-			ctx,
-			"SELECT participant_id FROM participant WHERE event_year_id=$1 AND alternate_id=$2;",
-			eventYearID,
-			participant.AlternateId,
-		)
-		if err != nil {
-			tx.Rollback()
-			return nil, fmt.Errorf("error retrieving participant_id: %v", err)
-		}
-		defer res.Close()
 		tmp := types.Participant{
 			Bib:         participant.Bib,
 			First:       participant.First,
@@ -452,15 +451,21 @@ func (s *SQLite) UpdateParticipants(eventYearID int64, participants []types.Part
 			Mobile:      participant.Mobile,
 			UpdatedAt:   participant.UpdatedAt,
 		}
-		if res.Next() {
-			res.Scan(
-				&tmp.Identifier,
-			)
-			output = append(output, tmp)
-		} else {
-			tx.Rollback()
-			return nil, fmt.Errorf("participant not found after add: %v", err)
+		// QueryRowContext closes its rows once scanned, so they aren't left open on the
+		// transaction's connection while the next participant is updated.
+		err = tx.QueryRowContext(
+			ctx,
+			"SELECT participant_id FROM participant WHERE event_year_id=$1 AND alternate_id=$2;",
+			eventYearID,
+			participant.AlternateId,
+		).Scan(&tmp.Identifier)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("participant not found after add: %v", participant.AlternateId)
 		}
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving participant_id: %v", err)
+		}
+		output = append(output, tmp)
 	}
 	err = tx.Commit()
 	if err != nil {

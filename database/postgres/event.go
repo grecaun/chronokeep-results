@@ -204,6 +204,8 @@ func (p *Postgres) DeleteEvent(event types.Event) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	res, err := tx.Exec(
 		ctx,
 		"UPDATE event SET event_deleted=TRUE WHERE event_id=$1;",
@@ -246,6 +248,8 @@ func (p *Postgres) RealDeleteEvent(event types.Event) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p NATURAL JOIN event_year y WHERE r.person_id=p.person_id AND y.event_id=$1);",

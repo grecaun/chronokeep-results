@@ -36,6 +36,8 @@ func (p *Postgres) AddDistances(eventYearID int64, distances []types.Distance) (
 	if err != nil {
 		return nil, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, dist := range distances {
 		_, err = tx.Exec(
 			ctx,
@@ -148,6 +150,8 @@ func (p *Postgres) DeleteDistances(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("error starting transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	res, err := tx.Exec(
 		ctx,
 		"DELETE FROM distances WHERE event_year_id=$1",

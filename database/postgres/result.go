@@ -326,6 +326,8 @@ func (p *Postgres) DeleteResults(eventYearID int64, results []types.Result) (int
 	if err != nil {
 		return 0, fmt.Errorf("unable to begin transaction to delete results: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, result := range results {
 		_, err = tx.Exec(
 			ctx,
@@ -354,6 +356,8 @@ func (p *Postgres) DeleteDistanceResults(eventYearID int64, distance string) (in
 	if err != nil {
 		return 0, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	res, err := tx.Exec(
 		ctx,
 		"DELETE FROM result AS r WHERE EXISTS (SELECT * FROM person AS p WHERE p.event_year_id=$1 AND p.distance=$2 AND p.person_id=r.person_id);",
@@ -393,6 +397,8 @@ func (p *Postgres) DeleteEventResults(eventYearID int64) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	res, err := tx.Exec(
 		ctx,
 		"DELETE FROM result r WHERE EXISTS (SELECT * FROM person p WHERE event_year_id=$1 AND p.person_id=r.person_id);",
@@ -431,6 +437,8 @@ func (p *Postgres) AddResults(eventYearID int64, results []types.Result) ([]type
 	if err != nil {
 		return nil, fmt.Errorf("unable to begin transaction to add results: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	for _, result := range results {
 		var id int64
 		err = tx.QueryRow(

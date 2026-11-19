@@ -21,6 +21,7 @@ package postgres
 import (
 	"chronokeep/results/types"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -93,7 +94,7 @@ func (p *Postgres) GetAccountEventAndYear(slug, year string) (*types.MultiGet, e
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				"WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=$1",
@@ -105,7 +106,7 @@ func (p *Postgres) GetAccountEventAndYear(slug, year string) (*types.MultiGet, e
 			"SELECT "+
 				"account_id, account_name, account_email, account_type, account_locked, "+
 				"event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM account NATURAL JOIN event NATURAL JOIN event_year WHERE account_deleted=FALSE AND event_deleted=FALSE AND year_deleted=FALSE AND slug=$1 AND year=$2",
 			slug,
 			year,
@@ -139,7 +140,6 @@ func (p *Postgres) GetAccountEventAndYear(slug, year string) (*types.MultiGet, e
 			&outVal.EventYear.Identifier,
 			&outVal.EventYear.Year,
 			&outVal.EventYear.DateTime,
-			&outVal.EventYear.Live,
 			&outVal.EventYear.DaysAllowed,
 			&outVal.Event.CertificateName,
 			&outVal.EventYear.RankingType,
@@ -155,6 +155,9 @@ func (p *Postgres) GetAccountEventAndYear(slug, year string) (*types.MultiGet, e
 }
 
 // GetEventAndYear Gets an event and eventyear.
+// Each query is read with QueryRow so its connection goes back to the pool before the next
+// query asks for one. Holding the first query's rows open while waiting on a second connection
+// let concurrent calls take every pooled connection and wait on each other until they timed out.
 func (p *Postgres) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 	db, err := p.GetDB()
 	if err != nil {
@@ -162,23 +165,61 @@ func (p *Postgres) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	var res pgx.Rows
-	var countRes pgx.Rows
+	var eventRow, countRow pgx.Row
 	if year == "" {
-		res, err = db.Query(
+		eventRow = db.QueryRow(
 			ctx,
 			"SELECT "+
 				"account_id, y.event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
 				"FROM event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
 				"WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=$1",
 			slug,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting account and event from database: %v", err)
-		}
-		countRes, err = db.Query(
+	} else {
+		eventRow = db.QueryRow(
+			ctx,
+			"SELECT "+
+				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
+				"event_year_id, year, date_time, days_allowed, cert_name, ranking_type "+
+				"FROM event NATURAL JOIN event_year WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=$1 AND year=$2",
+			slug,
+			year,
+		)
+	}
+	var distCount = 0
+	outVal := types.MultiGet{
+		Event:         &types.Event{},
+		EventYear:     &types.EventYear{},
+		DistanceCount: &distCount,
+	}
+	err = eventRow.Scan(
+		&outVal.Event.AccountIdentifier,
+		&outVal.Event.Identifier,
+		&outVal.Event.Name,
+		&outVal.Event.Slug,
+		&outVal.Event.Website,
+		&outVal.Event.Image,
+		&outVal.Event.ContactEmail,
+		&outVal.Event.AccessRestricted,
+		&outVal.Event.Type,
+		&outVal.EventYear.Identifier,
+		&outVal.EventYear.Year,
+		&outVal.EventYear.DateTime,
+		&outVal.EventYear.DaysAllowed,
+		&outVal.Event.CertificateName,
+		&outVal.EventYear.RankingType,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error getting values for account and event: %v", err)
+	}
+	outVal.EventYear.EventIdentifier = outVal.Event.Identifier
+	if year == "" {
+		countRow = db.QueryRow(
 			ctx,
 			"SELECT COUNT(DISTINCT distance) AS dist_count FROM event NATURAL JOIN event_year y INNER JOIN "+
 				"(SELECT event_id AS e_id, MAX(date_time) AS d_time FROM event_year WHERE year_deleted=FALSE GROUP BY e_id) AS g ON g.e_id=y.event_id AND g.d_time=y.date_time "+
@@ -186,23 +227,8 @@ func (p *Postgres) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 				" WHERE event_deleted=FALSE AND year_deleted=FALSE and slug=$1",
 			slug,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
 	} else {
-		res, err = db.Query(
-			ctx,
-			"SELECT "+
-				"account_id, event_id, event_name, slug, website, image, contact_email, access_restricted, event_type, "+
-				"event_year_id, year, date_time, "+liveColumn+", days_allowed, cert_name, ranking_type "+
-				"FROM event NATURAL JOIN event_year WHERE event_deleted=FALSE AND year_deleted=FALSE AND slug=$1 AND year=$2",
-			slug,
-			year,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting account and event from database: %v", err)
-		}
-		countRes, err = db.Query(
+		countRow = db.QueryRow(
 			ctx,
 			"SELECT COUNT(DISTINCT distance) AS dist_count "+
 				"FROM person NATURAL JOIN event_year "+
@@ -211,52 +237,11 @@ func (p *Postgres) GetEventAndYear(slug, year string) (*types.MultiGet, error) {
 			slug,
 			year,
 		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
 	}
-	defer res.Close()
-	defer countRes.Close()
-	var distCount = 0
-	if countRes.Next() {
-		err := countRes.Scan(
-			&distCount,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting distance count from database: %v", err)
-		}
+	if err = countRow.Scan(&distCount); err != nil {
+		return nil, fmt.Errorf("error getting distance count from database: %v", err)
 	}
-	if res.Next() {
-		outVal := types.MultiGet{
-			Event:         &types.Event{},
-			EventYear:     &types.EventYear{},
-			DistanceCount: &distCount,
-		}
-		err := res.Scan(
-			&outVal.Event.AccountIdentifier,
-			&outVal.Event.Identifier,
-			&outVal.Event.Name,
-			&outVal.Event.Slug,
-			&outVal.Event.Website,
-			&outVal.Event.Image,
-			&outVal.Event.ContactEmail,
-			&outVal.Event.AccessRestricted,
-			&outVal.Event.Type,
-			&outVal.EventYear.Identifier,
-			&outVal.EventYear.Year,
-			&outVal.EventYear.DateTime,
-			&outVal.EventYear.Live,
-			&outVal.EventYear.DaysAllowed,
-			&outVal.Event.CertificateName,
-			&outVal.EventYear.RankingType,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error getting values for account and event: %v", err)
-		}
-		outVal.EventYear.EventIdentifier = outVal.Event.Identifier
-		return &outVal, nil
-	}
-	return nil, nil
+	return &outVal, nil
 }
 
 // GetKeyAndAccount Gets an account and key based upon the key value.

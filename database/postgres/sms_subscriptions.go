@@ -36,6 +36,8 @@ func (p *Postgres) AddSubscribedPhone(eventYearID int64, subscription types.SmsS
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	_, err = tx.Exec(
 		ctx,
 		"INSERT INTO sms_subscriptions(event_year_id, bib, first, last, phone) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING;",
@@ -68,6 +70,8 @@ func (p *Postgres) RemoveSubscribedPhone(eventYearID int64, phone string) error 
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
+	// does nothing once the transaction is committed; otherwise frees its connection
+	defer tx.Rollback(ctx)
 	_, err = tx.Exec(
 		ctx,
 		"DELETE FROM sms_subscriptions WHERE event_year_id=$1 AND phone=$2;",

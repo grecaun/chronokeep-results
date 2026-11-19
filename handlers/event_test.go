@@ -176,7 +176,6 @@ func TestGetEvent(t *testing.T) {
 			assert.True(t, resp.Event.Equals(&event))
 			if assert.NotNil(t, resp.Year) {
 				assert.Equal(t, variables.eventYears["event2"]["2021"].Year, resp.Year.Year)
-				assert.Equal(t, variables.eventYears["event2"]["2021"].Live, resp.Year.Live)
 				assert.Equal(t, variables.eventYears["event2"]["2021"].DateTime.Local(), resp.Year.DateTime.Local())
 			}
 		}

@@ -85,6 +85,18 @@ func setupTests(t *testing.T) (*SQLite, func(t *testing.T), error) {
 	}
 	t.Log("Database initialized.")
 	return &o, func(t *testing.T) {
+		// Every query and transaction should have handed its connection back by now. One that
+		// didn't would be lost to the pool for good outside of tests. Rows closed by a cancelled
+		// context are handed back in the background, so give them a moment.
+		inUse := o.db.Stats().InUse
+		for wait := 0; inUse > 0 && wait < 20; wait++ {
+			time.Sleep(50 * time.Millisecond)
+			inUse = o.db.Stats().InUse
+		}
+		if inUse > 0 {
+			// Dropping tables or closing the pool would wait on them forever.
+			t.Fatalf("%d database connections were never released.", inUse)
+		}
 		t.Log("Deleting old database.")
 		err = o.dropTables()
 		if err != nil {
@@ -393,7 +405,6 @@ func TestUpgrade(t *testing.T) {
 		EventIdentifier: event1.Identifier,
 		Year:            "2021",
 		DateTime:        time.Date(2021, 10, 06, 9, 6, 3, 15, time.Local),
-		Live:            false,
 		DaysAllowed:     1,
 		RankingType:     "chip",
 	}
