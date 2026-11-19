@@ -31,8 +31,13 @@ import (
 var (
 	// resultsNotifyDelay groups bursts of result changes into one notification per event year.
 	resultsNotifyDelay = 2 * time.Second
-	// streamPingInterval keeps idle streams from being closed by proxies and browsers.
+	// streamPingInterval keeps idle streams from being closed by proxies and browsers, and
+	// lets pages tell the stream is still working: they reconnect if pings stop arriving.
 	streamPingInterval = 30 * time.Second
+	// streamWriteTimeout is how long each write to a stream may take. It only trips once the
+	// connection's send buffer is full; a client that vanished without closing the connection
+	// is caught by the listener's TCP user timeout (see util.Listen).
+	streamWriteTimeout = 15 * time.Second
 	// broker tells open results streams when an event year's results change.
 	broker = newResultsBroker()
 )
@@ -154,7 +159,12 @@ func (h Handler) StreamResults(c *echo.Context) error {
 	w.Header().Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
 	rc := http.NewResponseController(w)
+	// The server's read and write timeouts are for ordinary requests, and would close a stream
+	// that's meant to stay open. Clear the read deadline, and give each write its own deadline
+	// instead. Servers that can't set deadlines, like test recorders, just keep their own.
+	_ = rc.SetReadDeadline(time.Time{})
 	send := func(msg string) bool {
+		_ = rc.SetWriteDeadline(time.Now().Add(streamWriteTimeout))
 		if _, err := fmt.Fprint(w, msg); err != nil {
 			return false
 		}
@@ -176,7 +186,8 @@ func (h Handler) StreamResults(c *echo.Context) error {
 		case <-updates:
 			msg = "event: results\ndata: {}\n\n"
 		case <-ping.C:
-			msg = ": ping\n\n"
+			// a named event rather than an SSE comment, since EventSource hides comments from pages
+			msg = "event: ping\ndata: {}\n\n"
 		}
 		if !send(msg) {
 			return nil

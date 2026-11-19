@@ -116,9 +116,15 @@ func main() {
 			},
 		}))
 	}
+	addr := ":" + strconv.Itoa(config.Port)
+	listener, err := util.Listen(addr)
+	if err != nil {
+		log.Fatalf("Error listening on %s. %v", addr, err)
+	}
+	s := util.NewServer(addr, e, util.DefaultServerTimeouts)
 	if !config.AutoTLS {
 		log.Info("Starting non https echo server.")
-		log.Fatal(e.Start(":" + strconv.Itoa(config.Port)))
+		log.Fatal(s.Serve(listener))
 	} else {
 		log.Info("Starting auto tls echo server.")
 		// Set up auto tls manager - Cache certificates
@@ -131,15 +137,11 @@ func main() {
 			autoTLSManager.HostPolicy = autocert.HostWhitelist(config.Domain)
 		}
 		e.Pre(middleware.HTTPSRedirect())
-		s := http.Server{
-			Addr:    ":" + strconv.Itoa(config.Port),
-			Handler: e,
-			TLSConfig: &tls.Config{
-				GetCertificate: autoTLSManager.GetCertificate,
-				NextProtos:     []string{acme.ALPNProto},
-			},
+		s.TLSConfig = &tls.Config{
+			GetCertificate: autoTLSManager.GetCertificate,
+			NextProtos:     []string{acme.ALPNProto},
 		}
-		log.Fatal(s.ListenAndServeTLS("", ""))
+		log.Fatal(s.ServeTLS(listener, "", ""))
 	}
 }
 

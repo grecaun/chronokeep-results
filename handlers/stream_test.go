@@ -21,8 +21,10 @@ package handlers
 import (
 	"bufio"
 	"chronokeep/results/types"
+	"chronokeep/results/util"
 	"context"
 	"encoding/json"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -263,4 +265,83 @@ func TestAddResultsWithNoResults(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp))
 		assert.Equal(t, 0, resp.Count)
 	}
+}
+
+func TestStreamOutlastsServerTimeouts(t *testing.T) {
+	variables, finalize := setupTests(t)
+	defer finalize(t)
+	oldPing, oldDelay := streamPingInterval, resultsNotifyDelay
+	streamPingInterval = 100 * time.Millisecond
+	resultsNotifyDelay = 50 * time.Millisecond
+	defer func() { streamPingInterval, resultsNotifyDelay = oldPing, oldDelay }()
+
+	// the real server, with read and write timeouts far shorter than the stream stays open
+	e := echo.New()
+	h := Handler{}
+	h.Setup()
+	h.Bind(e.Group(""))
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Error listening: %v", err)
+	}
+	server := util.NewServer(listener.Addr().String(), e, util.ServerTimeouts{
+		ReadHeader: 200 * time.Millisecond,
+		Read:       300 * time.Millisecond,
+		Write:      300 * time.Millisecond,
+		Idle:       300 * time.Millisecond,
+	})
+	go server.Serve(listener)
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	address := "http://" + listener.Addr().String() + "/results/stream?" + url.Values{
+		"slug": {"event2"}, "year": {"2021"}, "key": {variables.knownValues["write2"]},
+	}.Encode()
+	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, address, nil)
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatalf("Error opening stream: %v", err)
+	}
+	defer response.Body.Close()
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+	lines := make(chan string, 100)
+	go func() {
+		reader := bufio.NewReader(response.Body)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				close(lines)
+				return
+			}
+			lines <- strings.TrimRight(line, "\r\n")
+		}
+	}()
+	// waits up to `limit` for a line, failing if the stream closes first
+	waitFor := func(want string, limit time.Duration) {
+		t.Helper()
+		deadline := time.After(limit)
+		for {
+			select {
+			case line, ok := <-lines:
+				if !ok {
+					t.Fatalf("Stream closed while waiting for %q.", want)
+				}
+				if line == want {
+					return
+				}
+			case <-deadline:
+				t.Fatalf("Didn't get %q within %v.", want, limit)
+			}
+		}
+	}
+	waitFor("event: ready", 2*time.Second)
+	// pings keep coming well past the read and write timeouts
+	pingsUntil := time.Now().Add(time.Second)
+	for time.Now().Before(pingsUntil) {
+		waitFor("event: ping", time.Second)
+	}
+	// and the stream still hears about result changes
+	broker.notify(variables.eventYears["event2"]["2021"].Identifier)
+	waitFor("event: results", 2*time.Second)
 }
