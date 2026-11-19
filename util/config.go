@@ -21,6 +21,7 @@ package util
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -94,6 +95,14 @@ func GetConfig() (*Config, error) {
 
 	domain := os.Getenv("DOMAIN")
 
+	// IPs or CIDRs, separated by commas, that are never banned for probing (see handlers.ProbeBanner)
+	var banAllowlist []string
+	for _, entry := range strings.Split(os.Getenv("BAN_ALLOWLIST"), ",") {
+		if entry = strings.TrimSpace(entry); entry != "" {
+			banAllowlist = append(banAllowlist, entry)
+		}
+	}
+
 	return &Config{
 		DBName:                   dbName,
 		DBHost:                   dbHost,
@@ -113,6 +122,7 @@ func GetConfig() (*Config, error) {
 		Domain:                   domain,
 		TwilioAuthToken:          twilio_auth_token,
 		TwilioResponseWebhookURL: twilio_response_webhook_url,
+		BanAllowlist:             banAllowlist,
 	}, nil
 }
 
@@ -136,5 +146,6 @@ type Config struct {
 	Domain                   string
 	TwilioAuthToken          string
 	TwilioResponseWebhookURL string
+	BanAllowlist             []string
 }
 
